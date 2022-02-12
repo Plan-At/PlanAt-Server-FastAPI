@@ -1,3 +1,5 @@
+import logging
+from datetime import datetime
 import uvicorn
 from fastapi import FastAPI
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -43,5 +45,15 @@ def v1_user_PublicProfile(request: Request, user_id: str):
     return {"status": "ok", "display_name": user_id}
 
 if __name__ == "__main__":
-    print(__file__)
+    LOG_NAME = str(int(datetime.now().timestamp()))
+
+    logging.basicConfig(filename="{}.log".format(LOG_NAME),
+                        format="%(asctime)s - %(levelname)s - %(message)s",
+                        datefmt="%D %H:%M:%S",
+                        level=logging.DEBUG)
+    logger = logging.StreamHandler()
+    logging.getLogger().addHandler(logger)
+    logger = logging.getLogger("tester_logging")
+    logger.debug(__file__)
+    logger.debug("Started")
     uvicorn.run("fast_demo:app", debug=True, reload=True)
