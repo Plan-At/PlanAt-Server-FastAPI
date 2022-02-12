@@ -35,11 +35,12 @@ def v1_endpoint():
 
 @app.get("/v1/user", tags=["V1"])
 def v1_user():
-    return {"status": "ok"}
+    return {"status": "empty"}
 
-@app.get("/v1/user/profile", tags=["V1"])
-def v1_user_profile(display_name: str):
-    return {"status": "ok", "display_name": display_name}
+@app.get("/v1/user/public-profile", tags=["V1"])
+@limiter.limit("5/minute")
+def v1_user_PublicProfile(request: Request, user_id: str):
+    return {"status": "ok", "display_name": user_id}
 
 if __name__ == "__main__":
     print(__file__)
