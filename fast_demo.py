@@ -1,4 +1,5 @@
 import logging
+import sys
 from datetime import datetime
 import uvicorn
 from fastapi import FastAPI
@@ -17,6 +18,10 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 @app.get("/")
 def hello_world():
     return {"message": "hello"}
+
+@app.get("/nodes")
+def api_nodes():
+    return {"primary_servers": [{"priority": 0, "name": "", "URL": "", "provider": "", "location": ""}]}
 
 @app.get("/version", tags=["General Methods"])
 def api_version():
@@ -56,4 +61,8 @@ if __name__ == "__main__":
     logger = logging.getLogger("tester_logging")
     logger.debug(__file__)
     logger.debug("Started")
-    uvicorn.run("fast_demo:app", debug=True, reload=True)
+
+    if sys.platform == "win32":
+        uvicorn.run("fast_demo:app", debug=True, reload=True, port=8000)
+    else:
+        uvicorn.run("fast_demo:app", debug=True, reload=False, port=80, host="0.0.0.0")
