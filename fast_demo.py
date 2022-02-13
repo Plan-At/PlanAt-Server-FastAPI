@@ -20,7 +20,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 async def log_requests(request: Request, call_next):
     start_time = datetime.now()
     logger = open(file="fast_demo.log", mode="a", encoding="utf-8")
-    logger.write(f"time={str(datetime.now())} ip={request.client.host} method {request.method} path=\"{request.url.path}\" ")
+    logger.write(f"time={str(datetime.now())} ip={request.client.host} method={request.method} path=\"{request.url.path}\" ")
     response = await call_next(request)
     logger.write(f"completed_in={(datetime.now()-start_time).microseconds/1000}ms status_code={response.status_code}\n")
     return response
