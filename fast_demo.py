@@ -27,11 +27,12 @@ async def log_requests(request: Request, call_next):
 
 @app.get("/")
 def hello_world():
-    return {"message": "hello, documentation available at \"/docs\""}
+    return {"message": "hello, documentation available at /docs"}
 
-@app.get("/server-list")
-def api_servers():
-    return {"primary_servers": [{"priority": 0, "name": "", "URL": "", "provider": "", "location": ""}]}
+@app.get("/ip", tags=["General Methods"])
+def client_ip(request: Request):
+    return {"ip": get_remote_address(request=request)}
+
 
 @app.get("/version", tags=["General Methods"])
 def api_version():
@@ -42,25 +43,55 @@ def api_version():
 def api_status(request: Request):
     return {"status": "ok"}
 
-@app.get("/ip", tags=["General Methods"])
-def client_ip(request: Request):
-    return {"ip": get_remote_address(request=request)}
+@app.get("/server/list", tags=["General Methods"])
+@limiter.limit("1/minute")
+def api_server_list(request: Request):
+    return {"server_list": [{"priority": 0, "load": 0, "name": "", "URL": "", "provider": "", "location": ""}]}
 
-@app.get("/v1", tags=["V1"])
-def v1_endpoint():
+@app.get("/server/assignment", tags=["General Methods"])
+@limiter.limit("1/minute")
+def api_server_assignment(request: Request):
+    return {"recommended_servers": [{"priority": 0, "load": 0, "name": "", "URL": "", "provider": "", "location": ""}]}
+
+
+@app.get("/dummy", tags=["Dummy Data"])
+def dummy():
     return {"status": "ok"}
 
-@app.get("/v1/private/user/profile", tags=["V1"])
-def v1_private_user_profile():
-    return {"status": "empty"}
+@app.get("/dummy/user/profile", tags=["Dummy Data"])
+def dummy_user_profile():
+    return {"id":"","profile_url":"","unique_name":"","display_name":"","picture":{"avatar":{"regular":"","full":""},"background":{"regular":"","full":""}},"status":{"current_status":"","until":"","default_status":""},"about":{"short_decription":"","full_decription":""},"contact":{"email":"","phone":""},"public_tags":[{"id":"","name":""}],"public_friends":[{"id":"","name":""}],"public_teams":[{"id":"","name":""}]}
+
+@app.get("/dummy/user/calendar", tags=["Dummy Data"])
+def dummy_user_calendar():
+    return {"status": "ok"}
+
+
+@app.get("/v1", tags=["V1"])
+def v1():
+    return {"status": "ok"}
+
+@app.get("/v1/public/stats", tags=["V1"])
+@limiter.limit("5/minute")
+def v1_public_stats(request: Request):
+    return {"status": "ok"}
+
+@app.get("/v1/restricted/stats", tags=["V1"])
+@limiter.limit("5/minute")
+def v1_restricted_stats(request: Request):
+    return {"status": "ok"}
 
 @app.get("/v1/public/user/profile", tags=["V1"])
 @limiter.limit("5/minute")
 def v1_public_user_profile(request: Request, user_id: str):
     return {"status": "ok", "display_name": user_id}
 
+@app.get("/v1/private/user/profile", tags=["V1"])
+def v1_private_user_profile():
+    return {"status": "empty"}
+
 if __name__ == "__main__":
     if sys.platform == "win32":
-        uvicorn.run("fast_demo:app", debug=True, reload=True, port=8000)
+        uvicorn.run("fast_demo:app", debug=True, reload=True, port=8000, host="127.0.0.1", limit_concurrency=8)
     else:
-        uvicorn.run("fast_demo:app", debug=True, reload=False, port=80, host="0.0.0.0")
+        uvicorn.run("fast_demo:app", debug=True, reload=False, port=80, host="0.0.0.0", limit_concurrency=8)
