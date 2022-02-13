@@ -8,17 +8,6 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.requests import Request
 
-LOG_NAME = str(int(datetime.now().timestamp()))
-logging.basicConfig(filename=f"{LOG_NAME}.log",
-                    format="%(asctime)s - %(levelname)s - %(message)s",
-                    datefmt="%D %H:%M:%S",
-                    level=logging.DEBUG)
-logging.getLogger().addHandler(logging.StreamHandler())
-logger = logging.getLogger(__name__)
-logger.debug(__file__)
-logger.debug("Started")
-
-
 app = FastAPI()
 
 limiter = Limiter(key_func=get_remote_address)
@@ -29,12 +18,12 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    logger.info(f"ip={request.client.host} start request path={request.url.path}")
+    logger = open(file="fast_demo.log", mode="a", encoding="utf-8")
+    logger.write(f"ip={request.client.host} method {request.method} path=\"{request.url.path}\" ")
     start_time = datetime.now()
     response = await call_next(request)
-    process_time = (datetime.now() - start_time).microseconds * 1000
-    formatted_process_time = '{0:.2f}'.format(process_time)
-    logger.info(f"completed_in={formatted_process_time}ms status_code={response.status_code}")
+    process_time = (datetime.now() - start_time).microseconds / 1000
+    logger.write(f"completed_in={process_time}ms status_code={response.status_code}\n")
     return response
 
 @app.get("/")
