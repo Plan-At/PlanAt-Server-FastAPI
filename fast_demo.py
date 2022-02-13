@@ -35,13 +35,13 @@ def client_ip(request: Request):
 def v1_endpoint():
     return {"status": "ok"}
 
-@app.get("/v1/user", tags=["V1"])
-def v1_user():
+@app.get("/v1/private/user/profile", tags=["V1"])
+def v1_private_user_profile():
     return {"status": "empty"}
 
-@app.get("/v1/user/public-profile", tags=["V1"])
+@app.get("/v1/public/user/profile", tags=["V1"])
 @limiter.limit("5/minute")
-def v1_user_PublicProfile(request: Request, user_id: str):
+def v1_public_user_profile(request: Request, user_id: str):
     return {"status": "ok", "display_name": user_id}
 
 if __name__ == "__main__":
