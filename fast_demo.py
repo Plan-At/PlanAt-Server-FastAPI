@@ -8,12 +8,34 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.requests import Request
 
+LOG_NAME = str(int(datetime.now().timestamp()))
+logging.basicConfig(filename=f"{LOG_NAME}.log",
+                    format="%(asctime)s - %(levelname)s - %(message)s",
+                    datefmt="%D %H:%M:%S",
+                    level=logging.DEBUG)
+logging.getLogger().addHandler(logging.StreamHandler())
+logger = logging.getLogger(__name__)
+logger.debug(__file__)
+logger.debug("Started")
+
+
 app = FastAPI()
 
 limiter = Limiter(key_func=get_remote_address)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"ip={request.client.host} start request path={request.url.path}")
+    start_time = datetime.now()
+    response = await call_next(request)
+    process_time = (datetime.now() - start_time).microseconds * 1000
+    formatted_process_time = '{0:.2f}'.format(process_time)
+    logger.info(f"completed_in={formatted_process_time}ms status_code={response.status_code}")
+    return response
 
 @app.get("/")
 def hello_world():
@@ -50,18 +72,6 @@ def v1_public_user_profile(request: Request, user_id: str):
     return {"status": "ok", "display_name": user_id}
 
 if __name__ == "__main__":
-    LOG_NAME = str(int(datetime.now().timestamp()))
-
-    logging.basicConfig(filename="{}.log".format(LOG_NAME),
-                        format="%(asctime)s - %(levelname)s - %(message)s",
-                        datefmt="%D %H:%M:%S",
-                        level=logging.DEBUG)
-    logger = logging.StreamHandler()
-    logging.getLogger().addHandler(logger)
-    logger = logging.getLogger("tester_logging")
-    logger.debug(__file__)
-    logger.debug("Started")
-
     if sys.platform == "win32":
         uvicorn.run("fast_demo:app", debug=True, reload=True, port=8000)
     else:
