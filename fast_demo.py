@@ -3,6 +3,7 @@ import sys
 from datetime import datetime
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -28,6 +29,10 @@ async def log_requests(request: Request, call_next):
 @app.get("/")
 def hello_world():
     return {"message": "hello, documentation available at /docs"}
+
+@app.get("/favicon.ico")
+def get_favicon():
+    return FileResponse(path="./favicon.ico", filename="favicon.ico")
 
 @app.get("/ip", tags=["General Methods"])
 def client_ip(request: Request):
