@@ -27,10 +27,10 @@ async def log_requests(request: Request, call_next):
 
 @app.get("/")
 def hello_world():
-    return {"message": "hello"}
+    return {"message": "hello, documentation available at \"/docs\""}
 
-@app.get("/nodes")
-def api_nodes():
+@app.get("/server-list")
+def api_servers():
     return {"primary_servers": [{"priority": 0, "name": "", "URL": "", "provider": "", "location": ""}]}
 
 @app.get("/version", tags=["General Methods"])
