@@ -1,4 +1,10 @@
 .idea
 
+# cache
+__pycache__
+
 # logs
 *.log
+
+# databases
+*.db

@@ -79,7 +79,7 @@ def v1():
 
 @app.get("/v1/auth/token/validate", tags=["V1"])
 def v1_auth_token_validate(auth_token: str):
-    if len(auth_token) == 4:
+    if len(auth_token) == 8:
         return {"auth_status": "ok"}
     else:
         return {"auth_status": "failed", "error": "invalid auth_token format"}
