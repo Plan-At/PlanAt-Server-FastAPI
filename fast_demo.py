@@ -8,6 +8,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.requests import Request
+import sqlite3
 
 app = FastAPI()
 
@@ -75,6 +76,13 @@ def dummy_user_calendar():
 @app.get("/v1", tags=["V1"])
 def v1():
     return {"status": "ok"}
+
+@app.get("/v1/auth/token/validate", tags=["V1"])
+def v1_auth_token_validate(auth_token: str):
+    if len(auth_token) == 4:
+        return {"auth_status": "ok"}
+    else:
+        return {"auth_status": "failed", "error": "invalid auth_token format"}
 
 @app.get("/v1/public/stats", tags=["V1"])
 @limiter.limit("5/minute")
