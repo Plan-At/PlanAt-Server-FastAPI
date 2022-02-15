@@ -107,4 +107,4 @@ if __name__ == "__main__":
     if sys.platform == "win32":
         uvicorn.run("fast_demo:app", debug=True, reload=True, port=8000, host="127.0.0.1", limit_concurrency=8)
     else:
-        uvicorn.run("fast_demo:app", debug=True, reload=False, port=80, host="0.0.0.0", limit_concurrency=8)
+        uvicorn.run("fast_demo:app", debug=True, reload=False, port=8000, host="127.0.0.1", limit_concurrency=8)
