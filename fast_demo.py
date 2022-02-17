@@ -10,7 +10,7 @@ from slowapi.util import get_remote_address
 from starlette.requests import Request
 import sqlite3
 import hashlib
-from .setting import AuthConfig, RateLimitConfig
+from setting import AuthConfig, RateLimitConfig
 
 app = FastAPI()
 
@@ -30,7 +30,7 @@ async def log_requests(request: Request, call_next):
     return response
 
 @app.get("/")
-def hello_world():
+def hello_world(request: Request):
     return {"message": "hello, documentation available at /docs"}
 
 @app.get("/favicon.ico")
@@ -55,35 +55,38 @@ def api_version(request: Request):
     return {"version": "v1"}
 
 @app.get("/status", tags=["General Methods"])
-@limiter.limit("5/10second")
+@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def api_status(request: Request):
     return {"status": "ok"}
 
 @app.get("/server/list", tags=["General Methods"])
-@limiter.limit("1/minute")
+@limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
 def api_server_list(request: Request):
     return {"server_list": [{"priority": 0, "load": 0, "name": "", "URL": "", "provider": "", "location": ""}]}
 
 @app.get("/server/assignment", tags=["General Methods"])
-@limiter.limit("1/minute")
+@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def api_server_assignment(request: Request):
     return {"recommended_servers": [{"priority": 0, "load": 0, "name": "", "URL": "", "provider": "", "location": ""}]}
 
 
 @app.get("/dummy", tags=["Dummy Data"])
-def dummy():
+@limiter.limit(RateLimitConfig.NO_COMPUTE)
+def dummy(request: Request):
     return {"status": "ok"}
 
 @app.get("/dummy/user/profile", tags=["Dummy Data"])
-def dummy_user_profile():
+@limiter.limit(RateLimitConfig.MIN_DB)
+def dummy_user_profile(request: Request):
     return {"id":"","profile_url":"","unique_name":"","display_name":"","picture":{"avatar":{"regular":"","full":""},"background":{"regular":"","full":""}},"status":{"current_status":"","until":"","default_status":""},"about":{"short_description":"","full_description":""},"contact":{"email":"","phone":""},"public_tags":[{"id":"","name":""}],"public_friends":[{"id":"","name":""}],"public_teams":[{"id":"","name":""}]}
 
 @app.get("/dummy/user/calendar", tags=["Dummy Data"])
-def dummy_user_calendar():
+@limiter.limit(RateLimitConfig.SOME_DB)
+def dummy_user_calendar(request: Request):
     return {"id":"","username":"","calendar_entry":[{"object_id":"1","event_id":"1","owner":"me","visibility":"public","start":"Monday 9AM","end":"Monday 9PM","name":"work","description":"endless work","type":"work","tags":["work","mandatory","not fun"]},{"object_id":"2","event_id":"2","owner":"me","visibility":"private","start":"Monday 9PM","end":"Monday 11PM","name":"rest","description":"having fun","type":"work","tags":["gaming","fun"]},{"object_id":"3","event_id":"3","owner":"me","visibility":"public","start":"Tuesday 9AM","end":"Tuesday 9PM","name":"work","description":"endless work","type":"work","tags":["work","mandatory","not fun"]}]}
 
 @app.get("/dummy/auth/decrypt", tags=["Dummy Data"])
-def dummy_auth_decrypt(encrypted_sha512_string: str , auth_token: str, timestamp: str, request: Request):
+def dummy_auth_decrypt(request: Request, encrypted_sha512_string: str , auth_token: str, timestamp: str):
     if len(auth_token) == AuthConfig.TOKEN_LENGTH:
         if (hashlib.sha512((auth_token+timestamp).encode("utf-8")).hexdigest() == encrypted_sha512_string):
             return {"auth_status": "ok"}
@@ -93,40 +96,43 @@ def dummy_auth_decrypt(encrypted_sha512_string: str , auth_token: str, timestamp
         return {"auth_status": "failed", "error": "invalid auth_token format"}
 
 @app.get("/dummy/auth/validate", tags=["Dummy Data"])
-def dummy_auth_validate(auth_token: str):
+def dummy_auth_validate(request: Request, auth_token: str):
     if len(auth_token) == AuthConfig.TOKEN_LENGTH:
         return {"auth_status": "ok"}
     else:
         return {"auth_status": "failed", "error": "invalid auth_token format"}
 
 @app.get("/v1", tags=["V1"])
-def v1():
+@limiter.limit(RateLimitConfig.NO_COMPUTE)
+def v1(request: Request):
     return {"status": "ok"}
 
 @app.get("/v1/auth/token/validate", tags=["V1"])
-def v1_auth_token_validate(auth_token: str):
+@limiter.limit(RateLimitConfig.MIN_DB)
+def v1_auth_token_validate(request: Request, auth_token: str):
     if len(auth_token) == AuthConfig.TOKEN_LENGTH:
         return {"auth_status": "ok"}
     else:
         return {"auth_status": "failed", "error": "invalid auth_token format"}
 
 @app.get("/v1/public/stats", tags=["V1"])
-@limiter.limit("5/minute")
+@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def v1_public_stats(request: Request):
     return {"status": "ok"}
 
 @app.get("/v1/restricted/stats", tags=["V1"])
-@limiter.limit("5/minute")
+@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def v1_restricted_stats(request: Request):
     return {"status": "ok"}
 
 @app.get("/v1/public/user/profile", tags=["V1"])
-@limiter.limit("5/minute")
+@limiter.limit(RateLimitConfig.MIN_DB)
 def v1_public_user_profile(request: Request, user_id: str):
     return {"status": "ok", "display_name": user_id}
 
 @app.get("/v1/private/user/profile", tags=["V1"])
-def v1_private_user_profile():
+@limiter.limit(RateLimitConfig.MIN_DB)
+def v1_private_user_profile(request: Request):
     return {"status": "empty"}
 
 if __name__ == "__main__":
