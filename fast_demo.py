@@ -80,7 +80,7 @@ def dummy_user_calendar():
 @app.get("/dummy/auth/decrypt", tags=["Dummy Data"])
 def dummy_auth_decrypt(encrypted_string: str , auth_token: str, timestamp: str, request: Request):
     if len(auth_token) == 8:
-        if (hashlib.sha512((timestamp+auth_token).encode("utf-8")).hexdigest() == encrypted_string):
+        if (hashlib.sha512((auth_token+timestamp).encode("utf-8")).hexdigest() == encrypted_string):
             return {"auth_status": "ok"}
         else:
             return {"auth_status": "failed", "error": "auth_token not match"}
