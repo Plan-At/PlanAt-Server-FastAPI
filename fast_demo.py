@@ -9,6 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.requests import Request
 import sqlite3
+import hashlib
 
 app = FastAPI()
 
@@ -76,6 +77,15 @@ def dummy_user_profile():
 def dummy_user_calendar():
     return {"id":"","username":"","calendar_entry":[{"object_id":"1","event_id":"1","owner":"me","visibility":"public","start":"Monday 9AM","end":"Monday 9PM","name":"work","description":"endless work","type":"work","tags":["work","mandatory","not fun"]},{"object_id":"2","event_id":"2","owner":"me","visibility":"private","start":"Monday 9PM","end":"Monday 11PM","name":"rest","description":"having fun","type":"work","tags":["gaming","fun"]},{"object_id":"3","event_id":"3","owner":"me","visibility":"public","start":"Tuesday 9AM","end":"Tuesday 9PM","name":"work","description":"endless work","type":"work","tags":["work","mandatory","not fun"]}]}
 
+@app.get("/dummy/auth/decrypt", tags=["Dummy Data"])
+def dummy_auth_decrypt(encrypted_string: str , auth_token: str, timestamp: str, request: Request):
+    if len(auth_token) == 8:
+        if (hashlib.sha512((timestamp+auth_token).encode("utf-8")).hexdigest() == encrypted_string):
+            return {"auth_status": "ok"}
+        else:
+            return {"auth_status": "failed", "error": "auth_token not match"}
+    else:
+        return {"auth_status": "failed", "error": "invalid auth_token format"}
 
 @app.get("/v1", tags=["V1"])
 def v1():
