@@ -10,6 +10,7 @@ from slowapi.util import get_remote_address
 from starlette.requests import Request
 import sqlite3
 import hashlib
+from .setting import AuthConfig, RateLimitConfig
 
 app = FastAPI()
 
@@ -33,20 +34,24 @@ def hello_world():
     return {"message": "hello, documentation available at /docs"}
 
 @app.get("/favicon.ico")
-def get_favicon():
+@limiter.limit(RateLimitConfig.SMALL_SIZE)
+def get_favicon(request: Request):
     return FileResponse(path="./favicon.ico", filename="favicon.ico")
 
 @app.get("/ip", tags=["General Methods"])
+@limiter.limit(RateLimitConfig.NO_COMPUTE)
 def request_ip(request: Request):
     return {"ip": get_remote_address(request=request)}
 
 @app.get("/header", tags=["General Methods"])
+@limiter.limit(RateLimitConfig.NO_COMPUTE)
 def request_header(request: Request):
     return dict(request.headers)
 
 
 @app.get("/version", tags=["General Methods"])
-def api_version():
+@limiter.limit(RateLimitConfig.NO_COMPUTE)
+def api_version(request: Request):
     return {"version": "v1"}
 
 @app.get("/status", tags=["General Methods"])
@@ -78,12 +83,19 @@ def dummy_user_calendar():
     return {"id":"","username":"","calendar_entry":[{"object_id":"1","event_id":"1","owner":"me","visibility":"public","start":"Monday 9AM","end":"Monday 9PM","name":"work","description":"endless work","type":"work","tags":["work","mandatory","not fun"]},{"object_id":"2","event_id":"2","owner":"me","visibility":"private","start":"Monday 9PM","end":"Monday 11PM","name":"rest","description":"having fun","type":"work","tags":["gaming","fun"]},{"object_id":"3","event_id":"3","owner":"me","visibility":"public","start":"Tuesday 9AM","end":"Tuesday 9PM","name":"work","description":"endless work","type":"work","tags":["work","mandatory","not fun"]}]}
 
 @app.get("/dummy/auth/decrypt", tags=["Dummy Data"])
-def dummy_auth_decrypt(encrypted_string: str , auth_token: str, timestamp: str, request: Request):
-    if len(auth_token) == 8:
-        if (hashlib.sha512((auth_token+timestamp).encode("utf-8")).hexdigest() == encrypted_string):
+def dummy_auth_decrypt(encrypted_sha512_string: str , auth_token: str, timestamp: str, request: Request):
+    if len(auth_token) == AuthConfig.TOKEN_LENGTH:
+        if (hashlib.sha512((auth_token+timestamp).encode("utf-8")).hexdigest() == encrypted_sha512_string):
             return {"auth_status": "ok"}
         else:
             return {"auth_status": "failed", "error": "auth_token not match"}
+    else:
+        return {"auth_status": "failed", "error": "invalid auth_token format"}
+
+@app.get("/dummy/auth/validate", tags=["Dummy Data"])
+def dummy_auth_validate(auth_token: str):
+    if len(auth_token) == AuthConfig.TOKEN_LENGTH:
+        return {"auth_status": "ok"}
     else:
         return {"auth_status": "failed", "error": "invalid auth_token format"}
 
@@ -93,7 +105,7 @@ def v1():
 
 @app.get("/v1/auth/token/validate", tags=["V1"])
 def v1_auth_token_validate(auth_token: str):
-    if len(auth_token) == 8:
+    if len(auth_token) == AuthConfig.TOKEN_LENGTH:
         return {"auth_status": "ok"}
     else:
         return {"auth_status": "failed", "error": "invalid auth_token format"}
