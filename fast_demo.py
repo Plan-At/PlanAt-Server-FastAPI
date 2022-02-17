@@ -36,8 +36,12 @@ def get_favicon():
     return FileResponse(path="./favicon.ico", filename="favicon.ico")
 
 @app.get("/ip", tags=["General Methods"])
-def client_ip(request: Request):
+def request_ip(request: Request):
     return {"ip": get_remote_address(request=request)}
+
+@app.get("/header", tags=["General Methods"])
+def request_header(request: Request):
+    return dict(request.headers)
 
 
 @app.get("/version", tags=["General Methods"])
