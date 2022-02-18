@@ -34,6 +34,7 @@ class MediaAssets:
 class DummyData:
     USER_PROFILE = {
                     "id":"",
+                    "seed":"",
                     "profile_url":"",
                     "unique_name":"",
                     "display_name":"",
@@ -52,8 +53,14 @@ class DummyData:
                         "short_description":"",
                         "full_description":""},
                     "contact":{
-                        "email":"",
-                        "phone":""},
+                        "email":{
+                            "value":"",
+                            "visibility":""}
+                        },
+                        # "phone":{
+                        #     "value":"",
+                        #     "visibility":""}
+                        # }},
                     "public_tags":[
                         {"id":"","name":""}],
                     "public_friends":[
