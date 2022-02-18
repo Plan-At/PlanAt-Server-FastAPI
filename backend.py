@@ -8,7 +8,7 @@ from slowapi.util import get_remote_address
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 import hashlib
-from constant import ServerConfig, AuthConfig, RateLimitConfig, MediaAssets
+from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, MediaAssets
 
 app = FastAPI()
 
@@ -35,7 +35,6 @@ def hello_world(request: Request):
 @app.get("/favicon.ico")
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def get_favicon(request: Request):
-    # return FileResponse(path="./favicon.ico", filename="favicon.ico")
     return RedirectResponse(url=MediaAssets.FAVICON)
 
 @app.get("/ip", tags=["General Methods"])
@@ -52,7 +51,7 @@ def request_header(request: Request):
 @app.get("/version", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def api_version(request: Request):
-    return {"version": "v1"}
+    return {"version": ServerConfig.CURRENT_VERSION}
 
 @app.get("/status", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
@@ -62,7 +61,7 @@ def api_status(request: Request):
 @app.get("/server/list", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
 def api_server_list(request: Request):
-    return {"server_list": [{"priority": 0, "load": 0, "name": "", "URL": "", "provider": "", "location": ""}]}
+    return {"server_list": ServerConfig.API_SERVER_LIST}
 
 @app.get("/server/assignment", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
@@ -78,12 +77,12 @@ def dummy(request: Request):
 @app.get("/dummy/user/profile", tags=["Dummy Data"])
 @limiter.limit(RateLimitConfig.MIN_DB)
 def dummy_user_profile(request: Request):
-    return {"id":"","profile_url":"","unique_name":"","display_name":"","picture":{"avatar":{"regular":"","full":""},"background":{"regular":"","full":""}},"status":{"current_status":"","until":"","default_status":""},"about":{"short_description":"","full_description":""},"contact":{"email":"","phone":""},"public_tags":[{"id":"","name":""}],"public_friends":[{"id":"","name":""}],"public_teams":[{"id":"","name":""}]}
+    return DummyData.USER_PROFILE
 
 @app.get("/dummy/user/calendar", tags=["Dummy Data"])
 @limiter.limit(RateLimitConfig.SOME_DB)
 def dummy_user_calendar(request: Request):
-    return {"id":"","username":"","calendar_entry":[{"object_id":"1","event_id":"1","owner":"me","visibility":"public","start":"Monday 9AM","end":"Monday 9PM","name":"work","description":"endless work","type":"work","tags":["work","mandatory","not fun"]},{"object_id":"2","event_id":"2","owner":"me","visibility":"private","start":"Monday 9PM","end":"Monday 11PM","name":"rest","description":"having fun","type":"work","tags":["gaming","fun"]},{"object_id":"3","event_id":"3","owner":"me","visibility":"public","start":"Tuesday 9AM","end":"Tuesday 9PM","name":"work","description":"endless work","type":"work","tags":["work","mandatory","not fun"]}]}
+    return DummyData.USER_CALENDAR
 
 @app.get("/dummy/auth/decrypt", tags=["Dummy Data"])
 @limiter.limit(RateLimitConfig.LESS_COMPUTE)
