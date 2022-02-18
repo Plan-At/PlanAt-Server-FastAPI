@@ -169,8 +169,8 @@ def v1_public_search_team(request: Request):
 
 if __name__ == "__main__":
     if sys.platform == "win32":
-        uvicorn.run("backend:app", debug=True, reload=True, port=ServerConfig.PORT, host=ServerConfig.HOST,
+        uvicorn.run("server:app", debug=True, reload=True, port=ServerConfig.PORT, host=ServerConfig.HOST,
                     limit_concurrency=ServerConfig.CONCURRENCY)
     else:
-        uvicorn.run("backend:app", debug=True, reload=False, port=ServerConfig.PORT, host=ServerConfig.HOST,
+        uvicorn.run("server:app", debug=True, reload=False, port=ServerConfig.PORT, host=ServerConfig.HOST,
                     limit_concurrency=ServerConfig.CONCURRENCY)
