@@ -8,7 +8,7 @@ from slowapi.util import get_remote_address
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 import hashlib
-from constant import AuthConfig, RateLimitConfig, MediaAssets
+from constant import ServerConfig, AuthConfig, RateLimitConfig, MediaAssets
 
 app = FastAPI()
 
@@ -28,6 +28,7 @@ async def log_requests(request: Request, call_next):
     return response
 
 @app.get("/")
+@limiter.limit(RateLimitConfig.NO_COMPUTE)
 def hello_world(request: Request):
     return {"message": "hello, documentation available at /docs"}
 
@@ -85,6 +86,7 @@ def dummy_user_calendar(request: Request):
     return {"id":"","username":"","calendar_entry":[{"object_id":"1","event_id":"1","owner":"me","visibility":"public","start":"Monday 9AM","end":"Monday 9PM","name":"work","description":"endless work","type":"work","tags":["work","mandatory","not fun"]},{"object_id":"2","event_id":"2","owner":"me","visibility":"private","start":"Monday 9PM","end":"Monday 11PM","name":"rest","description":"having fun","type":"work","tags":["gaming","fun"]},{"object_id":"3","event_id":"3","owner":"me","visibility":"public","start":"Tuesday 9AM","end":"Tuesday 9PM","name":"work","description":"endless work","type":"work","tags":["work","mandatory","not fun"]}]}
 
 @app.get("/dummy/auth/decrypt", tags=["Dummy Data"])
+@limiter.limit(RateLimitConfig.LESS_COMPUTE)
 def dummy_auth_decrypt(request: Request, encrypted_sha512_string: str , auth_token: str, timestamp: str):
     if len(auth_token) == AuthConfig.TOKEN_LENGTH:
         if (hashlib.sha512((auth_token+timestamp).encode("utf-8")).hexdigest() == encrypted_sha512_string):
@@ -95,6 +97,7 @@ def dummy_auth_decrypt(request: Request, encrypted_sha512_string: str , auth_tok
         return {"auth_status": "failed", "error": "invalid auth_token format"}
 
 @app.get("/dummy/auth/validate", tags=["Dummy Data"])
+@limiter.limit(RateLimitConfig.LESS_COMPUTE)
 def dummy_auth_validate(request: Request, auth_token: str):
     if len(auth_token) == AuthConfig.TOKEN_LENGTH:
         return {"auth_status": "ok"}
@@ -136,6 +139,6 @@ def v1_private_user_profile(request: Request):
 
 if __name__ == "__main__":
     if sys.platform == "win32":
-        uvicorn.run("fast_demo:app", debug=True, reload=True, port=8000, host="127.0.0.1", limit_concurrency=8)
+        uvicorn.run("backend:app", debug=True, reload=True, port=ServerConfig.PORT, host=ServerConfig.HOST, limit_concurrency=ServerConfig.CONCURRENCY)
     else:
-        uvicorn.run("fast_demo:app", debug=True, reload=False, port=8000, host="127.0.0.1", limit_concurrency=8)
+        uvicorn.run("backend:app", debug=True, reload=False, port=ServerConfig.PORT, host=ServerConfig.HOST, limit_concurrency=ServerConfig.CONCURRENCY)

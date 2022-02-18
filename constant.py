@@ -1,3 +1,8 @@
+class ServerConfig:
+    PORT = 8000
+    HOST = "127.0.0.1"
+    CONCURRENCY = 8
+
 class AuthConfig:
     TOKEN_LENGTH = 8
 
