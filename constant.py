@@ -55,12 +55,10 @@ class DummyData:
                     "contact":{
                         "email":{
                             "value":"",
-                            "visibility":""}
-                        },
-                        # "phone":{
-                        #     "value":"",
-                        #     "visibility":""}
-                        # }},
+                            "visibility":""},
+                        "phone":{
+                            "value":"",
+                            "visibility":""}},
                     "public_tags":[
                         {"id":"","name":""}],
                     "public_friends":[
