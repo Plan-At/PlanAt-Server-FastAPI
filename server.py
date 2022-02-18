@@ -63,7 +63,7 @@ def api_version(request: Request):
 @app.get("/status", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def api_status(request: Request):
-    return {"status": "ok"}
+    return {"status": "empty"}
 
 
 @app.get("/server/list", tags=["General Methods"])
@@ -135,19 +135,19 @@ def v1_auth_token_validate(request: Request, auth_token: str):
 @app.get("/v1/public/stats", tags=["V1"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def v1_public_stats(request: Request):
-    return {"status": "ok"}
+    return {"status": "empty"}
 
 
 @app.get("/v1/restricted/stats", tags=["V1"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def v1_restricted_stats(request: Request):
-    return {"status": "ok"}
+    return {"status": "empty"}
 
 
 @app.get("/v1/public/user/profile", tags=["V1"])
 @limiter.limit(RateLimitConfig.MIN_DB)
-def v1_public_user_profile(request: Request, user_id: str):
-    return {"status": "ok", "display_name": user_id}
+def v1_public_user_profile(request: Request):
+    return {"status": "empty"}
 
 
 @app.get("/v1/private/user/profile", tags=["V1"])
@@ -155,6 +155,17 @@ def v1_public_user_profile(request: Request, user_id: str):
 def v1_private_user_profile(request: Request):
     return {"status": "empty"}
 
+
+@app.get("/v1/public/search/user", tags=["V1"])
+@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
+def v1_public_search_user(request: Request):
+    return {"status": "empty"}
+
+
+@app.get("/v1/public/search/team", tags=["V1"])
+@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
+def v1_public_search_team(request: Request):
+    return {"status": "empty"}
 
 if __name__ == "__main__":
     if sys.platform == "win32":
