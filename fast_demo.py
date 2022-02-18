@@ -1,16 +1,14 @@
-import logging
 import sys
 from datetime import datetime
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.requests import Request
-import sqlite3
+from starlette.responses import RedirectResponse
 import hashlib
-from setting import AuthConfig, RateLimitConfig
+from constant import AuthConfig, RateLimitConfig, MediaAssets
 
 app = FastAPI()
 
@@ -34,9 +32,10 @@ def hello_world(request: Request):
     return {"message": "hello, documentation available at /docs"}
 
 @app.get("/favicon.ico")
-@limiter.limit(RateLimitConfig.SMALL_SIZE)
+@limiter.limit(RateLimitConfig.NO_COMPUTE)
 def get_favicon(request: Request):
-    return FileResponse(path="./favicon.ico", filename="favicon.ico")
+    # return FileResponse(path="./favicon.ico", filename="favicon.ico")
+    return RedirectResponse(url=MediaAssets.FAVICON)
 
 @app.get("/ip", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)

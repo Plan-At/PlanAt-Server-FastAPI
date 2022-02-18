@@ -20,3 +20,6 @@ class RateLimitConfig:
     LOW_SENSITIVITY = "1/10second"
     MID_SENSITIVITY = "1/30second"
     HIGH_SENSITIVITY = "1/minute"
+
+class MediaAssets:
+    FAVICON = "https://cdn.jsdelivr.net/gh/Plan-At/static-image/2022/02/17/favicon.ico"
