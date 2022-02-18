@@ -22,25 +22,31 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 async def log_requests(request: Request, call_next):
     start_time = datetime.now()
     logger = open(file="fast_demo.log", mode="a", encoding="utf-8")
-    logger.write(f"time={str(datetime.now())} ip={request.client.host} method={request.method} path=\"{request.url.path}\" ")
+    logger.write(
+        f"time={str(datetime.now())} ip={request.client.host} method={request.method} path=\"{request.url.path}\" ")
     response = await call_next(request)
-    logger.write(f"completed_in={(datetime.now()-start_time).microseconds/1000}ms status_code={response.status_code}\n")
+    logger.write(
+        f"completed_in={(datetime.now() - start_time).microseconds / 1000}ms status_code={response.status_code}\n")
     return response
+
 
 @app.get("/")
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def hello_world(request: Request):
     return {"message": "hello, documentation available at /docs"}
 
+
 @app.get("/favicon.ico")
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def get_favicon(request: Request):
     return RedirectResponse(url=MediaAssets.FAVICON)
 
+
 @app.get("/ip", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def request_ip(request: Request):
     return {"ip": get_remote_address(request=request)}
+
 
 @app.get("/header", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
@@ -53,15 +59,18 @@ def request_header(request: Request):
 def api_version(request: Request):
     return {"version": ServerConfig.CURRENT_VERSION}
 
+
 @app.get("/status", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def api_status(request: Request):
     return {"status": "ok"}
 
+
 @app.get("/server/list", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
 def api_server_list(request: Request):
     return {"server_list": ServerConfig.API_SERVER_LIST}
+
 
 @app.get("/server/assignment", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
@@ -74,26 +83,30 @@ def api_server_assignment(request: Request):
 def dummy(request: Request):
     return {"status": "ok"}
 
+
 @app.get("/dummy/user/profile", tags=["Dummy Data"])
 @limiter.limit(RateLimitConfig.MIN_DB)
 def dummy_user_profile(request: Request):
     return DummyData.USER_PROFILE
+
 
 @app.get("/dummy/user/calendar", tags=["Dummy Data"])
 @limiter.limit(RateLimitConfig.SOME_DB)
 def dummy_user_calendar(request: Request):
     return DummyData.USER_CALENDAR
 
+
 @app.get("/dummy/auth/decrypt", tags=["Dummy Data"])
 @limiter.limit(RateLimitConfig.LESS_COMPUTE)
-def dummy_auth_decrypt(request: Request, encrypted_sha512_string: str , auth_token: str, timestamp: str):
+def dummy_auth_decrypt(request: Request, encrypted_sha512_string: str, auth_token: str, timestamp: str):
     if len(auth_token) == AuthConfig.TOKEN_LENGTH:
-        if (hashlib.sha512((auth_token+timestamp).encode("utf-8")).hexdigest() == encrypted_sha512_string):
+        if hashlib.sha512((auth_token + timestamp).encode("utf-8")).hexdigest() == encrypted_sha512_string:
             return {"auth_status": "ok"}
         else:
             return {"auth_status": "failed", "error": "auth_token not match"}
     else:
         return {"auth_status": "failed", "error": "invalid auth_token format"}
+
 
 @app.get("/dummy/auth/validate", tags=["Dummy Data"])
 @limiter.limit(RateLimitConfig.LESS_COMPUTE)
@@ -103,10 +116,12 @@ def dummy_auth_validate(request: Request, auth_token: str):
     else:
         return {"auth_status": "failed", "error": "invalid auth_token format"}
 
+
 @app.get("/v1", tags=["V1"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def v1(request: Request):
     return {"status": "ok"}
+
 
 @app.get("/v1/auth/token/validate", tags=["V1"])
 @limiter.limit(RateLimitConfig.MIN_DB)
@@ -116,28 +131,35 @@ def v1_auth_token_validate(request: Request, auth_token: str):
     else:
         return {"auth_status": "failed", "error": "invalid auth_token format"}
 
+
 @app.get("/v1/public/stats", tags=["V1"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def v1_public_stats(request: Request):
     return {"status": "ok"}
+
 
 @app.get("/v1/restricted/stats", tags=["V1"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def v1_restricted_stats(request: Request):
     return {"status": "ok"}
 
+
 @app.get("/v1/public/user/profile", tags=["V1"])
 @limiter.limit(RateLimitConfig.MIN_DB)
 def v1_public_user_profile(request: Request, user_id: str):
     return {"status": "ok", "display_name": user_id}
+
 
 @app.get("/v1/private/user/profile", tags=["V1"])
 @limiter.limit(RateLimitConfig.MIN_DB)
 def v1_private_user_profile(request: Request):
     return {"status": "empty"}
 
+
 if __name__ == "__main__":
     if sys.platform == "win32":
-        uvicorn.run("backend:app", debug=True, reload=True, port=ServerConfig.PORT, host=ServerConfig.HOST, limit_concurrency=ServerConfig.CONCURRENCY)
+        uvicorn.run("backend:app", debug=True, reload=True, port=ServerConfig.PORT, host=ServerConfig.HOST,
+                    limit_concurrency=ServerConfig.CONCURRENCY)
     else:
-        uvicorn.run("backend:app", debug=True, reload=False, port=ServerConfig.PORT, host=ServerConfig.HOST, limit_concurrency=ServerConfig.CONCURRENCY)
+        uvicorn.run("backend:app", debug=True, reload=False, port=ServerConfig.PORT, host=ServerConfig.HOST,
+                    limit_concurrency=ServerConfig.CONCURRENCY)

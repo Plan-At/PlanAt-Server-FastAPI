@@ -49,7 +49,8 @@ class DummyData:
             "unique_name": "",
             "display_name": "",
             "localization": [],
-            "historical_name": []
+            "historical_name": [],
+            "searchable": True
         },
         "picture": {
             "avatar": {
@@ -69,7 +70,8 @@ class DummyData:
             "email": {
                 "value": "",
                 "visibility": {
-                    "general_public": False,
+                    "public": False,
+                    "searchable": True,
                     "organization_default": True,
                     "organization_visible": [],
                     "organization_invisible": [],
@@ -80,8 +82,20 @@ class DummyData:
                 "receive_contact": True},
             "phone": {
                 "value": "",
-                "visibility": "private",
+                "visibility": {
+                    "public": False,
+                    "searchable": True,
+                    "organization_default": True,
+                    "organization_visible": [],
+                    "organization_invisible": [],
+                    "friend_default": False,
+                    "friend_visible": [],
+                    "friend_invisible": []
+                },
                 "receive_contact": True}},
+        "usergroup": {
+
+        },
         "public_tags": [
             {"id": "", "name": ""}],
         "public_friends": [
