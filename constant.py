@@ -39,11 +39,18 @@ class MediaAssets:
 
 class DummyData:
     USER_PROFILE = {
-        "id": "",
-        "seed": "",
-        "profile_url": "",
-        "unique_name": "",
-        "display_name": "",
+        "lookup_id": "",
+        "metadata": {
+            "uuid": "",
+            "seed": "",
+            "registration_timestamp": ""
+        },
+        "name": {
+            "unique_name": "",
+            "display_name": "",
+            "localization": [],
+            "historical_name": []
+        },
         "picture": {
             "avatar": {
                 "regular": "",
@@ -61,10 +68,20 @@ class DummyData:
         "contact": {
             "email": {
                 "value": "",
-                "visibility": ""},
+                "visibility": {
+                    "general_public": False,
+                    "organization_default": True,
+                    "organization_visible": [],
+                    "organization_invisible": [],
+                    "friend_default": False,
+                    "friend_visible": [],
+                    "friend_invisible": []
+                },
+                "receive_contact": True},
             "phone": {
                 "value": "",
-                "visibility": ""}},
+                "visibility": "private",
+                "receive_contact": True}},
         "public_tags": [
             {"id": "", "name": ""}],
         "public_friends": [
@@ -76,35 +93,12 @@ class DummyData:
         "username": "",
         "calendar_entry":
             [{
-                "object_id": "1",
-                "event_id": "1",
-                "owner": "me",
+                "owner": {},
                 "visibility": "public",
-                "start": "Monday 9AM",
-                "end": "Monday 9PM",
+                "time": {
+                    "start": "Monday 9AM",
+                    "end": "Monday 9PM"},
                 "name": "work",
                 "description": "endless work",
                 "type": "work",
-                "tags": ["work", "mandatory", "not fun"]},
-                {
-                    "object_id": "2",
-                    "event_id": "2",
-                    "owner": "me",
-                    "visibility": "private",
-                    "start": "Monday 9PM",
-                    "end": "Monday 11PM",
-                    "name": "rest",
-                    "description": "having fun",
-                    "type": "work",
-                    "tags": ["gaming", "fun"]},
-                {
-                    "object_id": "3",
-                    "event_id": "3",
-                    "owner": "me",
-                    "visibility": "public",
-                    "start": "Tuesday 9AM",
-                    "end": "Tuesday 9PM",
-                    "name": "work",
-                    "description": "endless work",
-                    "type": "work",
-                    "tags": ["work", "mandatory", "not fun"]}]}
+                "tags": ["work", "mandatory", "not fun"]}]}
