@@ -4,8 +4,7 @@ class ServerConfig:
     CONCURRENCY = 8
     CURRENT_VERSION = "v1"
     API_SERVER_LIST = [
-        {"priority": 0, "load": 0, "name": "Primary", "URL": "https://api-0.752628.xyz/", "provider": "Official",
-         "location": "US-West"}]
+        {"priority": 0, "load": 0, "name": "Primary", "URL": "https://api-0.752628.xyz/", "provider": "Official", "location": "US-West"}]
 
 
 class AuthConfig:
@@ -39,38 +38,44 @@ class MediaAssets:
 
 class DummyData:
     USER_PROFILE = {
-        "lookup_id": "",
+        "lookup_id": "1234567890",
+        "person_id": "",
         "metadata": {
-            "uuid": "",
-            "seed": "",
-            "registration_timestamp": ""
+            "uuid": "6cb63b46-00ce-4433-a7e1-c839e94c1315",
+            "seed": "56467484686",
+            "registration_timestamp": "1646081914"
         },
         "name": {
-            "unique_name": "",
-            "display_name": "",
+            "unique_name": "abced",
+            "display_name": "HelloWorld",
             "localization": [],
             "historical_name": [],
             "searchable": True
         },
         "picture": {
             "avatar": {
-                "regular": "",
-                "full": ""},
+                "regular": "https://cdn.statically.io/avatar/s=64/HW",
+                "full": "https://cdn.statically.io/avatar/s=128/HW"},
             "background": {
-                "regular": "",
-                "full": ""}},
+                "regular": "https://cdn.statically.io/og/Hello%20World.jpg",
+                "full": "https://cdn.statically.io/og/Hello%20World.jpg"}},
         "status": {
-            "current_status": "",
-            "until": "",
-            "default_status": ""},
+            "current_status": "Developing",
+            "until": {
+                        "text": "Extraday 13AM",
+                        "timestamp": "",
+                        "timezone_name": "Mars",
+                        "timezone_offset": ""
+                    },
+            "default_status": "Alive"},
         "about": {
-            "short_description": "",
-            "full_description": ""},
+            "short_description": "I",
+            "full_description": "I'm here"},
         "contact": {
             "email": {
-                "value": "",
+                "value": "example@example.com",
                 "visibility": {
-                    "public": False,
+                    "public": True,
                     "searchable": True,
                     "organization_default": True,
                     "organization_visible": [],
@@ -81,7 +86,7 @@ class DummyData:
                 },
                 "receive_contact": True},
             "phone": {
-                "value": "",
+                "value": "1234567890",
                 "visibility": {
                     "public": False,
                     "searchable": True,
@@ -93,26 +98,37 @@ class DummyData:
                     "friend_invisible": []
                 },
                 "receive_contact": True}},
-        "usergroup": {
-
-        },
+        "usergroup": [],
         "public_tags": [
-            {"id": "", "name": ""}],
+            {"tag_id": "123", "name": "OP"}],
         "public_friends": [
-            {"id": "", "name": ""}],
+            {"person_id": "", "name": ""}],
         "public_teams": [
-            {"id": "", "name": ""}]}
+            {"org_id": "", "name": ""}]}
     USER_CALENDAR = {
-        "id": "",
+        "event_id": "",
         "username": "",
         "calendar_entry":
-            [{
+            [
+                {
                 "owner": {},
                 "visibility": "public",
                 "time": {
-                    "start": "Monday 9AM",
-                    "end": "Monday 9PM"},
+                    "start": {
+                        "text": "Monday 9AM",
+                        "timestamp": "",
+                        "timezone_name": "America/Los_Angeles",
+                        "timezone_offset": ""
+                    },
+                    "end": {
+                        "text": "Monday 10AM",
+                        "timestamp": "",
+                        "timezone_name": "",
+                        "timezone_offset": ""
+                    }},
                 "name": "work",
                 "description": "endless work",
                 "type": "work",
-                "tags": ["work", "mandatory", "not fun"]}]}
+                "tags": ["work", "mandatory", "not fun"]
+                }
+            ]}
