@@ -38,8 +38,7 @@ class MediaAssets:
 
 class DummyData:
     USER_PROFILE = {
-        "lookup_id": "1234567890",
-        "person_id": "",
+        "person_id": "1234567890",
         "metadata": {
             "uuid": "6cb63b46-00ce-4433-a7e1-c839e94c1315",
             "seed": "56467484686",
@@ -54,25 +53,38 @@ class DummyData:
         },
         "picture": {
             "avatar": {
-                "regular": "https://cdn.statically.io/avatar/s=64/HW",
-                "full": "https://cdn.statically.io/avatar/s=128/HW"},
+                "regular": {
+                    "image_id": "",
+                    "image_url": "https://cdn.statically.io/avatar/s=64/HW",
+                },
+                "full": {
+                    "image_id": "",
+                    "image_url": "https://cdn.statically.io/avatar/s=128/HW",
+                }},
             "background": {
-                "regular": "https://cdn.statically.io/og/Hello%20World.jpg",
-                "full": "https://cdn.statically.io/og/Hello%20World.jpg"}},
+                "regular": {
+                    "image_id": "",
+                    "image_url": "https://cdn.statically.io/og/Hello%20World.jpg",
+                },
+                "full": {
+                    "image_id": "",
+                    "image_url": "https://cdn.statically.io/og/Hello%20World.jpg",
+                }}},
         "status": {
             "current_status": "Developing",
             "until": {
-                        "text": "Extraday 13AM",
-                        "timestamp": "",
-                        "timezone_name": "Mars",
-                        "timezone_offset": ""
-                    },
+                "text": "Extraday 13AM",
+                "timestamp": "",
+                "timezone_name": "Mars",
+                "timezone_offset": ""
+            },
             "default_status": "Alive"},
         "about": {
             "short_description": "I",
             "full_description": "I'm here"},
         "contact": {
             "email": {
+                "domain": "example.com",
                 "value": "example@example.com",
                 "visibility": {
                     "public": True,
@@ -80,20 +92,21 @@ class DummyData:
                     "organization_default": True,
                     "organization_visible": [],
                     "organization_invisible": [],
-                    "friend_default": False,
+                    "friend_default": True,
                     "friend_visible": [],
                     "friend_invisible": []
                 },
                 "receive_contact": True},
             "phone": {
-                "value": "1234567890",
+                "country_code": "",
+                "bare_value": "1234567890",
                 "visibility": {
-                    "public": False,
+                    "public": True,
                     "searchable": True,
                     "organization_default": True,
                     "organization_visible": [],
                     "organization_invisible": [],
-                    "friend_default": False,
+                    "friend_default": True,
                     "friend_visible": [],
                     "friend_invisible": []
                 },
@@ -108,12 +121,12 @@ class DummyData:
     USER_CALENDAR = {
         "event_id": "",
         "username": "",
-        "calendar_entry":
+        "calendar_event":
             [
                 {
-                "owner": {},
-                "visibility": "public",
-                "time": {
+                    "event_id": 0,
+                    "owner": {},
+                    "visibility": "public",
                     "start": {
                         "text": "Monday 9AM",
                         "timestamp": "",
@@ -125,10 +138,13 @@ class DummyData:
                         "timestamp": "",
                         "timezone_name": "",
                         "timezone_offset": ""
-                    }},
-                "name": "work",
-                "description": "endless work",
-                "type": "work",
-                "tags": ["work", "mandatory", "not fun"]
+                    },
+                    "name": "work",
+                    "description": "endless work",
+                    "type": {
+                        "type_id": "",
+                        "name": "work",
+                    },
+                    "tags": [{"tag_id": "", "name": "mandatory"}, {"tag_id": "", "name": "not fun"}]
                 }
             ]}
