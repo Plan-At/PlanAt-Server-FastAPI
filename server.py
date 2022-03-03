@@ -1,7 +1,7 @@
 import sys
 from datetime import datetime
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -148,8 +148,11 @@ def v1_restricted_stats(request: Request):
 
 @app.get("/v1/public/user/profile", tags=["V1"])
 @limiter.limit(RateLimitConfig.MIN_DB)
-def v1_public_user_profile(request: Request, req_body: RequestUserProfile):
-    db_query = MongoDB.find_one(target_db="PlanAtDev", target_collection="User", find_filter={"person_id": req_body.person_id})
+def v1_public_user_profile(request: Request, person_id: str):
+    db_query = MongoDB.find_one(target_db="PlanAtDev", target_collection="User", find_filter={"person_id": person_id})
+    if "document" in db_query:
+        if db_query["document"] == "null":
+            return HTTPException(status_code=404, detail="User Not Found")
     return db_query
 
 
