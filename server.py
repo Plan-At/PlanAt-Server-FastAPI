@@ -9,6 +9,8 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse
 import hashlib
 from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, MediaAssets
+from util.request_json import RequestUserProfile
+import util.mongodb_data_api as MongoDB
 
 app = FastAPI()
 
@@ -146,8 +148,9 @@ def v1_restricted_stats(request: Request):
 
 @app.get("/v1/public/user/profile", tags=["V1"])
 @limiter.limit(RateLimitConfig.MIN_DB)
-def v1_public_user_profile(request: Request):
-    return {"status": "empty"}
+def v1_public_user_profile(request: Request, req_body: RequestUserProfile):
+    db_query = MongoDB.find_one(target_db="PlanAtDev", target_collection="User", find_filter={"person_id": req_body.person_id})
+    return db_query
 
 
 @app.get("/v1/private/user/profile", tags=["V1"])
@@ -166,6 +169,7 @@ def v1_public_search_user(request: Request):
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def v1_public_search_team(request: Request):
     return {"status": "empty"}
+
 
 if __name__ == "__main__":
     if sys.platform == "win32":
