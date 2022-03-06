@@ -82,11 +82,15 @@ class DummyData:
         "about": {
             "short_description": "I",
             "full_description": "I'm here"},
-        "contact": {
-            "email": {
-                "domain": "example.com",
-                "value": "example@example.com",
+        "contact": [
+            {
+                "type": "email",
+                "value": {
+                    "domain": "example.com",
+                    "full": "example@example.com",
+                },
                 "visibility": {
+                    "system_contact": True,
                     "public": True,
                     "searchable": True,
                     "organization_default": True,
@@ -95,12 +99,16 @@ class DummyData:
                     "friend_default": True,
                     "friend_visible": [],
                     "friend_invisible": []
+                }
+            },
+            {
+                "type": "phone",
+                "value": {
+                    "country_code": "",
+                    "full": "1234567890",
                 },
-                "receive_contact": True},
-            "phone": {
-                "country_code": "",
-                "bare_value": "1234567890",
                 "visibility": {
+                    "system_contact": True,
                     "public": True,
                     "searchable": True,
                     "organization_default": True,
@@ -109,8 +117,9 @@ class DummyData:
                     "friend_default": True,
                     "friend_visible": [],
                     "friend_invisible": []
-                },
-                "receive_contact": True}},
+                }
+            }
+        ],
         "usergroup": [],
         "public_tags": [
             {"tag_id": "123", "name": "OP"}],

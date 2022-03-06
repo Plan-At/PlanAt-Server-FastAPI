@@ -1,8 +1,7 @@
-import imp
 import sys
 from datetime import datetime
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -11,7 +10,6 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse
 import hashlib
 from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, MediaAssets
-from util.request_json import RequestUserProfile
 import util.mongodb_data_api as MongoDB
 import util.json_filter as JSONFilter
 
@@ -155,9 +153,9 @@ def v1_public_user_profile(request: Request, person_id: str):
     if len(person_id) != 10:
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformatted person_id"})
     db_query = MongoDB.find_one(target_db="PlanAtDev", target_collection="User", find_filter={"person_id": person_id})
-    if "document" in db_query and db_query["document"] == None:
+    if db_query is None:
         return JSONResponse(status_code=403, content={"status": "user not found"})
-    return JSONFilter.public_user_profile(raw_json=db_query)
+    return JSONFilter.public_user_profile(input_json=db_query)
 
 
 @app.get("/v1/private/user/profile", tags=["V1"])
@@ -180,8 +178,6 @@ def v1_public_search_team(request: Request):
 
 if __name__ == "__main__":
     if sys.platform == "win32":
-        uvicorn.run("server:app", debug=True, reload=True, port=ServerConfig.PORT, host=ServerConfig.HOST,
-                    limit_concurrency=ServerConfig.CONCURRENCY)
+        uvicorn.run("server:app", debug=True, reload=True, port=ServerConfig.PORT, host=ServerConfig.HOST, limit_concurrency=ServerConfig.CONCURRENCY)
     else:
-        uvicorn.run("server:app", debug=True, reload=False, port=ServerConfig.PORT, host=ServerConfig.HOST,
-                    limit_concurrency=ServerConfig.CONCURRENCY)
+        uvicorn.run("server:app", debug=True, reload=False, port=ServerConfig.PORT, host=ServerConfig.HOST, limit_concurrency=ServerConfig.CONCURRENCY)
