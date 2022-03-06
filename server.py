@@ -10,7 +10,8 @@ from starlette.requests import Request
 from starlette.responses import RedirectResponse
 import hashlib
 from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, MediaAssets
-import util.mongodb_data_api as MongoDB
+import util.mongodb_data_api as DocumentDB
+import util.bit_io_api as RelationalDB
 import util.json_filter as JSONFilter
 
 app = FastAPI()
@@ -25,11 +26,9 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 async def log_requests(request: Request, call_next):
     start_time = datetime.now()
     logger = open(file="fast_demo.log", mode="a", encoding="utf-8")
-    logger.write(
-        f"time={str(datetime.now())} ip={request.client.host} method={request.method} path=\"{request.url.path}\" ")
+    logger.write(f"time={str(datetime.now())} ip={request.client.host} method={request.method} path=\"{request.url.path}\" ")
     response = await call_next(request)
-    logger.write(
-        f"completed_in={(datetime.now() - start_time).microseconds / 1000}ms status_code={response.status_code}\n")
+    logger.write(f"completed_in={(datetime.now() - start_time).microseconds / 1000}ms status_code={response.status_code}\n")
     return response
 
 
@@ -151,8 +150,8 @@ def v1_restricted_stats(request: Request):
 @limiter.limit(RateLimitConfig.MIN_DB)
 def v1_public_user_profile(request: Request, person_id: str):
     if len(person_id) != 10:
-        return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformatted person_id"})
-    db_query = MongoDB.find_one(target_db="PlanAtDev", target_collection="User", find_filter={"person_id": person_id})
+        return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
+    db_query = DocumentDB.find_one(target_db="PlanAtDev", target_collection="User", find_filter={"person_id": person_id})
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "user not found"})
     return JSONFilter.public_user_profile(input_json=db_query)

@@ -6,12 +6,15 @@ if __name__ == "__main__":
 
     url = "https://api.bit.io/api/v1beta/query/"
 
-    query_string = f"SELECT * FROM \"{TOKEN['bit_io']['user_name']}/{TOKEN['bit_io']['repo_name']}\".\"{TOKEN['bit_io']['table_name']}\""
+    query_string = f"""SELECT * FROM "{TOKEN['bit_io']['user_name']}/{TOKEN['bit_io']['repo_name']}"."atl_home_sales" """
     print(query_string)
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
         "Authorization": f"Bearer {TOKEN['bit_io']['api_key']}"
     }
-    ret = requests.request("POST", url, data=json.dumps({"query_string": query_string}), headers=headers)
-    print(ret.status_code, ret.text)
+    ret = requests.post(url=url, data=json.dumps({"query_string": query_string}), headers=headers)
+    print(ret.status_code)
+    print(ret.text)
+    print(type(ret.json()))
+    print(ret.json())
