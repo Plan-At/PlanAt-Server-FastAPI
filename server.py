@@ -1,7 +1,9 @@
+import imp
 import sys
 from datetime import datetime
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -11,6 +13,7 @@ import hashlib
 from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, MediaAssets
 from util.request_json import RequestUserProfile
 import util.mongodb_data_api as MongoDB
+import util.json_filter as JSONFilter
 
 app = FastAPI()
 
@@ -149,11 +152,12 @@ def v1_restricted_stats(request: Request):
 @app.get("/v1/public/user/profile", tags=["V1"])
 @limiter.limit(RateLimitConfig.MIN_DB)
 def v1_public_user_profile(request: Request, person_id: str):
+    if len(person_id) != 10:
+        return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformatted person_id"})
     db_query = MongoDB.find_one(target_db="PlanAtDev", target_collection="User", find_filter={"person_id": person_id})
-    if "document" in db_query:
-        if db_query["document"] == "null":
-            return HTTPException(status_code=404, detail="User Not Found")
-    return db_query
+    if "document" in db_query and db_query["document"] == None:
+        return JSONResponse(status_code=403, content={"status": "user not found"})
+    return JSONFilter.public_user_profile(raw_json=db_query)
 
 
 @app.get("/v1/private/user/profile", tags=["V1"])
