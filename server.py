@@ -13,6 +13,7 @@ from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, Media
 import util.mongodb_data_api as DocumentDB
 import util.bit_io_api as RelationalDB
 import util.json_filter as JSONFilter
+from util.validate_token import match_token_with_person_id
 
 app = FastAPI()
 
@@ -151,16 +152,24 @@ def v1_restricted_stats(request: Request):
 def v1_public_user_profile(request: Request, person_id: str):
     if len(person_id) != 10:
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-    db_query = DocumentDB.find_one(target_db="PlanAtDev", target_collection="User", find_filter={"person_id": person_id})
-    if db_query is None:
+    db_query = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+    if db_query is None: 
         return JSONResponse(status_code=403, content={"status": "user not found"})
     return JSONFilter.public_user_profile(input_json=db_query)
 
 
 @app.get("/v1/private/user/profile", tags=["V1"])
 @limiter.limit(RateLimitConfig.MIN_DB)
-def v1_private_user_profile(request: Request):
-    return {"status": "empty"}
+def v1_private_user_profile(request: Request, person_id: str, token: str):
+    if len(person_id) != 10:
+        return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
+    validate_token_result = match_token_with_person_id(person_id=person_id, token=token)
+    if validate_token_result != True: 
+        return validate_token_result
+    db_query = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+    if db_query is None: 
+        return JSONResponse(status_code=403, content={"status": "user not found"})
+    return JSONFilter.private_user_profile(input_json=db_query)
 
 
 @app.get("/v1/public/search/user", tags=["V1"])

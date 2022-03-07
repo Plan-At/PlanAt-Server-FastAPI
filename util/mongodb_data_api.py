@@ -3,12 +3,14 @@ import json
 
 
 TOKEN = json.load(open("app.token.json"))
+DB_CLUSTER = "Cluster1"
+DB_NAME = "PlanAtDev"
 
 
 def find_one(target_db: str, target_collection: str, find_filter: dict):
     url = "https://data.mongodb-api.com/app/data-whsfw/endpoint/data/beta/action/findOne"
     payload = json.dumps({
-        "dataSource": "Cluster1",
+        "dataSource": DB_CLUSTER,
         "database": target_db,
         "collection": target_collection,
         "filter": find_filter
