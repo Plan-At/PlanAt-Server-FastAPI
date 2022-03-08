@@ -8,6 +8,7 @@ class ServerConfig:
 
 
 class AuthConfig:
+    PERSON_ID_LENGTH = 10
     TOKEN_LENGTH = 8
 
 

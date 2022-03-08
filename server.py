@@ -13,7 +13,7 @@ from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, Media
 import util.mongodb_data_api as DocumentDB
 import util.bit_io_api as RelationalDB
 import util.json_filter as JSONFilter
-from util.validate_token import match_token_with_person_id
+from util.validate_token import match_token_with_person_id, check_token_exist
 
 app = FastAPI()
 
@@ -81,107 +81,111 @@ def api_server_assignment(request: Request):
     return {"recommended_servers": [{"priority": 0, "load": 0, "name": "", "URL": "", "provider": "", "location": ""}]}
 
 
-@app.get("/dummy", tags=["Dummy Data"])
-@limiter.limit(RateLimitConfig.NO_COMPUTE)
-def dummy(request: Request):
-    return {"status": "ok"}
+class DummyMethod:
+    @app.get("/dummy", tags=["Dummy Data"])
+    @limiter.limit(RateLimitConfig.NO_COMPUTE)
+    def dummy(request: Request):
+        return {"status": "ok"}
 
 
-@app.get("/dummy/user/profile", tags=["Dummy Data"])
-@limiter.limit(RateLimitConfig.MIN_DB)
-def dummy_user_profile(request: Request):
-    return DummyData.USER_PROFILE
+    @app.get("/dummy/user/profile", tags=["Dummy Data"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def dummy_user_profile(request: Request):
+        return DummyData.USER_PROFILE
 
 
-@app.get("/dummy/user/calendar", tags=["Dummy Data"])
-@limiter.limit(RateLimitConfig.SOME_DB)
-def dummy_user_calendar(request: Request):
-    return DummyData.USER_CALENDAR
+    @app.get("/dummy/user/calendar", tags=["Dummy Data"])
+    @limiter.limit(RateLimitConfig.SOME_DB)
+    def dummy_user_calendar(request: Request):
+        return DummyData.USER_CALENDAR
 
 
-@app.get("/dummy/auth/decrypt", tags=["Dummy Data"])
-@limiter.limit(RateLimitConfig.LESS_COMPUTE)
-def dummy_auth_decrypt(request: Request, encrypted_sha512_string: str, auth_token: str, timestamp: str):
-    if len(auth_token) == AuthConfig.TOKEN_LENGTH:
-        if hashlib.sha512((auth_token + timestamp).encode("utf-8")).hexdigest() == encrypted_sha512_string:
-            return {"auth_status": "ok"}
+    @app.get("/dummy/auth/decrypt", tags=["Dummy Data"])
+    @limiter.limit(RateLimitConfig.LESS_COMPUTE)
+    def dummy_auth_decrypt(request: Request, encrypted_sha512_string: str, auth_token: str, timestamp: str):
+        if len(auth_token) == AuthConfig.TOKEN_LENGTH:
+            if hashlib.sha512((auth_token + timestamp).encode("utf-8")).hexdigest() == encrypted_sha512_string:
+                return {"auth_status": "ok"}
+            else:
+                return {"auth_status": "failed", "error": "auth_token not match"}
         else:
-            return {"auth_status": "failed", "error": "auth_token not match"}
-    else:
-        return {"auth_status": "failed", "error": "invalid auth_token format"}
+            return {"auth_status": "failed", "error": "invalid auth_token format"}
 
 
-@app.get("/dummy/auth/validate", tags=["Dummy Data"])
-@limiter.limit(RateLimitConfig.LESS_COMPUTE)
-def dummy_auth_validate(request: Request, auth_token: str):
-    if len(auth_token) == AuthConfig.TOKEN_LENGTH:
-        return {"auth_status": "ok"}
-    else:
-        return {"auth_status": "failed", "error": "invalid auth_token format"}
+class V1:
+    @app.get("/v1", tags=["V1"])
+    @limiter.limit(RateLimitConfig.NO_COMPUTE)
+    def v1(request: Request):
+        return {"status": "ok"}
 
 
-@app.get("/v1", tags=["V1"])
-@limiter.limit(RateLimitConfig.NO_COMPUTE)
-def v1(request: Request):
-    return {"status": "ok"}
+    @app.get("/v1/auth/token/validate", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_auth_token_validate(request: Request, auth_token: str):
+        validate_token_result = check_token_exist(auth_token=auth_token)
+        if validate_token_result != True: 
+            return validate_token_result
+        else:
+            return {"status": "valid"}
+
+    @app.get("/v1/public/stats", tags=["V1"])
+    @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
+    def v1_public_stats(request: Request):
+        return {"status": "empty"}
 
 
-@app.get("/v1/auth/token/validate", tags=["V1"])
-@limiter.limit(RateLimitConfig.MIN_DB)
-def v1_auth_token_validate(request: Request, auth_token: str):
-    if len(auth_token) == AuthConfig.TOKEN_LENGTH:
-        return {"auth_status": "ok"}
-    else:
-        return {"auth_status": "failed", "error": "invalid auth_token format"}
+    @app.get("/v1/restricted/stats", tags=["V1"])
+    @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
+    def v1_restricted_stats(request: Request):
+        return {"status": "empty"}
 
 
-@app.get("/v1/public/stats", tags=["V1"])
-@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
-def v1_public_stats(request: Request):
-    return {"status": "empty"}
+    @app.get("/v1/public/user/profile", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_public_user_profile(request: Request, person_id: str):
+        if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
+            return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
+        db_query = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        if db_query is None: 
+            return JSONResponse(status_code=403, content={"status": "user not found"})
+        return JSONFilter.public_user_profile(input_json=db_query)
 
 
-@app.get("/v1/restricted/stats", tags=["V1"])
-@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
-def v1_restricted_stats(request: Request):
-    return {"status": "empty"}
+    @app.get("/v1/private/user/profile", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_private_user_profile(request: Request, person_id: str, token: str):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+        if validate_token_result != True: 
+            return validate_token_result
+        if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
+            return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
+        db_query = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        if db_query is None: 
+            return JSONResponse(status_code=403, content={"status": "user not found"})
+        return JSONFilter.private_user_profile(input_json=db_query)
+
+    
+    @app.post("/v1/update/user/profile", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_update_user_profile(request: Request, person_id: str, token: str):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+        if validate_token_result != True: 
+            return validate_token_result
+        if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
+            return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
+        return {"status": "not implemented"}
 
 
-@app.get("/v1/public/user/profile", tags=["V1"])
-@limiter.limit(RateLimitConfig.MIN_DB)
-def v1_public_user_profile(request: Request, person_id: str):
-    if len(person_id) != 10:
-        return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-    db_query = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
-    if db_query is None: 
-        return JSONResponse(status_code=403, content={"status": "user not found"})
-    return JSONFilter.public_user_profile(input_json=db_query)
+    @app.get("/v1/public/search/user", tags=["V1"])
+    @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
+    def v1_public_search_user(request: Request):
+        return {"status": "empty"}
 
 
-@app.get("/v1/private/user/profile", tags=["V1"])
-@limiter.limit(RateLimitConfig.MIN_DB)
-def v1_private_user_profile(request: Request, person_id: str, token: str):
-    if len(person_id) != 10:
-        return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-    validate_token_result = match_token_with_person_id(person_id=person_id, token=token)
-    if validate_token_result != True: 
-        return validate_token_result
-    db_query = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
-    if db_query is None: 
-        return JSONResponse(status_code=403, content={"status": "user not found"})
-    return JSONFilter.private_user_profile(input_json=db_query)
-
-
-@app.get("/v1/public/search/user", tags=["V1"])
-@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
-def v1_public_search_user(request: Request):
-    return {"status": "empty"}
-
-
-@app.get("/v1/public/search/team", tags=["V1"])
-@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
-def v1_public_search_team(request: Request):
-    return {"status": "empty"}
+    @app.get("/v1/public/search/team", tags=["V1"])
+    @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
+    def v1_public_search_team(request: Request):
+        return {"status": "empty"}
 
 
 if __name__ == "__main__":
