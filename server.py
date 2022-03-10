@@ -9,11 +9,12 @@ from slowapi.util import get_remote_address
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 import hashlib
-from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, MediaAssets
+from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, MediaAssets, ContentLimit
 import util.mongodb_data_api as DocumentDB
 import util.bit_io_api as RelationalDB
 import util.json_filter as JSONFilter
 from util.validate_token import match_token_with_person_id, check_token_exist
+import util.request_json
 
 app = FastAPI()
 
@@ -174,6 +175,27 @@ class V1:
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
             return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
         return {"status": "not implemented"}
+
+    @app.post("/v1/update/user/profile/name/display_name", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_update_user_profile(request: Request, person_id: str, token: str, request_body: util.request_json.UpdateUserProfileName_DisplayName):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+        if validate_token_result != True: 
+            return validate_token_result
+        if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
+            return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
+        if len(request_body.display_name) > ContentLimit.DISPLAY_NAME_LENGTH: 
+            return JSONResponse(status_code=403, content={"status": "new display_name too long"})
+        old_profile = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        if old_profile is None: 
+            return JSONResponse(status_code=403, content={"status": "user not found"})
+        del old_profile["_id"]
+        old_profile["name"]["display_name"] = request_body.display_name
+        update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
+        print(update_query)
+        if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
+            return {"status": "success"}
+        return {"status": "failed"}
 
 
     @app.get("/v1/public/search/user", tags=["V1"])
