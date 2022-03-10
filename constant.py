@@ -11,6 +11,9 @@ class AuthConfig:
     PERSON_ID_LENGTH = 10
     TOKEN_LENGTH = 8
 
+class ContentLimit:
+    DISPLAY_NAME_LENGTH = 20
+
 
 class RateLimitConfig:
     NO_COMPUTE = "2/second"
@@ -19,9 +22,9 @@ class RateLimitConfig:
     MORE_COMPUTE = "1/5second"
     INTENSE_COMPUTE = "1/10second"
 
-    MIN_DB = "1/3second"
-    SOME_DB = "1/5second"
-    MAX_DB = "1/15second"
+    MIN_DB = "2/3second"
+    SOME_DB = "2/5second"
+    MAX_DB = "2/15second"
 
     MICRO_SIZE = "1/second"
     SMALL_SIZE = "1/5second"
