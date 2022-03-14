@@ -15,6 +15,7 @@ class ContentLimit:
     DISPLAY_NAME_LENGTH = 20
     SHORT_DESCRIPTION = 100
     LONG_DESCRIPTION = 500
+    USER_STATUS = 15
 
 
 class RateLimitConfig:

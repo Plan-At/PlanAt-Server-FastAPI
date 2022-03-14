@@ -176,6 +176,7 @@ class V1:
             return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
         return JSONResponse(status_code=501, content={"status": "not implemented"})
 
+
     @app.post("/v1/update/user/profile/name/display_name", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def v1_update_user_profile_name_displayName(request: Request, person_id: str, token: str, request_body: util.request_json.UpdateUserProfileName_DisplayName):
@@ -195,6 +196,7 @@ class V1:
             return JSONResponse(status_code=200, content={"status": "success"})
         return JSONResponse(status_code=500, content={"status": "failed"})
 
+
     @app.post("/v1/update/user/profile/about/description", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def v1_update_user_profile_about_description(request: Request, person_id: str, token: str, request_body: util.request_json.UpdateUserProfileAbout_Description):
@@ -211,6 +213,27 @@ class V1:
         del old_profile["_id"]
         old_profile["about"]["short_description"] = request_body.short_description
         old_profile["about"]["full_description"] = request_body.full_description
+        update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
+        print(update_query)
+        if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
+            return JSONResponse(status_code=200, content={"status": "success"})
+        return JSONResponse(status_code=500, content={"status": "failed"})
+
+
+    
+    @app.post("/v1/update/user/profile/status", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_update_user_profile_status(request: Request, person_id: str, token: str, request_body: util.request_json.UpdateUserProfileStatus):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+        if validate_token_result != True: 
+            return validate_token_result
+        if len(request_body.current_status) > ContentLimit.USER_STATUS: 
+            return JSONResponse(status_code=400, content={"status": "new current_status too long"})
+        old_profile = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        if old_profile is None: 
+            return JSONResponse(status_code=404, content={"status": "user not found"})
+        del old_profile["_id"]
+        old_profile["status"]["current_status"] = request_body.current_status
         update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
