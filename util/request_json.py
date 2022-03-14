@@ -6,3 +6,7 @@ class RequestUserProfile(BaseModel):
 
 class UpdateUserProfileName_DisplayName(BaseModel):
     display_name: str
+
+class UpdateUserProfileAbout_Description(BaseModel):
+    short_description: str
+    full_description: str
