@@ -37,7 +37,7 @@ async def log_requests(request: Request, call_next):
 @app.get("/")
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def hello_world(request: Request):
-    return {"message": "hello, documentation available at /docs"}
+    return JSONResponse(status_code=200, content={"message": "hello, documentation available at /docs"})
 
 
 @app.get("/favicon.ico")
@@ -49,37 +49,37 @@ def get_favicon(request: Request):
 @app.get("/ip", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def request_ip(request: Request):
-    return {"ip": get_remote_address(request=request)}
+    return JSONResponse(status_code=200, content={"ip": get_remote_address(request=request)})
 
 
 @app.get("/header", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def request_header(request: Request):
-    return dict(request.headers)
+    return JSONResponse(status_code=200, content=dict(request.headers))
 
 
 @app.get("/version", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def api_version(request: Request):
-    return {"version": ServerConfig.CURRENT_VERSION}
+    return JSONResponse(status_code=200, content={"version": ServerConfig.CURRENT_VERSION})
 
 
 @app.get("/status", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def api_status(request: Request):
-    return {"status": "empty"}
+    return JSONResponse(status_code=501, content={"status": "not implemented"})
 
 
 @app.get("/server/list", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
 def api_server_list(request: Request):
-    return {"server_list": ServerConfig.API_SERVER_LIST}
+    return JSONResponse(status_code=200, content={"server_list": ServerConfig.API_SERVER_LIST})
 
 
 @app.get("/server/assignment", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def api_server_assignment(request: Request):
-    return {"recommended_servers": [{"priority": 0, "load": 0, "name": "", "URL": "", "provider": "", "location": ""}]}
+    return JSONResponse(status_code=200, content={"recommended_servers": [{"priority": 0, "load": 0, "name": "", "URL": "", "provider": "", "location": ""}]})
 
 
 class DummyMethod:
@@ -117,7 +117,7 @@ class V1:
     @app.get("/v1", tags=["V1"])
     @limiter.limit(RateLimitConfig.NO_COMPUTE)
     def v1(request: Request):
-        return {"status": "ok"}
+        return JSONResponse(status_code=200, content={"status": "ok"})
 
 
     @app.get("/v1/auth/token/validate", tags=["V1"])
@@ -127,18 +127,18 @@ class V1:
         if validate_token_result != True: 
             return validate_token_result
         else:
-            return {"status": "valid"}
+            return JSONResponse(status_code=200, content={"status": "valid"})
 
     @app.get("/v1/public/stats", tags=["V1"])
     @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
     def v1_public_stats(request: Request):
-        return {"status": "empty"}
+        return JSONResponse(status_code=501, content={"status": "not implemented"})
 
 
     @app.get("/v1/restricted/stats", tags=["V1"])
     @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
     def v1_restricted_stats(request: Request):
-        return {"status": "empty"}
+        return JSONResponse(status_code=501, content={"status": "not implemented"})
 
 
     @app.get("/v1/public/user/profile", tags=["V1"])
@@ -174,40 +174,83 @@ class V1:
             return validate_token_result
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
             return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-        return {"status": "not implemented"}
+        return JSONResponse(status_code=501, content={"status": "not implemented"})
+
 
     @app.post("/v1/update/user/profile/name/display_name", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile(request: Request, person_id: str, token: str, request_body: util.request_json.UpdateUserProfileName_DisplayName):
+    def v1_update_user_profile_name_displayName(request: Request, person_id: str, token: str, request_body: util.request_json.UpdateUserProfileName_DisplayName):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
-        if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
-            return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
         if len(request_body.display_name) > ContentLimit.DISPLAY_NAME_LENGTH: 
-            return JSONResponse(status_code=403, content={"status": "new display_name too long"})
+            return JSONResponse(status_code=400, content={"status": "new display_name too long"})
         old_profile = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
         if old_profile is None: 
-            return JSONResponse(status_code=403, content={"status": "user not found"})
+            return JSONResponse(status_code=404, content={"status": "user not found"})
         del old_profile["_id"]
         old_profile["name"]["display_name"] = request_body.display_name
         update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
-            return {"status": "success"}
-        return {"status": "failed"}
+            return JSONResponse(status_code=200, content={"status": "success"})
+        return JSONResponse(status_code=500, content={"status": "failed"})
+
+
+    @app.post("/v1/update/user/profile/about/description", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_update_user_profile_about_description(request: Request, person_id: str, token: str, request_body: util.request_json.UpdateUserProfileAbout_Description):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+        if validate_token_result != True: 
+            return validate_token_result
+        if len(request_body.short_description) > ContentLimit.SHORT_DESCRIPTION: 
+            return JSONResponse(status_code=400, content={"status": "new short_description too long"})
+        elif len(request_body.full_description) > ContentLimit.LONG_DESCRIPTION:
+            return JSONResponse(status_code=400, content={"status": "new full_description too long"})
+        old_profile = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        if old_profile is None: 
+            return JSONResponse(status_code=404, content={"status": "user not found"})
+        del old_profile["_id"]
+        old_profile["about"]["short_description"] = request_body.short_description
+        old_profile["about"]["full_description"] = request_body.full_description
+        update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
+        print(update_query)
+        if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
+            return JSONResponse(status_code=200, content={"status": "success"})
+        return JSONResponse(status_code=500, content={"status": "failed"})
+
+
+    
+    @app.post("/v1/update/user/profile/status", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_update_user_profile_status(request: Request, person_id: str, token: str, request_body: util.request_json.UpdateUserProfileStatus):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+        if validate_token_result != True: 
+            return validate_token_result
+        if len(request_body.current_status) > ContentLimit.USER_STATUS: 
+            return JSONResponse(status_code=400, content={"status": "new current_status too long"})
+        old_profile = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        if old_profile is None: 
+            return JSONResponse(status_code=404, content={"status": "user not found"})
+        del old_profile["_id"]
+        old_profile["status"]["current_status"] = request_body.current_status
+        update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
+        print(update_query)
+        if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
+            return JSONResponse(status_code=200, content={"status": "success"})
+        return JSONResponse(status_code=500, content={"status": "failed"})
 
 
     @app.get("/v1/public/search/user", tags=["V1"])
     @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
     def v1_public_search_user(request: Request):
-        return {"status": "empty"}
+        return JSONResponse(status_code=501, content={"status": "not implemented"})
 
 
     @app.get("/v1/public/search/team", tags=["V1"])
     @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
     def v1_public_search_team(request: Request):
-        return {"status": "empty"}
+        return JSONResponse(status_code=501, content={"status": "not implemented"})
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ def check_token_exist(auth_token: str):
 def match_token_with_person_id(person_id: str, auth_token: str):
     """
     All the check to the token is done here
+    Will validate person_id
     """
     if len(auth_token) != AuthConfig.TOKEN_LENGTH:
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed token"})
