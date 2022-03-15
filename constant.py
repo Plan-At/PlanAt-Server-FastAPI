@@ -135,8 +135,7 @@ class DummyData:
         "public_teams": [
             {"org_id": "", "name": ""}]}
     USER_CALENDAR = {
-        "event_id": "",
-        "username": "",
+        "person_id": "",
         "calendar_event":
             [
                 {
@@ -164,3 +163,12 @@ class DummyData:
                     "tags": [{"tag_id": "", "name": "mandatory"}, {"tag_id": "", "name": "not fun"}]
                 }
             ]}
+    
+    USER_CALENDAR_EVENT_INDEX = {
+        "person_id": "1234567890",
+        "event_id_list": [
+            123456789001,
+            123456789002,
+            123456789003
+        ]
+    }

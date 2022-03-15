@@ -32,3 +32,11 @@ def private_user_profile(input_json: dict):
         "public_teams": input_json["public_teams"]
     }
     return return_json
+    
+def private_user_calendar_event_index(input_json: dict):
+    print(input_json)
+    return_json = {
+        "person_id": input_json["person_id"],
+        "event_id_list": input_json["event_id_list"]
+    }
+    return return_json

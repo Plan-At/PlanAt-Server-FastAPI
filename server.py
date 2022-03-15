@@ -252,6 +252,20 @@ class V1:
     def v1_public_search_team(request: Request):
         return JSONResponse(status_code=501, content={"status": "not implemented"})
 
+    
+    @app.get("/v1/private/user/calendar/event/index", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_private_user_calendar_event_index(request: Request, person_id: str, token: str):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+        if validate_token_result != True: 
+            return validate_token_result
+        if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
+            return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
+        db_query = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
+        if db_query is None: 
+            return JSONResponse(status_code=403, content={"status": "user not found"})
+        return JSONFilter.private_user_calendar_event_index(input_json=db_query)
+
 
 if __name__ == "__main__":
     if sys.platform == "win32":
