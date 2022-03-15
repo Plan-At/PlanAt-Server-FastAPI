@@ -15,6 +15,7 @@ import util.bit_io_api as RelationalDB
 import util.json_filter as JSONFilter
 from util.validate_token import match_token_with_person_id, check_token_exist
 import util.request_json
+import random
 
 app = FastAPI()
 
@@ -265,6 +266,24 @@ class V1:
         if db_query is None: 
             return JSONResponse(status_code=403, content={"status": "user not found"})
         return JSONFilter.private_user_calendar_event_index(input_json=db_query)
+
+    
+    @app.post("/v1/add/user/calendar/event", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_add_user_calendar_event(request: Request, person_id: str, token: str):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+        if validate_token_result != True: 
+            return validate_token_result
+        old_profile = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        if old_profile is None: 
+            return JSONResponse(status_code=404, content={"status": "user not found"})
+        del old_profile["_id"]
+        old_profile["event_id_list"].append(123456789000)
+        update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
+        print(update_query)
+        if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
+            return JSONResponse(status_code=200, content={"status": "success"})
+        return JSONResponse(status_code=500, content={"status": "failed"})
 
 
 if __name__ == "__main__":
