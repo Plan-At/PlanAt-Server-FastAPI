@@ -13,3 +13,8 @@ class UpdateUserProfileAbout_Description(BaseModel):
 
 class UpdateUserProfileStatus(BaseModel):
     current_status: str
+
+class AddUserCalendarEvent(BaseModel):
+    visibility: str
+    display_name: str
+    description: str

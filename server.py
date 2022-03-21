@@ -1,7 +1,8 @@
+from re import I
 import sys
 from datetime import datetime
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Header
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -14,8 +15,8 @@ import util.mongodb_data_api as DocumentDB
 import util.bit_io_api as RelationalDB
 import util.json_filter as JSONFilter
 from util.validate_token import match_token_with_person_id, check_token_exist
-import util.request_json
-from util import random_content
+from util import json_body, random_content
+from typing import Optional, List
 
 app = FastAPI()
 
@@ -180,7 +181,7 @@ class V1:
 
     @app.post("/v1/update/user/profile/name/display_name", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_name_displayName(request: Request, person_id: str, token: str, request_body: util.request_json.UpdateUserProfileName_DisplayName):
+    def v1_update_user_profile_name_displayName(request: Request, person_id: str, token: str, request_body: json_body.UpdateUserProfileName_DisplayName):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
@@ -200,7 +201,7 @@ class V1:
 
     @app.post("/v1/update/user/profile/about/description", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_about_description(request: Request, person_id: str, token: str, request_body: util.request_json.UpdateUserProfileAbout_Description):
+    def v1_update_user_profile_about_description(request: Request, person_id: str, token: str, request_body: json_body.UpdateUserProfileAbout_Description):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
@@ -224,7 +225,7 @@ class V1:
     
     @app.post("/v1/update/user/profile/status", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_status(request: Request, person_id: str, token: str, request_body: util.request_json.UpdateUserProfileStatus):
+    def v1_update_user_profile_status(request: Request, person_id: str, token: str, request_body: json_body.UpdateUserProfileStatus):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
@@ -256,7 +257,8 @@ class V1:
     
     @app.get("/v1/private/user/calendar/event/index", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_private_user_calendar_event_index(request: Request, person_id: str, token: str):
+    def v1_private_user_calendar_event_index(request: Request, person_id: str, token: Optional[List[str]] = Header(None)):
+        print(token)
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
@@ -271,7 +273,7 @@ class V1:
     # TODO check is the event_id already being used
     @app.post("/v1/add/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_add_user_calendar_event(request: Request, person_id: str, token: str):
+    def v1_add_user_calendar_event(request: Request, person_id: str, token: str, req_body: json_body.AddUserCalendarEvent):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result

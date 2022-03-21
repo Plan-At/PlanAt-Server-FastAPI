@@ -154,7 +154,7 @@ class DummyData:
                         "timezone_name": "",
                         "timezone_offset": ""
                     },
-                    "name": "work",
+                    "display_name": "work",
                     "description": "endless work",
                     "type": {
                         "type_id": "",
