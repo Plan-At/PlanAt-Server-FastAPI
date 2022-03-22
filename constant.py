@@ -81,9 +81,9 @@ class DummyData:
             "current_status": "Developing",
             "until": {
                 "text": "Extraday 13AM",
-                "timestamp": "",
+                "timestamp": 0,
                 "timezone_name": "Mars",
-                "timezone_offset": ""
+                "timezone_offset": 0
             },
             "default_status": "Alive"},
         "about": {
@@ -91,7 +91,7 @@ class DummyData:
             "full_description": "I'm here"},
         "contact": [
             {
-                "type": "email",
+                "method": "email",
                 "value": {
                     "domain": "example.com",
                     "full": "example@example.com",
@@ -109,7 +109,7 @@ class DummyData:
                 }
             },
             {
-                "type": "phone",
+                "method": "phone",
                 "value": {
                     "country_code": "",
                     "full": "1234567890",
@@ -144,23 +144,20 @@ class DummyData:
                     "visibility": "public",
                     "start": {
                         "text": "Monday 9AM",
-                        "timestamp": "",
+                        "timestamp": 0,
                         "timezone_name": "America/Los_Angeles",
-                        "timezone_offset": ""
+                        "timezone_offset": 0
                     },
                     "end": {
                         "text": "Monday 10AM",
-                        "timestamp": "",
+                        "timestamp": 0,
                         "timezone_name": "",
-                        "timezone_offset": ""
+                        "timezone_offset": 0
                     },
                     "display_name": "work",
                     "description": "endless work",
-                    "type": {
-                        "type_id": "",
-                        "name": "work",
-                    },
-                    "tags": [{"tag_id": "", "name": "mandatory"}, {"tag_id": "", "name": "not fun"}]
+                    "type_list": [{"type_id": "","name": "work"}],
+                    "tag_list": [{"tag_id": "", "name": "mandatory"}, {"tag_id": "", "name": "not fun"}]
                 }
             ]}
     

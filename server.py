@@ -273,6 +273,7 @@ class V1:
     @app.post("/v1/add/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def v1_add_user_calendar_event(request: Request, person_id: str, token: str=Header(None), req_body: json_body.AddUserCalendarEvent=None):
+        print(req_body)
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
