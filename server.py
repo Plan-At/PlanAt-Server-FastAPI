@@ -1,4 +1,3 @@
-from re import I
 import sys
 from datetime import datetime
 import uvicorn
@@ -156,7 +155,7 @@ class V1:
 
     @app.get("/v1/private/user/profile", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_private_user_profile(request: Request, person_id: str, token: str):
+    def v1_private_user_profile(request: Request, person_id: str, token: str=Header(None)):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
@@ -170,7 +169,7 @@ class V1:
     
     @app.post("/v1/update/user/profile", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile(request: Request, person_id: str, token: str):
+    def v1_update_user_profile(request: Request, person_id: str, token: str=Header(None)):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
@@ -181,7 +180,7 @@ class V1:
 
     @app.post("/v1/update/user/profile/name/display_name", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_name_displayName(request: Request, person_id: str, token: str, request_body: json_body.UpdateUserProfileName_DisplayName):
+    def v1_update_user_profile_name_displayName(request: Request, person_id: str, token: str=Header(None), request_body: json_body.UpdateUserProfileName_DisplayName=None):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
@@ -201,7 +200,7 @@ class V1:
 
     @app.post("/v1/update/user/profile/about/description", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_about_description(request: Request, person_id: str, token: str, request_body: json_body.UpdateUserProfileAbout_Description):
+    def v1_update_user_profile_about_description(request: Request, person_id: str, token: str=Header(None), request_body: json_body.UpdateUserProfileAbout_Description=None):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
@@ -225,7 +224,7 @@ class V1:
     
     @app.post("/v1/update/user/profile/status", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_status(request: Request, person_id: str, token: str, request_body: json_body.UpdateUserProfileStatus):
+    def v1_update_user_profile_status(request: Request, person_id: str, token: str=Header(None), request_body: json_body.UpdateUserProfileStatus=None):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
@@ -257,7 +256,7 @@ class V1:
     
     @app.get("/v1/private/user/calendar/event/index", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_private_user_calendar_event_index(request: Request, person_id: str, token: Optional[List[str]] = Header(None)):
+    def v1_private_user_calendar_event_index(request: Request, person_id: str, token: str = Header(None)):
         print(token)
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
@@ -273,7 +272,7 @@ class V1:
     # TODO check is the event_id already being used
     @app.post("/v1/add/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_add_user_calendar_event(request: Request, person_id: str, token: str, req_body: json_body.AddUserCalendarEvent):
+    def v1_add_user_calendar_event(request: Request, person_id: str, token: str=Header(None), req_body: json_body.AddUserCalendarEvent=None):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
