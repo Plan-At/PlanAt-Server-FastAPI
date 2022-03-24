@@ -277,6 +277,19 @@ class V1:
         if validate_token_result != True: 
             return validate_token_result
         new_event_id = int(str(int(datetime.now().timestamp())) + str(random_content.get_int(length=6)))
+        new_event_entry = {
+            "structure_version": 1,
+            "event_id": new_event_id,
+            "visibility": req_body.visibility,
+            "start_time": req_body.start_time,
+            "end_time": req_body.end_time,
+            "display_name": req_body.display_name,
+            "description": req_body.description,
+            "type_list": req_body.type_list,
+            "tag_list": req_body.tag_list
+        }
+        insert_query = DocumentDB.insert_one(target_db=DocumentDB.DB_NAME, target_collection="CalendarEventEntry", document_body=new_event_entry)
+        print(insert_query)
         """add record to the index"""
         event_id_index = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
         if event_id_index is None: 
@@ -287,7 +300,8 @@ class V1:
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
             return JSONResponse(status_code=200, content={"status": "success"})
-        return JSONResponse(status_code=500, content={"status": "failed"})
+        else:
+            return JSONResponse(status_code=500, content={"status": "failed to insert index"})
 
 
 if __name__ == "__main__":

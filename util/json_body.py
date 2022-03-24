@@ -44,8 +44,8 @@ class AddUserCalendarEvent(BaseModel):
     visibility: str
     display_name: str
     description: str
-    start: TimeObject
-    end: TimeObject
+    start_time: TimeObject
+    end_time: TimeObject
     type_list: List[TypeObject]
     tag_list: List[TagObject]
     
