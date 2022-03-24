@@ -45,6 +45,7 @@ class MediaAssets:
 
 class DummyData:
     USER_PROFILE = {
+        "structure_version": 1,
         "person_id": "1234567890",
         "metadata": {
             "uuid": "6cb63b46-00ce-4433-a7e1-c839e94c1315",
@@ -135,6 +136,7 @@ class DummyData:
         "public_team_list": [
             {"org_id": "", "name": ""}]}
     USER_CALENDAR = {
+        "structure_version": 1,
         "person_id": "",
         "calendar_event":
             [
@@ -162,6 +164,7 @@ class DummyData:
             ]}
     
     USER_CALENDAR_EVENT_INDEX = {
+        "structure_version": 1,
         "person_id": "1234567890",
         "event_id_list": [
             123456789001,

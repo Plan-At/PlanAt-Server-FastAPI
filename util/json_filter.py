@@ -1,6 +1,7 @@
 def public_user_profile(input_json: dict):
     print(input_json)
     return_json = {
+        "structure_version": input_json["structure_version"],
         "person_id": input_json["person_id"],
         "name": input_json["name"],
         "picture": input_json["picture"],
@@ -21,6 +22,7 @@ def public_user_profile(input_json: dict):
 def private_user_profile(input_json: dict):
     print(input_json)
     return_json = {
+        "structure_version": input_json["structure_version"],
         "person_id": input_json["person_id"],
         "name": input_json["name"],
         "picture": input_json["picture"],
@@ -36,6 +38,7 @@ def private_user_profile(input_json: dict):
 def private_user_calendar_event_index(input_json: dict):
     print(input_json)
     return_json = {
+        "structure_version": input_json["structure_version"],
         "person_id": input_json["person_id"],
         "event_id_list": input_json["event_id_list"]
     }
