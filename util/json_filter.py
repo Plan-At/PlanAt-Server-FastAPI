@@ -12,11 +12,9 @@ def public_user_profile(input_json: dict):
         "public_friend_list": input_json["public_friend_list"],
         "public_team_list": input_json["public_team_list"]
     }
-    contact_method_list = []
     for contact_method in input_json["contact"]:
         if contact_method["visibility"]["public"] is True:
-            contact_method_list.append({"type": contact_method["type"], "value": contact_method["value"]})
-    return_json["contact"] = contact_method_list
+            return_json["contact"].append({"type": contact_method["type"], "value": contact_method["value"]})
     return return_json
 
 def private_user_profile(input_json: dict):
