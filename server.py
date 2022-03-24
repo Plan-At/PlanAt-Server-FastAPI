@@ -257,7 +257,6 @@ class V1:
     @app.get("/v1/private/user/calendar/event/index", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def v1_private_user_calendar_event_index(request: Request, person_id: str, token: str = Header(None)):
-        print(token)
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
@@ -277,11 +276,13 @@ class V1:
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
+        new_event_id = str(int(datetime.now().timestamp())) + str(random_content.get_int(length=6))
+        new_event_id = int(new_event_id)
         user_profile = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
         if user_profile is None: 
             return JSONResponse(status_code=404, content={"status": "user calander_event_index not found"})
         del user_profile["_id"]
-        user_profile["event_id_list"].append(random_content.get_int(length=16))
+        user_profile["event_id_list"].append(new_event_id)
         update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, document_body=user_profile)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
