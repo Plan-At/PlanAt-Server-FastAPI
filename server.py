@@ -276,6 +276,7 @@ class V1:
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
+        """add the event detail"""
         new_event_id = int(str(int(datetime.now().timestamp())) + str(random_content.get_int(length=6)))
         new_event_entry = {
             "structure_version": 1,
@@ -295,9 +296,13 @@ class V1:
             },
             "display_name": req_body.display_name,
             "description": req_body.description,
-            "type_list": req_body.type_list,
-            "tag_list": req_body.tag_list
+            "type_list": [],
+            "tag_list": []
         }
+        for each_type in req_body.type_list:
+            new_event_entry["type_list"].append({"type_id": each_type.type_id, "name": each_type.name})
+        for each_tag in req_body.tag_list:
+            new_event_entry["tag_list"].append({"tag_id": each_tag.tag_id, "name": each_tag.name})
         print(new_event_entry)
         insert_query = DocumentDB.insert_one(target_db=DocumentDB.DB_NAME, target_collection="CalendarEventEntry", document_body=new_event_entry)
         print(insert_query)

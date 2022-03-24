@@ -38,7 +38,7 @@ def delete_one(target_db: str, target_collection: str, find_filter: dict):
         "api-key": TOKEN["mongodb"]["data_api_key"]
     }
     response = requests.request("POST", url, headers=headers, data=payload)
-    return json.loads(response.text)["document"]
+    return json.loads(response.text)
 
 
 def insert_one(target_db: str, target_collection: str, document_body: dict):
@@ -55,7 +55,7 @@ def insert_one(target_db: str, target_collection: str, document_body: dict):
         "api-key": TOKEN["mongodb"]["data_api_key"]
     }
     response = requests.request("POST", url, headers=headers, data=payload)
-    return json.loads(response.text)["document"]
+    return json.loads(response.text)
 
 
 def replace_one(target_db: str, target_collection: str, find_filter: dict, document_body: dict):
