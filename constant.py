@@ -68,7 +68,8 @@ class DummyData:
                 "full": {
                     "image_id": "",
                     "image_url": "https://cdn.statically.io/avatar/s=128/HW",
-                }},
+                }
+            },
             "background": {
                 "regular": {
                     "image_id": "",
@@ -77,7 +78,9 @@ class DummyData:
                 "full": {
                     "image_id": "",
                     "image_url": "https://cdn.statically.io/og/Hello%20World.jpg",
-                }}},
+                }
+            }
+        },
         "status": {
             "current_status": "Developing",
             "until": {
@@ -86,10 +89,12 @@ class DummyData:
                 "timezone_name": "Mars",
                 "timezone_offset": 0
             },
-            "default_status": "Alive"},
+            "default_status": "Alive"
+        },
         "about": {
             "short_description": "I",
-            "full_description": "I'm here"},
+            "full_description": "I'm here"
+        },
         "contact": [
             {
                 "method": "email",
@@ -129,28 +134,27 @@ class DummyData:
             }
         ],
         "usergroup": [],
-        "public_tag_list": [
-            {"tag_id": "123", "name": "OP"}],
-        "public_friend_list": [
-            {"person_id": "", "name": ""}],
-        "public_team_list": [
-            {"org_id": "", "name": ""}]}
+        "public_tag_list": [{"tag_id": "123", "name": "OP"}],
+        "public_friend_list": [{"person_id": "", "name": ""}],
+        "public_team_list": [{"org_id": "", "name": ""}]
+    }
     USER_CALENDAR = {
         "structure_version": 1,
         "person_id": "",
         "calendar_event":
             [
                 {
-                    "event_id": 0,
+                    "structure_version": 1,
+                    "event_id": 1234567890123456,
                     "owner": {},
                     "visibility": "public",
-                    "start": {
+                    "start_time": {
                         "text": "Monday 9AM",
                         "timestamp": 0,
                         "timezone_name": "America/Los_Angeles",
                         "timezone_offset": 0
                     },
-                    "end": {
+                    "end_time": {
                         "text": "Monday 10AM",
                         "timestamp": 0,
                         "timezone_name": "",
@@ -161,7 +165,8 @@ class DummyData:
                     "type_list": [{"type_id": "","name": "work"}],
                     "tag_list": [{"tag_id": "", "name": "mandatory"}, {"tag_id": "", "name": "not fun"}]
                 }
-            ]}
+            ]
+        }
     
     USER_CALENDAR_EVENT_INDEX = {
         "structure_version": 1,
