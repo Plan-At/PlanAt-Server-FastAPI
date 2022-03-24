@@ -7,9 +7,9 @@ def public_user_profile(input_json: dict):
         "status": input_json["status"],
         "about": input_json["about"],
         "contact": [],
-        "public_tags": input_json["public_tags"],
-        "public_friends": input_json["public_friends"],
-        "public_teams": input_json["public_teams"]
+        "public_tag_list": input_json["public_tag_list"],
+        "public_friend_list": input_json["public_friend_list"],
+        "public_team_list": input_json["public_team_list"]
     }
     contact_method_list = []
     for contact_method in input_json["contact"]:
@@ -27,9 +27,9 @@ def private_user_profile(input_json: dict):
         "status": input_json["status"],
         "about": input_json["about"],
         "contact": input_json["contact"],
-        "public_tags": input_json["public_tags"],
-        "public_friends": input_json["public_friends"],
-        "public_teams": input_json["public_teams"]
+        "public_tag_list": input_json["public_tag_list"],
+        "public_friend_list": input_json["public_friend_list"],
+        "public_team_list": input_json["public_team_list"]
     }
     return return_json
     

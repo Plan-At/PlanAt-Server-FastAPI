@@ -128,11 +128,11 @@ class DummyData:
             }
         ],
         "usergroup": [],
-        "public_tags": [
+        "public_tag_list": [
             {"tag_id": "123", "name": "OP"}],
-        "public_friends": [
+        "public_friend_list": [
             {"person_id": "", "name": ""}],
-        "public_teams": [
+        "public_team_list": [
             {"org_id": "", "name": ""}]}
     USER_CALENDAR = {
         "person_id": "",
