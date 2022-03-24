@@ -281,13 +281,24 @@ class V1:
             "structure_version": 1,
             "event_id": new_event_id,
             "visibility": req_body.visibility,
-            "start_time": req_body.start_time,
-            "end_time": req_body.end_time,
+            "start_time": {
+                "text": req_body.start_time.text,
+                "timestamp": req_body.start_time.timestamp,
+                "timezone_name": req_body.start_time.timezone_name,
+                "timezone_offset": req_body.start_time.timezone_offset
+            },
+            "end_time": {
+                "text": req_body.end_time.text,
+                "timestamp": req_body.end_time.timestamp,
+                "timezone_name": req_body.end_time.timezone_name,
+                "timezone_offset": req_body.end_time.timezone_offset
+            },
             "display_name": req_body.display_name,
             "description": req_body.description,
             "type_list": req_body.type_list,
             "tag_list": req_body.tag_list
         }
+        print(new_event_entry)
         insert_query = DocumentDB.insert_one(target_db=DocumentDB.DB_NAME, target_collection="CalendarEventEntry", document_body=new_event_entry)
         print(insert_query)
         """add record to the index"""
