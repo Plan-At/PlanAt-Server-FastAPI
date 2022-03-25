@@ -1,3 +1,4 @@
+# TODO change "name" to something else
 def public_user_profile(input_json: dict):
     print(input_json)
     return_json = {
@@ -17,6 +18,7 @@ def public_user_profile(input_json: dict):
             return_json["contact"].append({"type": contact_method["type"], "value": contact_method["value"]})
     return return_json
 
+# TODO change "name" to something else
 def private_user_profile(input_json: dict):
     print(input_json)
     return_json = {
