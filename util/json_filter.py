@@ -41,3 +41,22 @@ def private_user_calendar_event_index(input_json: dict):
         "event_id_list": input_json["event_id_list"]
     }
     return return_json
+
+def universal_user_calendar_event(input_json: dict, person_id: str):
+    print(input_json)
+    return_json = {
+        "structure_version": input_json["structure_version"],
+        "event_id": input_json["event_id"],
+        "owner_list": input_json["owner_list"],
+        "visibility": input_json["visibility"],
+        "start_time": input_json["start_time"],
+        "end_time": input_json["end_time"],
+        "display_name": input_json["display_name"],
+        "description": input_json["description"],
+        "type_list": input_json["type_list"],
+        "tag_list": input_json["tag_list"]
+    }
+    for each_owner in input_json["owner_list"]:
+        if each_owner["person_id"] == person_id:
+            return return_json
+    return None

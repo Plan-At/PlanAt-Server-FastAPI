@@ -328,6 +328,7 @@ class V1:
         find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
         if find_query == None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
+        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id="1234567890")
         return JSONResponse(status_code=200, content=find_query)
 
 

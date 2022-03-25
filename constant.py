@@ -144,9 +144,9 @@ class DummyData:
         "calendar_event":
             [
                 {
-                    "structure_version": 1,
+                    "structure_version": 2,
                     "event_id": 1234567890123456,
-                    "owner": {},
+                    "owner_list": [{"person_id": "1234567890"}],
                     "visibility": "public",
                     "start_time": {
                         "text": "Monday 9AM",

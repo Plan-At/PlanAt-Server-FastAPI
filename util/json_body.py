@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List, Optional
 from pydantic import BaseModel
 
 class TimeObject(BaseModel):
@@ -16,6 +16,9 @@ class TypeObject(BaseModel):
 class TagObject(BaseModel):
     tag_id: str
     name: str
+
+class OwnerObject(BaseModel):
+    person_id: Optional[str]
 
 
 """
@@ -40,6 +43,7 @@ class UpdateUserProfileStatus(BaseModel):
 
 
 class AddUserCalendarEvent(BaseModel):
+    owner_list: List[OwnerObject]
     visibility: str
     display_name: str
     description: str
