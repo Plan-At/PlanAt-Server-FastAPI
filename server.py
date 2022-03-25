@@ -147,7 +147,7 @@ class V1:
     def v1_public_user_profile(request: Request, person_id: str):
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
             return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-        db_query = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        db_query = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
         if db_query is None: 
             return JSONResponse(status_code=403, content={"status": "user not found"})
         return JSONFilter.public_user_profile(input_json=db_query)
@@ -161,7 +161,7 @@ class V1:
             return validate_token_result
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
             return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-        db_query = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        db_query = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
         if db_query is None: 
             return JSONResponse(status_code=403, content={"status": "user not found"})
         return JSONFilter.private_user_profile(input_json=db_query)
@@ -186,12 +186,12 @@ class V1:
             return validate_token_result
         if len(request_body.display_name) > ContentLimit.DISPLAY_NAME_LENGTH: 
             return JSONResponse(status_code=400, content={"status": "new display_name too long"})
-        old_profile = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
         if old_profile is None: 
             return JSONResponse(status_code=404, content={"status": "user not found"})
         del old_profile["_id"]
         old_profile["name"]["display_name"] = request_body.display_name
-        update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
+        update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
             return JSONResponse(status_code=200, content={"status": "success"})
@@ -208,13 +208,13 @@ class V1:
             return JSONResponse(status_code=400, content={"status": "new short_description too long"})
         elif len(request_body.full_description) > ContentLimit.LONG_DESCRIPTION:
             return JSONResponse(status_code=400, content={"status": "new full_description too long"})
-        old_profile = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
         if old_profile is None: 
             return JSONResponse(status_code=404, content={"status": "user not found"})
         del old_profile["_id"]
         old_profile["about"]["short_description"] = request_body.short_description
         old_profile["about"]["full_description"] = request_body.full_description
-        update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
+        update_query = DocumentDB.replace_one( target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
             return JSONResponse(status_code=200, content={"status": "success"})
@@ -230,12 +230,12 @@ class V1:
             return validate_token_result
         if len(request_body.current_status) > ContentLimit.USER_STATUS: 
             return JSONResponse(status_code=400, content={"status": "new current_status too long"})
-        old_profile = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id})
+        old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
         if old_profile is None: 
             return JSONResponse(status_code=404, content={"status": "user not found"})
         del old_profile["_id"]
         old_profile["status"]["current_status"] = request_body.current_status
-        update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
+        update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
             return JSONResponse(status_code=200, content={"status": "success"})
@@ -262,7 +262,7 @@ class V1:
             return validate_token_result
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
             return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-        db_query = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
+        db_query = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
         if db_query is None: 
             return JSONResponse(status_code=403, content={"status": "user not found"})
         return JSONFilter.private_user_calendar_event_index(input_json=db_query)
@@ -304,20 +304,31 @@ class V1:
         for each_tag in req_body.tag_list:
             new_event_entry["tag_list"].append({"tag_id": each_tag.tag_id, "name": each_tag.name})
         print(new_event_entry)
-        insert_query = DocumentDB.insert_one(target_db=DocumentDB.DB_NAME, target_collection="CalendarEventEntry", document_body=new_event_entry)
+        insert_query = DocumentDB.insert_one(target_collection="CalendarEventEntry", document_body=new_event_entry)
         print(insert_query)
         """add record to the index"""
-        event_id_index = DocumentDB.find_one(target_db=DocumentDB.DB_NAME, target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
+        event_id_index = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
         if event_id_index is None: 
             return JSONResponse(status_code=404, content={"status": "user calander_event_index not found"})
-        del event_id_index["_id"]
+        del event_id_index["_id"] # If not remove _id when replace will get error
         event_id_index["event_id_list"].append(new_event_id)
-        update_query = DocumentDB.replace_one(target_db=DocumentDB.DB_NAME, target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, document_body=event_id_index)
+        update_query = DocumentDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, document_body=event_id_index)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
             return JSONResponse(status_code=200, content={"status": "success"})
         else:
             return JSONResponse(status_code=500, content={"status": "failed to insert index"})
+
+
+    @app.get("/v1/universal/user/calendar/event", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_add_user_calendar_event(request: Request, header_token: Optional[str]=Header(None), event_id: int = 1234567890123456):
+        if len(str(event_id)) != 16:
+            return JSONResponse(status_code=400, content={"status": "malformed event_id"})
+        find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
+        if find_query == None:
+            return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
+        return JSONResponse(status_code=200, content=find_query)
 
 
 if __name__ == "__main__":
