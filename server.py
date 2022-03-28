@@ -268,6 +268,28 @@ class V1:
         return JSONFilter.private_user_calendar_event_index(input_json=db_query)
 
     
+    # TODO more efficient way to filter out
+    @app.get("/v1/public/user/calendar/event/index", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_public_user_calendar_event_index(request: Request, person_id: str):
+        if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
+            return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
+        db_query = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
+        if db_query is None: 
+            return JSONResponse(status_code=403, content={"status": "user not found"})
+        filtered_result = {
+        "structure_version": db_query["structure_version"],
+        "person_id": db_query["person_id"],
+        "event_id_list": []
+        }
+        for each_event_id in db_query["event_id_list"]:
+            find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": each_event_id})
+            if find_query != None:
+                if find_query["visibility"] == "public":
+                    filtered_result["event_id_list"].append(each_event_id)
+        return JSONResponse(status_code=200, content=filtered_result)
+
+    
     # TODO check is the event_id already being used
     @app.post("/v1/add/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)

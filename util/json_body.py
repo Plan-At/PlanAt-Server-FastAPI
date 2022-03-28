@@ -18,7 +18,7 @@ class TagObject(BaseModel):
     name: str
 
 class OwnerObject(BaseModel):
-    person_id: Optional[str]
+    person_id: Optional[str] = "1234567890"
 
 
 """
@@ -44,9 +44,9 @@ class UpdateUserProfileStatus(BaseModel):
 
 class AddUserCalendarEvent(BaseModel):
     owner_list: List[OwnerObject]
-    visibility: str
-    display_name: str
-    description: str
+    visibility: str = "private"
+    display_name: str = "my event"
+    description: str = "my description"
     start_time: TimeObject
     end_time: TimeObject
     type_list: List[TypeObject]
