@@ -16,6 +16,7 @@ class ContentLimit:
     SHORT_DESCRIPTION = 100
     LONG_DESCRIPTION = 500
     USER_STATUS = 15
+    PUBLIC_EVENT_ID_INDEX = 50
 
 
 class RateLimitConfig:
@@ -45,6 +46,7 @@ class MediaAssets:
 
 class DummyData:
     USER_PROFILE = {
+        "structure_version": 1,
         "person_id": "1234567890",
         "metadata": {
             "uuid": "6cb63b46-00ce-4433-a7e1-c839e94c1315",
@@ -67,7 +69,8 @@ class DummyData:
                 "full": {
                     "image_id": "",
                     "image_url": "https://cdn.statically.io/avatar/s=128/HW",
-                }},
+                }
+            },
             "background": {
                 "regular": {
                     "image_id": "",
@@ -76,22 +79,26 @@ class DummyData:
                 "full": {
                     "image_id": "",
                     "image_url": "https://cdn.statically.io/og/Hello%20World.jpg",
-                }}},
+                }
+            }
+        },
         "status": {
             "current_status": "Developing",
             "until": {
                 "text": "Extraday 13AM",
-                "timestamp": "",
+                "timestamp": 0,
                 "timezone_name": "Mars",
-                "timezone_offset": ""
+                "timezone_offset": 0
             },
-            "default_status": "Alive"},
+            "default_status": "Alive"
+        },
         "about": {
             "short_description": "I",
-            "full_description": "I'm here"},
+            "full_description": "I'm here"
+        },
         "contact": [
             {
-                "type": "email",
+                "method": "email",
                 "value": {
                     "domain": "example.com",
                     "full": "example@example.com",
@@ -109,7 +116,7 @@ class DummyData:
                 }
             },
             {
-                "type": "phone",
+                "method": "phone",
                 "value": {
                     "country_code": "",
                     "full": "1234567890",
@@ -128,39 +135,46 @@ class DummyData:
             }
         ],
         "usergroup": [],
-        "public_tags": [
-            {"tag_id": "123", "name": "OP"}],
-        "public_friends": [
-            {"person_id": "", "name": ""}],
-        "public_teams": [
-            {"org_id": "", "name": ""}]}
+        "public_tag_list": [{"tag_id": "123", "name": "OP"}],
+        "public_friend_list": [{"person_id": "", "name": ""}],
+        "public_team_list": [{"org_id": "", "name": ""}]
+    }
     USER_CALENDAR = {
-        "event_id": "",
-        "username": "",
+        "structure_version": 1,
+        "person_id": "",
         "calendar_event":
             [
                 {
-                    "event_id": 0,
-                    "owner": {},
+                    "structure_version": 2,
+                    "event_id": 1234567890123456,
+                    "owner_list": [{"person_id": "1234567890"}],
                     "visibility": "public",
-                    "start": {
+                    "start_time": {
                         "text": "Monday 9AM",
-                        "timestamp": "",
+                        "timestamp": 0,
                         "timezone_name": "America/Los_Angeles",
-                        "timezone_offset": ""
+                        "timezone_offset": 0
                     },
-                    "end": {
+                    "end_time": {
                         "text": "Monday 10AM",
-                        "timestamp": "",
+                        "timestamp": 0,
                         "timezone_name": "",
-                        "timezone_offset": ""
+                        "timezone_offset": 0
                     },
-                    "name": "work",
+                    "display_name": "work",
                     "description": "endless work",
-                    "type": {
-                        "type_id": "",
-                        "name": "work",
-                    },
-                    "tags": [{"tag_id": "", "name": "mandatory"}, {"tag_id": "", "name": "not fun"}]
+                    "type_list": [{"type_id": "","name": "work"}],
+                    "tag_list": [{"tag_id": "", "name": "mandatory"}, {"tag_id": "", "name": "not fun"}]
                 }
-            ]}
+            ]
+        }
+    
+    USER_CALENDAR_EVENT_INDEX = {
+        "structure_version": 1,
+        "person_id": "1234567890",
+        "event_id_list": [
+            123456789001,
+            123456789002,
+            123456789003
+        ]
+    }
