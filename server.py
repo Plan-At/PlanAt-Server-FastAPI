@@ -322,9 +322,10 @@ class V1:
         update_query = DocumentDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, document_body=event_id_index)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
-            return JSONResponse(status_code=200, content={"status": "success"})
+            pass
         else:
             return JSONResponse(status_code=500, content={"status": "failed to insert index"})
+        return JSONResponse(status_code=200, content={"status": "success", "event_id": new_event_id})
 
 
     @app.get("/v1/universal/user/calendar/event", tags=["V1"])
