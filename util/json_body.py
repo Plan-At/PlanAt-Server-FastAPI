@@ -51,4 +51,6 @@ class AddUserCalendarEvent(BaseModel):
     end_time: TimeObject
     type_list: List[TypeObject]
     tag_list: List[TagObject]
-    
+
+class RegistrationUser(BaseModel):
+    name: str
