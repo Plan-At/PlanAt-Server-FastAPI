@@ -282,7 +282,7 @@ class V1:
         "person_id": db_query["person_id"],
         "event_id_list": []
         }
-        for each_event_id in db_query["event_id_list"]:
+        for each_event_id in db_query["event_id_list"][:ContentLimit.PUBLIC_EVENT_ID_INDEX]:
             find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": each_event_id})
             if find_query != None:
                 if find_query["visibility"] == "public":
