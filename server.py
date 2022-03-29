@@ -13,7 +13,7 @@ from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, Media
 import util.mongodb_data_api as DocumentDB
 import util.bit_io_api as RelationalDB
 import util.json_filter as JSONFilter
-from util.validate_token import match_token_with_person_id, check_token_exist
+from util.validate_token import match_token_with_person_id, check_token_exist, find_person_id_with_token
 from util import json_body, random_content
 from typing import Optional, List
 
@@ -300,6 +300,7 @@ class V1:
             return validate_token_result
         """add the event detail"""
         new_event_id = int(str(int(datetime.now().timestamp())) + str(random_content.get_int(length=6)))
+        print(str(int(datetime.now().timestamp())), random_content.get_int(length=6), new_event_id)
         new_event_entry = {
             "structure_version": 3,
             "event_id": new_event_id,
@@ -359,7 +360,7 @@ class V1:
         find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
         if find_query == None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
-        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id="1234567890")
+        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=find_person_id_with_token(auth_token=header_token))
         return JSONResponse(status_code=200, content=processed_find_query)
 
 
