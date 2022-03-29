@@ -301,10 +301,9 @@ class V1:
         """add the event detail"""
         new_event_id = int(str(int(datetime.now().timestamp())) + str(random_content.get_int(length=6)))
         new_event_entry = {
-            "structure_version": 2,
+            "structure_version": 3,
             "event_id": new_event_id,
-            "owner_list": [],
-            "visibility": req_body.visibility,
+            "access_control_list": [],
             "start_time": {
                 "text": req_body.start_time.text,
                 "timestamp": req_body.start_time.timestamp,
@@ -326,12 +325,12 @@ class V1:
             new_event_entry["type_list"].append({"type_id": each_type.type_id, "name": each_type.name})
         for each_tag in req_body.tag_list:
             new_event_entry["tag_list"].append({"tag_id": each_tag.tag_id, "name": each_tag.name})
-        for each_owner in req_body.owner_list:
-            print(each_owner)
-            if each_owner.person_id != None:
-                new_event_entry["owner_list"].append({"person_id": each_owner.person_id})
+        for each_access_control in req_body.access_control_list:
+            print(each_access_control)
+            if True:
+                new_event_entry["access_control_list"].append({"canonical_name": each_access_control.canonical_name, "person_id": each_access_control.person_id})
             else:
-                return JSONResponse(status_code=400, content={"status": "person_id in owner_list is required"})
+                return JSONResponse(status_code=400, content={"status": "person_id in access_control_list is required"})
         print(new_event_entry)
         insert_query = DocumentDB.insert_one(target_collection="CalendarEventEntry", document_body=new_event_entry)
         print(insert_query)
