@@ -13,7 +13,7 @@ from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, Media
 import util.mongodb_data_api as DocumentDB
 import util.bit_io_api as RelationalDB
 import util.json_filter as JSONFilter
-from util.validate_token import match_token_with_person_id, check_token_exist, find_person_id_with_token
+from util.token_tool import match_token_with_person_id, check_token_exist, find_person_id_with_token
 from util import json_body, random_content
 from typing import Optional, List
 

@@ -59,7 +59,9 @@ def universal_user_calendar_event(input_json: dict, person_id: str):
     }
     for each_owner in input_json["access_control_list"]:
         if each_owner["canonical_name"] == "public":
+            print("event is public")
             return return_json
         if each_owner["person_id"] == person_id:
+            print("event person_id matched")
             return return_json
     return None
