@@ -325,12 +325,14 @@ class V1:
             new_event_entry["type_list"].append({"type_id": each_type.type_id, "name": each_type.name})
         for each_tag in req_body.tag_list:
             new_event_entry["tag_list"].append({"tag_id": each_tag.tag_id, "name": each_tag.name})
+        least_one_access_control = False
         for each_access_control in req_body.access_control_list:
             print(each_access_control)
-            if True:
+            if (each_access_control.canonical_name != None) or (each_access_control.person_id != None):
                 new_event_entry["access_control_list"].append({"canonical_name": each_access_control.canonical_name, "person_id": each_access_control.person_id})
-            else:
-                return JSONResponse(status_code=400, content={"status": "person_id in access_control_list is required"})
+                least_one_access_control = True
+        if not least_one_access_control:
+            return JSONResponse(status_code=400, content={"status": "person_id or canonical_name in access_control_list is required"})
         print(new_event_entry)
         insert_query = DocumentDB.insert_one(target_collection="CalendarEventEntry", document_body=new_event_entry)
         print(insert_query)
