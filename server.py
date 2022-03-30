@@ -1,5 +1,7 @@
 import sys
 from datetime import datetime
+
+import requests
 import uvicorn
 from fastapi import FastAPI, Header
 from fastapi.responses import JSONResponse
@@ -81,6 +83,12 @@ def api_server_list(request: Request):
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def api_server_assignment(request: Request):
     return JSONResponse(status_code=200, content={"recommended_servers": [{"priority": 0, "load": 0, "name": "", "URL": "", "provider": "", "location": ""}]})
+
+@app.get("/test/connection", tags=["General Methods"])
+@limiter.limit(RateLimitConfig.SMALL_SIZE)
+def api_test_connection(request: Request):
+    print(requests.get("https://www.google.com/", timeout=5).status_code)
+    return JSONResponse(status_code=200, content={})
 
 
 class DummyMethod:
