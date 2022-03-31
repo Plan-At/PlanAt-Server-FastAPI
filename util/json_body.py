@@ -43,7 +43,7 @@ class UpdateUserProfileStatus(BaseModel):
     current_status: str
 
 
-class AddUserCalendarEvent(BaseModel):
+class CalendarEventObject(BaseModel):
     access_control_list: List[OwnerObject]
     display_name: str = "my event"
     description: str = "my description"

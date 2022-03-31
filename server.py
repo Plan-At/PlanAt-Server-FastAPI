@@ -301,7 +301,7 @@ class V1:
     # TODO check is the event_id already being used
     @app.post("/v1/add/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_add_user_calendar_event(request: Request, person_id: str, token: str=Header(None), req_body: json_body.AddUserCalendarEvent=None):
+    def v1_add_user_calendar_event(request: Request, person_id: str, token: str=Header(None), req_body: json_body.CalendarEventObject=None):
         print(dict(req_body))
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
@@ -368,8 +368,15 @@ class V1:
         find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
         if find_query == None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
-        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=find_person_id_with_token(auth_token=header_token))
-        return JSONResponse(status_code=200, content=processed_find_query)
+        if header_token != None:
+            processed_find_query = JSONFilter.private_user_calendar_event(input_json=find_query, person_id=find_person_id_with_token(auth_token=header_token))
+        else:
+            processed_find_query = JSONFilter.public_user_calendar_event(input_json=find_query)
+
+        if processed_find_query != None:
+            return JSONResponse(status_code=200, content=processed_find_query)
+        else:
+            return JSONResponse(status_code=403, content={"status": "unable to access this calendar_event with current token"})
 
 
     @app.post("/v1/registration/user", tags=["V1"])
