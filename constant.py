@@ -100,13 +100,11 @@ class DummyData:
             "short_description": "I",
             "full_description": "I'm here"
         },
-        "contact": [
+        "contact_method_list": [
             {
                 "method_name": "email",
-                "value": {
-                    "domain_name": "example.com",
-                    "full_address": "example@example.com",
-                },
+                "domain_name": "example.com",
+                "full_address": "example@example.com",
                 "visibility": {
                     "system_contact": True,
                     "public": True,
@@ -121,10 +119,8 @@ class DummyData:
             },
             {
                 "method_name": "phone",
-                "value": {
-                    "country_code": "",
-                    "full_number": "1234567890",
-                },
+                "country_code": "",
+                "regular_number": "1234567890",
                 "visibility": {
                     "system_contact": True,
                     "public": True,

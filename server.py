@@ -385,6 +385,12 @@ class V1:
         return JSONResponse(status_code=200, content={"status": "success", "person_id": "", "token": ""})
 
 
+    @app.get("/v1/user/person_id")
+    @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
+    def v1_get_user_person_id(request: Request, header_token: str=Header(None)):
+        return JSONResponse(status_code=200, content={"status": "success", "person_id": ""})
+
+
 if __name__ == "__main__":
     if sys.platform == "win32":
         uvicorn.run("server:app", debug=True, reload=True, port=ServerConfig.PORT, host=ServerConfig.HOST, limit_concurrency=ServerConfig.CONCURRENCY)
