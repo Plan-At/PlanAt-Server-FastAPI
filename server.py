@@ -82,7 +82,7 @@ def api_server_list(request: Request):
 @app.get("/server/assignment", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def api_server_assignment(request: Request):
-    return JSONResponse(status_code=200, content={"recommended_servers": [{"priority": 0, "load": 0, "name": "", "URL": "", "provider": "", "location": ""}]})
+    return JSONResponse(status_code=200, content={"recommended_servers": [{"priority": 0, "load": 0, "display_name": "", "URL": "", "provider": "", "location": ""}]})
 
 @app.get("/test/connection", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.SMALL_SIZE)
@@ -198,7 +198,7 @@ class V1:
         if old_profile is None: 
             return JSONResponse(status_code=404, content={"status": "user not found"})
         del old_profile["_id"]
-        old_profile["name"]["display_name"] = request_body.display_name
+        old_profile["naming"]["display_name"] = request_body.display_name
         update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
@@ -310,18 +310,18 @@ class V1:
         new_event_id = int(str(int(datetime.now().timestamp())) + str(random_content.get_int(length=6)))
         print(str(int(datetime.now().timestamp())), random_content.get_int(length=6), new_event_id)
         new_event_entry = {
-            "structure_version": 3,
+            "structure_version": 4,
             "event_id": new_event_id,
             "access_control_list": [],
             "start_time": {
                 "text": req_body.start_time.text,
-                "timestamp": req_body.start_time.timestamp,
+                "timestamp_int": req_body.start_time.timestamp,
                 "timezone_name": req_body.start_time.timezone_name,
                 "timezone_offset": req_body.start_time.timezone_offset
             },
             "end_time": {
                 "text": req_body.end_time.text,
-                "timestamp": req_body.end_time.timestamp,
+                "timestamp_int": req_body.end_time.timestamp,
                 "timezone_name": req_body.end_time.timezone_name,
                 "timezone_offset": req_body.end_time.timezone_offset
             },
@@ -331,9 +331,9 @@ class V1:
             "tag_list": []
         }
         for each_type in req_body.type_list:
-            new_event_entry["type_list"].append({"type_id": each_type.type_id, "name": each_type.name})
+            new_event_entry["type_list"].append({"type_id": each_type.type_id, "display_name": each_type.name})
         for each_tag in req_body.tag_list:
-            new_event_entry["tag_list"].append({"tag_id": each_tag.tag_id, "name": each_tag.name})
+            new_event_entry["tag_list"].append({"tag_id": each_tag.tag_id, "display_name": each_tag.name})
         least_one_access_control = False
         for each_access_control in req_body.access_control_list:
             print(each_access_control)

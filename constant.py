@@ -46,23 +46,18 @@ class MediaAssets:
 
 """
 TODO change the following key
-domain
-name
-timestamp
 token
-full
-method
 """
 class DummyData:
     USER_PROFILE = {
-        "structure_version": 1,
+        "structure_version": 2,
         "person_id": "1234567890",
         "metadata": {
             "uuid": "6cb63b46-00ce-4433-a7e1-c839e94c1315",
             "seed": "56467484686",
-            "registration_timestamp": "1646081914"
+            "registration_timestamp_int": "1646081914"
         },
-        "name": {
+        "naming": {
             "unique_name": "abced",
             "display_name": "HelloWorld",
             "localization": [],
@@ -75,7 +70,7 @@ class DummyData:
                     "image_id": "",
                     "image_url": "https://cdn.statically.io/avatar/s=64/HW",
                 },
-                "full": {
+                "original": {
                     "image_id": "",
                     "image_url": "https://cdn.statically.io/avatar/s=128/HW",
                 }
@@ -85,7 +80,7 @@ class DummyData:
                     "image_id": "",
                     "image_url": "https://cdn.statically.io/og/Hello%20World.jpg",
                 },
-                "full": {
+                "original": {
                     "image_id": "",
                     "image_url": "https://cdn.statically.io/og/Hello%20World.jpg",
                 }
@@ -95,7 +90,7 @@ class DummyData:
             "current_status": "Developing",
             "until": {
                 "text": "Extraday 13AM",
-                "timestamp": 0,
+                "timestamp_int": 0,
                 "timezone_name": "Mars",
                 "timezone_offset": 0
             },
@@ -107,10 +102,10 @@ class DummyData:
         },
         "contact": [
             {
-                "method": "email",
+                "method_name": "email",
                 "value": {
-                    "domain": "example.com",
-                    "full": "example@example.com",
+                    "domain_name": "example.com",
+                    "full_address": "example@example.com",
                 },
                 "visibility": {
                     "system_contact": True,
@@ -125,10 +120,10 @@ class DummyData:
                 }
             },
             {
-                "method": "phone",
+                "method_name": "phone",
                 "value": {
                     "country_code": "",
-                    "full": "1234567890",
+                    "full_number": "1234567890",
                 },
                 "visibility": {
                     "system_contact": True,
@@ -154,19 +149,19 @@ class DummyData:
         "calendar_event":
             [
                 {
-                    "structure_version": 2,
+                    "structure_version": 4,
                     "event_id": 1234567890123456,
                     "access_control_list": [{"person_id": "1234567890"}],
                     "visibility": "public",
                     "start_time": {
                         "text": "Monday 9AM",
-                        "timestamp": 0,
+                        "timestamp_int": 0,
                         "timezone_name": "America/Los_Angeles",
                         "timezone_offset": 0
                     },
                     "end_time": {
                         "text": "Monday 10AM",
-                        "timestamp": 0,
+                        "timestamp_int": 0,
                         "timezone_name": "",
                         "timezone_offset": 0
                     },
