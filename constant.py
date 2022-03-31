@@ -44,6 +44,15 @@ class MediaAssets:
     FAVICON = "https://cdn.jsdelivr.net/gh/Plan-At/static-image/2022/02/17/favicon.ico"
 
 
+"""
+TODO change the following key
+domain
+name
+timestamp
+token
+full
+method
+"""
 class DummyData:
     USER_PROFILE = {
         "structure_version": 1,
@@ -147,7 +156,7 @@ class DummyData:
                 {
                     "structure_version": 2,
                     "event_id": 1234567890123456,
-                    "owner_list": [{"person_id": "1234567890"}],
+                    "access_control_list": [{"person_id": "1234567890"}],
                     "visibility": "public",
                     "start_time": {
                         "text": "Monday 9AM",
