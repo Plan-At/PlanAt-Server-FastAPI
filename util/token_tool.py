@@ -31,9 +31,10 @@ def find_person_id_with_token(auth_token: str):
     Will validate person_id
     """
     if len(auth_token) != AuthConfig.TOKEN_LENGTH:
-        return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed token"})
+        return ""
     db_query = DocumentDB.find_one(target_collection="TokenV1", find_filter={"token_value": auth_token})
     print(db_query)
     if db_query is None:
-        return JSONResponse(status_code=403, content={"status": "token not found"})
-    return db_query["person_id"]
+        return ""
+    else:
+        return db_query["person_id"]

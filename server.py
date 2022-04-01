@@ -362,17 +362,13 @@ class V1:
 
     @app.get("/v1/universal/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_universal_user_calendar_event(request: Request, header_token: Optional[str]=Header(None), event_id: int = 1234567890123456):
+    def v1_universal_user_calendar_event(request: Request, header_token: Optional[str]=Header(""), event_id: int = 1234567890123456):
         if len(str(event_id)) != 16:
             return JSONResponse(status_code=400, content={"status": "malformed event_id"})
         find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
         if find_query == None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
-        if header_token != None:
-            processed_find_query = JSONFilter.private_user_calendar_event(input_json=find_query, person_id=find_person_id_with_token(auth_token=header_token))
-        else:
-            processed_find_query = JSONFilter.public_user_calendar_event(input_json=find_query)
-
+        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=find_person_id_with_token(auth_token=header_token))
         if processed_find_query != None:
             return JSONResponse(status_code=200, content=processed_find_query)
         else:
@@ -388,7 +384,11 @@ class V1:
     @app.get("/v1/user/person_id")
     @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
     def v1_get_user_person_id(request: Request, header_token: str=Header(None)):
-        return JSONResponse(status_code=200, content={"status": "success", "person_id": ""})
+        check_result = find_person_id_with_token(auth_token=header_token)
+        if check_result != None:
+            return JSONResponse(status_code=200, content={"status": "success", "person_id": check_result})
+        else:
+            return JSONResponse(status_code=400, content={"status": "failed"})
 
 
 if __name__ == "__main__":
