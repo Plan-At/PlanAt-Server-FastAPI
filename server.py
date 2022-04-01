@@ -1,5 +1,7 @@
 import sys
 from datetime import datetime
+
+import requests
 import uvicorn
 from fastapi import FastAPI, Header
 from fastapi.responses import JSONResponse
@@ -13,7 +15,7 @@ from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, Media
 import util.mongodb_data_api as DocumentDB
 import util.bit_io_api as RelationalDB
 import util.json_filter as JSONFilter
-from util.validate_token import match_token_with_person_id, check_token_exist
+from util.token_tool import match_token_with_person_id, check_token_exist, find_person_id_with_token
 from util import json_body, random_content
 from typing import Optional, List
 
@@ -80,7 +82,13 @@ def api_server_list(request: Request):
 @app.get("/server/assignment", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def api_server_assignment(request: Request):
-    return JSONResponse(status_code=200, content={"recommended_servers": [{"priority": 0, "load": 0, "name": "", "URL": "", "provider": "", "location": ""}]})
+    return JSONResponse(status_code=200, content={"recommended_servers": [{"priority": 0, "load": 0, "display_name": "", "URL": "", "provider": "", "location": ""}]})
+
+@app.get("/test/connection", tags=["General Methods"])
+@limiter.limit(RateLimitConfig.SMALL_SIZE)
+def api_test_connection(request: Request):
+    print(requests.get("https://www.google.com/", timeout=5).status_code)
+    return JSONResponse(status_code=200, content={})
 
 
 class DummyMethod:
@@ -190,7 +198,7 @@ class V1:
         if old_profile is None: 
             return JSONResponse(status_code=404, content={"status": "user not found"})
         del old_profile["_id"]
-        old_profile["name"]["display_name"] = request_body.display_name
+        old_profile["naming"]["display_name"] = request_body.display_name
         update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
@@ -293,27 +301,27 @@ class V1:
     # TODO check is the event_id already being used
     @app.post("/v1/add/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_add_user_calendar_event(request: Request, person_id: str, token: str=Header(None), req_body: json_body.AddUserCalendarEvent=None):
+    def v1_add_user_calendar_event(request: Request, person_id: str, token: str=Header(None), req_body: json_body.CalendarEventObject=None):
         print(dict(req_body))
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
         if validate_token_result != True: 
             return validate_token_result
         """add the event detail"""
         new_event_id = int(str(int(datetime.now().timestamp())) + str(random_content.get_int(length=6)))
+        print(str(int(datetime.now().timestamp())), random_content.get_int(length=6), new_event_id)
         new_event_entry = {
-            "structure_version": 2,
+            "structure_version": 4,
             "event_id": new_event_id,
-            "owner_list": [],
-            "visibility": req_body.visibility,
+            "access_control_list": [],
             "start_time": {
                 "text": req_body.start_time.text,
-                "timestamp": req_body.start_time.timestamp,
+                "timestamp_int": req_body.start_time.timestamp,
                 "timezone_name": req_body.start_time.timezone_name,
                 "timezone_offset": req_body.start_time.timezone_offset
             },
             "end_time": {
                 "text": req_body.end_time.text,
-                "timestamp": req_body.end_time.timestamp,
+                "timestamp_int": req_body.end_time.timestamp,
                 "timezone_name": req_body.end_time.timezone_name,
                 "timezone_offset": req_body.end_time.timezone_offset
             },
@@ -323,15 +331,17 @@ class V1:
             "tag_list": []
         }
         for each_type in req_body.type_list:
-            new_event_entry["type_list"].append({"type_id": each_type.type_id, "name": each_type.name})
+            new_event_entry["type_list"].append({"type_id": each_type.type_id, "display_name": each_type.name})
         for each_tag in req_body.tag_list:
-            new_event_entry["tag_list"].append({"tag_id": each_tag.tag_id, "name": each_tag.name})
-        for each_owner in req_body.owner_list:
-            print(each_owner)
-            if each_owner.person_id != None:
-                new_event_entry["owner_list"].append({"person_id": each_owner.person_id})
-            else:
-                return JSONResponse(status_code=400, content={"status": "person_id in owner_list is required"})
+            new_event_entry["tag_list"].append({"tag_id": each_tag.tag_id, "display_name": each_tag.name})
+        least_one_access_control = False
+        for each_access_control in req_body.access_control_list:
+            print(each_access_control)
+            if (each_access_control.canonical_name != None) or (each_access_control.person_id != None):
+                new_event_entry["access_control_list"].append({"canonical_name": each_access_control.canonical_name, "person_id": each_access_control.person_id})
+                least_one_access_control = True
+        if not least_one_access_control:
+            return JSONResponse(status_code=400, content={"status": "person_id or canonical_name in access_control_list is required"})
         print(new_event_entry)
         insert_query = DocumentDB.insert_one(target_collection="CalendarEventEntry", document_body=new_event_entry)
         print(insert_query)
@@ -352,14 +362,33 @@ class V1:
 
     @app.get("/v1/universal/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_add_user_calendar_event(request: Request, header_token: Optional[str]=Header(None), event_id: int = 1234567890123456):
+    def v1_universal_user_calendar_event(request: Request, header_token: Optional[str]=Header(""), event_id: int = 1234567890123456):
         if len(str(event_id)) != 16:
             return JSONResponse(status_code=400, content={"status": "malformed event_id"})
         find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
         if find_query == None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
-        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id="1234567890")
-        return JSONResponse(status_code=200, content=find_query)
+        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=find_person_id_with_token(auth_token=header_token))
+        if processed_find_query != None:
+            return JSONResponse(status_code=200, content=processed_find_query)
+        else:
+            return JSONResponse(status_code=403, content={"status": "unable to access this calendar_event with current token"})
+
+
+    @app.post("/v1/registration/user", tags=["V1"])
+    @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
+    def v1_registration_user(request: Request):
+        return JSONResponse(status_code=200, content={"status": "success", "person_id": "", "token": ""})
+
+
+    @app.get("/v1/user/person_id")
+    @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
+    def v1_get_user_person_id(request: Request, header_token: str=Header(None)):
+        check_result = find_person_id_with_token(auth_token=header_token)
+        if check_result != None:
+            return JSONResponse(status_code=200, content={"status": "success", "person_id": check_result})
+        else:
+            return JSONResponse(status_code=400, content={"status": "failed"})
 
 
 if __name__ == "__main__":

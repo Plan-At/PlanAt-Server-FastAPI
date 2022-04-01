@@ -18,8 +18,9 @@ class TagObject(BaseModel):
     name: str
 
 class OwnerObject(BaseModel):
-    person_id: Optional[str] = "1234567890"
-
+    canonical_name: Optional[str]
+    person_id: Optional[str]
+    
 
 """
 Is possible to stack multiple BaseModel class into one
@@ -42,13 +43,14 @@ class UpdateUserProfileStatus(BaseModel):
     current_status: str
 
 
-class AddUserCalendarEvent(BaseModel):
-    owner_list: List[OwnerObject]
-    visibility: str = "private"
+class CalendarEventObject(BaseModel):
+    access_control_list: List[OwnerObject]
     display_name: str = "my event"
     description: str = "my description"
     start_time: TimeObject
     end_time: TimeObject
     type_list: List[TypeObject]
     tag_list: List[TagObject]
-    
+
+class RegistrationUser(BaseModel):
+    name: str
