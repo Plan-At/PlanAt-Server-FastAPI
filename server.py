@@ -67,6 +67,12 @@ def api_version(request: Request):
     return JSONResponse(status_code=200, content={"version": ServerConfig.CURRENT_VERSION})
 
 
+@app.get("/timestamp", tags=["General Methods"])
+@limiter.limit(RateLimitConfig.NO_COMPUTE)
+def request_timestamp(request: Request):
+    return JSONResponse(status_code=200, content={"timestamp": str((int(datetime.now().timestamp())))})
+
+
 @app.get("/status", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
 def api_status(request: Request):
