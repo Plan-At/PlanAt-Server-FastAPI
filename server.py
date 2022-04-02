@@ -1,5 +1,6 @@
 import sys
 from datetime import datetime
+import time
 
 import requests
 import uvicorn
@@ -95,6 +96,11 @@ def api_server_assignment(request: Request):
 def api_test_connection(request: Request):
     print(requests.get("https://www.google.com/", timeout=5).status_code)
     return JSONResponse(status_code=200, content={})
+
+@app.get("/tool/delay", tags=["Utility"])
+def api_tool_delay(request: Request, sleep_time: int):
+    time.sleep(sleep_time)
+    return JSONResponse(status_code=200, content={"status": "finished"})
 
 
 class DummyMethod:
