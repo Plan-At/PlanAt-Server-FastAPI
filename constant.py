@@ -5,6 +5,7 @@ class ServerConfig:
     CURRENT_VERSION = "v1"
     API_SERVER_LIST = [
         {"priority": 0, "load": 0, "name": "Primary", "URL": "https://api-0.752628.xyz/", "provider": "Official", "location": "US-West"}]
+    IMAGEBED_FOLDER = "/Plan-At/usercontent"
 
 
 class AuthConfig:
@@ -17,6 +18,7 @@ class ContentLimit:
     LONG_DESCRIPTION = 500
     USER_STATUS = 15
     PUBLIC_EVENT_ID_INDEX = 50
+    IMAGE_SIZE = 1024 * 1024 * 4
 
 
 class RateLimitConfig:
@@ -177,4 +179,17 @@ class DummyData:
             123456789002,
             123456789003
         ]
+    }
+
+class ExampleData:
+    HOSTING_IMAGE = {
+        "structure_version": 1,
+        "image_url": "https://cdn.image4.io/as-an-imagebed/f_auto/Plan-At/usercontent/16490351977f8394ebab084c34406531918337c425.png",
+        "image_id": "",
+        "image_file_name": "16490351977f8394ebab084c34406531918337c425.png",
+        "image_file_path": "/Plan-At/usercontent/16490351977f8394ebab084c34406531918337c425.png",
+        "image_size": 0,
+        "image_width": 0,
+        "image_hright": 0,
+        "hosting_provider": "image4io"
     }
