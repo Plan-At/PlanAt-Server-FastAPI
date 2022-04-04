@@ -1,1 +1,1 @@
-pip install fastapi slowapi uvicorn python-multipart
+python -m pip install fastapi slowapi uvicorn python-multipart
