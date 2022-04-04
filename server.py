@@ -1,10 +1,12 @@
+from cgitb import reset
+import json
 import sys
 from datetime import datetime
 import time
 
 import requests
 import uvicorn
-from fastapi import FastAPI, Header
+from fastapi import FastAPI, Header, File
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -19,6 +21,7 @@ import util.json_filter as JSONFilter
 from util.token_tool import match_token_with_person_id, check_token_exist, find_person_id_with_token
 from util import json_body, random_content
 from typing import Optional, List
+from util import image4io
 
 app = FastAPI()
 
@@ -401,6 +404,36 @@ class V1:
             return JSONResponse(status_code=200, content={"status": "success", "person_id": check_result})
         else:
             return JSONResponse(status_code=400, content={"status": "failed"})
+
+    
+    @app.post("/v1/hosting/image", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MID_SIZE)
+    def v1_upload_image(request: Request, image_file: bytes = File(..., max_length=ContentLimit.IMAGE_SIZE)):
+        resp = image4io.uploadImage(
+                            authorization=image4io.calculate_basic_auth(
+                                api_key=json.load(open("app.token.json"))["image4io"]["api_key"], 
+                                api_secret=json.load(open("app.token.json"))["image4io"]["api_secret"]),
+                            local_file_bytes=image_file,
+                            local_file_name=image4io.generate_file_name(local_file_bytes=image_file),
+                            remote_folder_path=ServerConfig.IMAGEBED_FOLDER)
+        if resp.status_code != 200:
+            return JSONResponse(status_code=500, content={"status": "image upload failed"})
+        else:
+            image_info = json.loads(resp.text)
+            report_card = {
+                "structure_version": 1,
+                "image_url": image_info["uploadedFiles"][0]["url"],
+                "image_id": "",
+                "image_file_name": image_info["uploadedFiles"][0]["userGivenName"],
+                "image_file_path": image_info["uploadedFiles"][0]["name"],
+                "image_size": image_info["uploadedFiles"][0]["size"],
+                "image_width": image_info["uploadedFiles"][0]["width"],
+                "image_height": image_info["uploadedFiles"][0]["height"],
+                "hosting_provider": "image4io"
+            }
+            db_action_result = DocumentDB.insert_one(target_collection="ImageHosting", document_body=report_card)
+            print(db_action_result)
+            return JSONResponse(status_code=201, content={"status": "success", "image_url": image_info["uploadedFiles"][0]["url"]})
 
 
 if __name__ == "__main__":
