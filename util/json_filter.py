@@ -14,7 +14,7 @@ def public_user_profile(input_json: dict):
     }
     for contact_method in input_json["contact_method_list"]:
         if contact_method["visibility"]["public"] is True:
-            return_json["contact_method_list"].append({"type": contact_method["type"], "value": contact_method["value"]})
+            return_json["contact_method_list"].append(contact_method)
     return return_json
 
 def private_user_profile(input_json: dict):
