@@ -7,14 +7,14 @@ def public_user_profile(input_json: dict):
         "picture": input_json["picture"],
         "status": input_json["status"],
         "about": input_json["about"],
-        "contact": [],
+        "contact_method_list": [],
         "public_tag_list": input_json["public_tag_list"],
         "public_friend_list": input_json["public_friend_list"],
         "public_team_list": input_json["public_team_list"]
     }
-    for contact_method in input_json["contact"]:
+    for contact_method in input_json["contact_method_list"]:
         if contact_method["visibility"]["public"] is True:
-            return_json["contact"].append({"type": contact_method["type"], "value": contact_method["value"]})
+            return_json["contact_method_list"].append({"type": contact_method["type"], "value": contact_method["value"]})
     return return_json
 
 def private_user_profile(input_json: dict):
@@ -26,7 +26,7 @@ def private_user_profile(input_json: dict):
         "picture": input_json["picture"],
         "status": input_json["status"],
         "about": input_json["about"],
-        "contact": input_json["contact"],
+        "contact_method_list": input_json["contact_method_list"],
         "public_tag_list": input_json["public_tag_list"],
         "public_friend_list": input_json["public_friend_list"],
         "public_team_list": input_json["public_team_list"]
