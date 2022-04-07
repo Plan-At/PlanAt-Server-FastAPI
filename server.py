@@ -352,7 +352,11 @@ class V1:
         for each_access_control in req_body.access_control_list:
             print(each_access_control)
             if (each_access_control.canonical_name != None) or (each_access_control.person_id != None):
-                new_event_entry["access_control_list"].append({"canonical_name": each_access_control.canonical_name, "person_id": each_access_control.person_id})
+                new_event_entry["access_control_list"].append({
+                    "canonical_name": each_access_control.canonical_name, 
+                    "person_id": each_access_control.person_id, 
+                    "premission_list": each_access_control.premission_list
+                    })
                 least_one_access_control = True
         if not least_one_access_control:
             return JSONResponse(status_code=400, content={"status": "person_id or canonical_name in access_control_list is required"})

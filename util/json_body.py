@@ -17,9 +17,10 @@ class TagObject(BaseModel):
     tag_id: str
     name: str
 
-class OwnerObject(BaseModel):
+class ACObject(BaseModel):
     canonical_name: Optional[str]
     person_id: Optional[str]
+    premission_list: List[str] = ["read_full", "edit_full", "delete"]
     
 
 """
@@ -44,7 +45,7 @@ class UpdateUserProfileStatus(BaseModel):
 
 
 class CalendarEventObject(BaseModel):
-    access_control_list: List[OwnerObject]
+    access_control_list: List[ACObject]
     display_name: str = "my event"
     description: str = "my description"
     start_time: TimeObject
