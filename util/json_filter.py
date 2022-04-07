@@ -60,11 +60,12 @@ def universal_user_calendar_event(input_json: dict, person_id=""):
         if each_owner["canonical_name"] == "public":
             is_controller = True
             print("event is public")
-            return return_json
         elif each_owner["person_id"] == person_id:
             is_controller = True
             print("event person_id matched")
-            return return_json
+        have_premission = False
         if is_controller:
+            return return_json
+        if have_premission:
             pass
     return None
