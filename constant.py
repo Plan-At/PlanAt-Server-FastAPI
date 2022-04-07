@@ -151,7 +151,8 @@ class DummyData:
                     "event_id": 1234567890123456,
                     "access_control_list": [
                         {
-                            "person_id": "1234567890"
+                            "person_id": "1234567890",
+                            "premission": ["read", "edit", "delete"]
                         }
                     ],
                     "visibility": "public",
