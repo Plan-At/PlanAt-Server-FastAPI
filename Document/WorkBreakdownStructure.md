@@ -6,6 +6,6 @@
 |28 Feb 2022 - 8 Mar 2022|Connect to the Database|How is the query language and firewall working|Fundamental|5 day|Finished|The DB choosen also based on open-ended which prevent vendor-lockin to certain DB|
 |10 Mar 2022 - 10 Mar 2022|More interaction with Database|Update query|Fundamental|1 day|Finished|Progress Report Day|
 |14 Mar 2022 - 22 Mar 2022|Using multiple database|Trying to add a SQL database|Fundamental|4 day|Failed|Somewhat complicated to make SQL query for the data-structure I already made but seamlessly works with Document-Base NotOnlySQL database, plus can potentially immune SQL-Injection attack|
-|24 Mar 2022 - 2 Apr 2022|General Maintenance|Means no significant functionality added but some improvement|Fundamental|8 hours|Finished||
-|3 Apr 2022 - 3 Apr 2022|Upload Image|User will upload image directly to our backend server, but then the backend will send it to an external image hosting service, which is not directly store in our side|Low|3 hours|FinishedThe free tier should be enough|
-|4 Apr 2022 - 7 Apr 2022|Visilibity and Ownership attribute for Calendar Event|Allow multiple user see and edit the same Calendar Event, with permission control for each individual|Fundamental|4 hours|Why I didn't thinking this at the begining|
+|24 Mar 2022 - 2 Apr 2022|General Maintenance|Means no significant functionality added but some improvement|Fundamental|8 hours|Finished|Modify existing data entry in Database is a pain|
+|3 Apr 2022 - 3 Apr 2022|Upload Image|User will upload image directly to our backend server, but then the backend will send it to an external image hosting service, which is not directly store in our side|Low|3 hours|Finished|The free tier should be enough|
+|4 Apr 2022 - 7 Apr 2022|Visilibity and Ownership attribute for Calendar Event|Allow multiple user see and edit the same Calendar Event, with permission control for each individual|Fundamental|4 hours|Finished|Why I didn't thinking this at the begining|
