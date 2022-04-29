@@ -43,6 +43,7 @@ def private_user_calendar_event_index(input_json: dict):
     return return_json
 
 def universal_user_calendar_event(input_json: dict, person_id=""):
+    print(person_id)
     print(input_json)
     return_json = {
         "structure_version": input_json["structure_version"],

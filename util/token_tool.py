@@ -30,6 +30,7 @@ def find_person_id_with_token(auth_token: str):
     All the check to the token is done here
     Will validate person_id
     """
+    print(auth_token)
     if len(auth_token) != AuthConfig.TOKEN_LENGTH:
         return ""
     db_query = DocumentDB.find_one(target_collection="TokenV1", find_filter={"token_value": auth_token})
