@@ -155,8 +155,8 @@ class V1:
 
     @app.get("/v1/auth/token/validate", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_auth_token_validate(request: Request, auth_token: str):
-        validate_token_result = check_token_exist(auth_token=auth_token)
+    def v1_auth_token_validate(request: Request, pa_token: str):
+        validate_token_result = check_token_exist(auth_token=pa_token)
         if validate_token_result != True: 
             return validate_token_result
         else:
@@ -187,8 +187,8 @@ class V1:
 
     @app.get("/v1/private/user/profile", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_private_user_profile(request: Request, person_id: str, token: str=Header(None)):
-        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+    def v1_private_user_profile(request: Request, person_id: str, pa_token: str=Header(None)):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
         if validate_token_result != True: 
             return validate_token_result
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
@@ -201,8 +201,8 @@ class V1:
     
     @app.post("/v1/update/user/profile", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile(request: Request, person_id: str, token: str=Header(None)):
-        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+    def v1_update_user_profile(request: Request, person_id: str, pa_token: str=Header(None)):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
         if validate_token_result != True: 
             return validate_token_result
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
@@ -212,8 +212,8 @@ class V1:
 
     @app.post("/v1/update/user/profile/name/display_name", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_name_displayName(request: Request, person_id: str, token: str=Header(None), request_body: json_body.UpdateUserProfileName_DisplayName=None):
-        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+    def v1_update_user_profile_name_displayName(request: Request, person_id: str, pa_token: str=Header(None), request_body: json_body.UpdateUserProfileName_DisplayName=None):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
         if validate_token_result != True: 
             return validate_token_result
         if len(request_body.display_name) > ContentLimit.DISPLAY_NAME_LENGTH: 
@@ -232,8 +232,8 @@ class V1:
 
     @app.post("/v1/update/user/profile/about/description", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_about_description(request: Request, person_id: str, token: str=Header(None), request_body: json_body.UpdateUserProfileAbout_Description=None):
-        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+    def v1_update_user_profile_about_description(request: Request, person_id: str, pa_token: str=Header(None), request_body: json_body.UpdateUserProfileAbout_Description=None):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
         if validate_token_result != True: 
             return validate_token_result
         if len(request_body.short_description) > ContentLimit.SHORT_DESCRIPTION: 
@@ -256,8 +256,8 @@ class V1:
     
     @app.post("/v1/update/user/profile/status", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_status(request: Request, person_id: str, token: str=Header(None), request_body: json_body.UpdateUserProfileStatus=None):
-        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+    def v1_update_user_profile_status(request: Request, person_id: str, pa_token: str=Header(None), request_body: json_body.UpdateUserProfileStatus=None):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
         if validate_token_result != True: 
             return validate_token_result
         if len(request_body.current_status) > ContentLimit.USER_STATUS: 
@@ -288,8 +288,8 @@ class V1:
     
     @app.get("/v1/private/user/calendar/event/index", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_private_user_calendar_event_index(request: Request, person_id: str, token: str = Header(None)):
-        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+    def v1_private_user_calendar_event_index(request: Request, person_id: str, pa_token: str = Header(None)):
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
         if validate_token_result != True: 
             return validate_token_result
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
@@ -325,9 +325,9 @@ class V1:
     # TODO check is the event_id already being used
     @app.post("/v1/add/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_add_user_calendar_event(request: Request, person_id: str, token: str=Header(None), req_body: json_body.CalendarEventObject=None):
+    def v1_add_user_calendar_event(request: Request, person_id: str, pa_token: str=Header(None), req_body: json_body.CalendarEventObject=None):
         print(dict(req_body))
-        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=token)
+        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
         if validate_token_result != True: 
             return validate_token_result
         """add the event detail"""
@@ -411,8 +411,8 @@ class V1:
 
     @app.get("/v1/user/person_id")
     @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
-    def v1_get_user_person_id(request: Request, header_token: str=Header(None)):
-        check_result = find_person_id_with_token(auth_token=header_token)
+    def v1_get_user_person_id(request: Request, pa_token: str=Header(None)):
+        check_result = find_person_id_with_token(auth_token=pa_token)
         if check_result != None:
             return JSONResponse(status_code=200, content={"status": "success", "person_id": check_result})
         else:
