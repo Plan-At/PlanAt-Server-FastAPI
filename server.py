@@ -389,7 +389,7 @@ class V1:
 
 
     @app.get("/v1/universal/user/calendar/event", tags=["V1"])
-    @limiter.limit(RateLimitConfig.MIN_DB)
+    @limiter.limit(RateLimitConfig.BURST)
     def v1_universal_user_calendar_event(request: Request, pa_token: Optional[str]=Header(""), event_id: int = 1234567890123456):
         if len(str(event_id)) != 16:
             return JSONResponse(status_code=400, content={"status": "malformed event_id"})

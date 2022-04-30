@@ -41,6 +41,8 @@ class RateLimitConfig:
     MID_SENSITIVITY = "1/30second"
     HIGH_SENSITIVITY = "1/minute"
 
+    BURST = "20/minute"
+
 
 class MediaAssets:
     FAVICON = "https://cdn.jsdelivr.net/gh/Plan-At/static-image/2022/02/17/favicon.ico"
