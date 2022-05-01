@@ -42,8 +42,8 @@ def private_user_calendar_event_index(input_json: dict):
     }
     return return_json
 
-def universal_user_calendar_event(input_json: dict, person_id=""):
-    print(person_id)
+def universal_user_calendar_event(input_json: dict, person_id="", required_premission_list=["read_full", "edit_full", "delete"]):
+    # Can also be used to verify does user have suffient premission
     print(input_json)
     return_json = {
         "structure_version": input_json["structure_version"],
@@ -66,7 +66,9 @@ def universal_user_calendar_event(input_json: dict, person_id=""):
             print("event person_id matched")
         have_premission = False
         if is_controller:
-            return return_json
+            for each_premisson in required_premission_list:
+                if each_premisson in each_owner["premission_list"]:
+                    have_premission = True
         if have_premission:
-            pass
-    return None
+            return return_json
+    return False
