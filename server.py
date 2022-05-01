@@ -332,7 +332,8 @@ class V1:
             return validate_token_result
         """add the event detail"""
         new_event_id = int(str(int(datetime.now().timestamp())) + str(random_content.get_int(length=6)))
-        print(str(int(datetime.now().timestamp())), random_content.get_int(length=6), new_event_id)
+        if len(str(new_event_id)) != 16:
+            raise Exception("random did not generator correct length of number")
         new_event_entry = {
             "structure_version": 4,
             "event_id": new_event_id,
@@ -408,14 +409,32 @@ class V1:
     def v1_delete_user_calendar_event(request: Request, pa_token: str=Header(None), event_id: int = 1234567890123456):
         if len(str(event_id)) != 16:
             return JSONResponse(status_code=400, content={"status": "malformed event_id"})
+        person_id = find_person_id_with_token(auth_token=pa_token)
         find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
         if find_query == None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
-        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=find_person_id_with_token(auth_token=pa_token))
-        if processed_find_query != False:
-            return JSONResponse(status_code=200, content={"status": "have sufficient premisson but CalendarEvent not deleted yet"})
-        else:
+        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id)
+        if processed_find_query == False:
             return JSONResponse(status_code=403, content={"status": f"unable to delete calendar_event {event_id} with current token"})
+        # else:
+        #     return JSONResponse(status_code=200, content={"status": "have sufficient premisson but CalendarEvent not deleted yet"})
+        deletion_query = DocumentDB.delete_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
+        print(deletion_query)
+        if deletion_query == None:
+            return JSONResponse(status_code=404, content={"status": "calendar_event not found when trying to delete", "event_id": event_id})
+        if deletion_query["deletedCount"] != 1:
+            return JSONResponse(status_code=404, content={"status": "calendar_event deleted but some error occured", "event_id": event_id})
+        """remove from the index"""
+        event_id_index = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
+        if event_id_index is None: 
+            return JSONResponse(status_code=404, content={"status": "user calander_event_index not found"})
+        del event_id_index["_id"] # If not remove _id when replace will get error
+        event_id_index["event_id_list"].remove(event_id)
+        update_query = DocumentDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, document_body=event_id_index)
+        print(update_query)
+        if update_query["matchedCount"] != 1 and update_query["modifiedCount"] != 1:
+            return JSONResponse(status_code=500, content={"status": "failed to update index but calendar_event still deleted", "event_id": event_id})
+        return JSONResponse(status_code=200, content={"status": "deletion success", "event_id": event_id})
 
 
     @app.post("/v1/registration/user", tags=["V1"])
