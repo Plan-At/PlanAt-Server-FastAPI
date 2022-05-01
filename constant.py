@@ -6,6 +6,7 @@ class ServerConfig:
     API_SERVER_LIST = [
         {"priority": 0, "load": 0, "name": "Primary", "URL": "https://api-0.752628.xyz/", "provider": "Official", "location": "US-West"}]
     IMAGEBED_FOLDER = "/Plan-At/usercontent"
+    LOG_LEVEL = "debug"
 
 
 class AuthConfig:
