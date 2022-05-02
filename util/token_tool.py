@@ -16,14 +16,17 @@ def match_token_with_person_id(person_id: str, auth_token: str, requests_session
     All the check to the token is done here
     Will validate person_id
     """
+    print(auth_token)
+    if auth_token == None:
+        return ""
     if len(auth_token) != AuthConfig.TOKEN_LENGTH:
-        return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed token"})
+        return JSONResponse(status_code=403, content={"status": "malformed token"})
     db_query = DocumentDB.find_one(target_collection="TokenV1", find_filter={"token_value": auth_token}, requests_session=requests_session)
     print(db_query)
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "token not found"})
     if db_query["person_id"] != person_id:
-        return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "invalid token for this person_id"})
+        return JSONResponse(status_code=403, content={"status": "invalid token for this person_id"})
     return True
 
 def find_person_id_with_token(auth_token: str, requests_session=requests.Session()):
@@ -32,6 +35,8 @@ def find_person_id_with_token(auth_token: str, requests_session=requests.Session
     Will validate person_id
     """
     print(auth_token)
+    if auth_token == None:
+        return ""
     if len(auth_token) != AuthConfig.TOKEN_LENGTH:
         return ""
     db_query = DocumentDB.find_one(target_collection="TokenV1", find_filter={"token_value": auth_token}, requests_session=requests_session)
