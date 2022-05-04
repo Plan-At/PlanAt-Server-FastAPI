@@ -1,3 +1,9 @@
+import hashlib
+from datetime import datetime
+
+START_TIME = datetime.now()
+PROGRAM_HASH = hashlib.md5(open(__file__, mode="rb").read()).hexdigest()
+
 class ServerConfig:
     PORT = 8000
     HOST = "127.0.0.1"

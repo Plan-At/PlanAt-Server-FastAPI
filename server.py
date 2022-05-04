@@ -7,7 +7,6 @@ import requests
 import uvicorn
 from fastapi import FastAPI, Header, File
 from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -19,8 +18,9 @@ import util.mongodb_data_api as DocumentDB
 import util.json_filter as JSONFilter
 from util.token_tool import match_token_with_person_id, check_token_exist, find_person_id_with_token
 from util import json_body, random_content
-from typing import Optional, List
+from typing import Optional
 from util import image4io
+from constant import START_TIME, PROGRAM_HASH
 
 app = FastAPI()
 
@@ -28,21 +28,15 @@ limiter = Limiter(key_func=get_remote_address)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_credentials=True,
-#     allow_methods=["OPTIONS", "POST", "GET"],
-#     allow_headers=["*"],
-# )
 
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = datetime.now()
-    logger = open(file="fast_demo.log", mode="a", encoding="utf-8")
+    logger = open(file=f"{int(START_TIME.timestamp())}.FastAPI.log", mode="a", encoding="utf-8")
     logger.write(f"time={str(datetime.now())} ip={request.client.host} method={request.method} path=\"{request.url.path}\" ")
     response: Response = await call_next(request)
-    process_time = str((datetime.now() - start_time).microseconds / 1000)
+    process_time = f"{(datetime.now() - start_time).microseconds / 1000}ms"
     response.headers["X-Process-Time"] = str(process_time)
     logger.write(f"completed_in={process_time}ms status_code={response.status_code}\n")
     return response
@@ -85,9 +79,9 @@ def request_timestamp(request: Request):
 
 
 @app.get("/status", tags=["General Methods"])
-@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
+@limiter.limit(RateLimitConfig.NO_COMPUTE)
 def api_status(request: Request):
-    return JSONResponse(status_code=501, content={"status": "not implemented"})
+    return JSONResponse(status_code=200, content={"status": f"alive", "uptime": f"{datetime.now() - START_TIME}", "version": PROGRAM_HASH})
 
 
 @app.get("/server/list", tags=["General Methods"])
@@ -159,17 +153,6 @@ class V1:
             return validate_token_result
         else:
             return JSONResponse(status_code=200, content={"status": "valid"})
-
-    @app.get("/v1/public/stats", tags=["V1"])
-    @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
-    def v1_public_stats(request: Request):
-        return JSONResponse(status_code=501, content={"status": "not implemented"})
-
-
-    @app.get("/v1/restricted/stats", tags=["V1"])
-    @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
-    def v1_restricted_stats(request: Request):
-        return JSONResponse(status_code=501, content={"status": "not implemented"})
 
 
     @app.get("/v1/public/user/profile", tags=["V1"])
@@ -250,7 +233,6 @@ class V1:
             return JSONResponse(status_code=200, content={"status": "success"})
         return JSONResponse(status_code=500, content={"status": "failed"})
 
-
     
     @app.post("/v1/update/user/profile/status", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
@@ -270,18 +252,6 @@ class V1:
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
             return JSONResponse(status_code=200, content={"status": "success"})
         return JSONResponse(status_code=500, content={"status": "failed"})
-
-
-    @app.get("/v1/public/search/user", tags=["V1"])
-    @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
-    def v1_public_search_user(request: Request):
-        return JSONResponse(status_code=501, content={"status": "not implemented"})
-
-
-    @app.get("/v1/public/search/team", tags=["V1"])
-    @limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
-    def v1_public_search_team(request: Request):
-        return JSONResponse(status_code=501, content={"status": "not implemented"})
 
     
     @app.get("/v1/private/user/calendar/event/index", tags=["V1"])
