@@ -12,11 +12,10 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
+from starlette.responses import Response, RedirectResponse
 import hashlib
 from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, MediaAssets, ContentLimit
 import util.mongodb_data_api as DocumentDB
-import util.bit_io_api as RelationalDB
 import util.json_filter as JSONFilter
 from util.token_tool import match_token_with_person_id, check_token_exist, find_person_id_with_token
 from util import json_body, random_content
@@ -28,16 +27,13 @@ app = FastAPI()
 limiter = Limiter(key_func=get_remote_address)
 
 app.state.limiter = limiter
-app.add_exception_handler(
-    RateLimitExceeded, 
-    _rate_limit_exceeded_handler
-    )
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_methods=["OPTIONS", "POST", "GET"],
-    allow_headers=["*"],
-)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_credentials=True,
+#     allow_methods=["OPTIONS", "POST", "GET"],
+#     allow_headers=["*"],
+# )
 
 
 @app.middleware("http")
@@ -45,8 +41,10 @@ async def log_requests(request: Request, call_next):
     start_time = datetime.now()
     logger = open(file="fast_demo.log", mode="a", encoding="utf-8")
     logger.write(f"time={str(datetime.now())} ip={request.client.host} method={request.method} path=\"{request.url.path}\" ")
-    response = await call_next(request)
-    logger.write(f"completed_in={(datetime.now() - start_time).microseconds / 1000}ms status_code={response.status_code}\n")
+    response: Response = await call_next(request)
+    process_time = str((datetime.now() - start_time).microseconds / 1000)
+    response.headers["X-Process-Time"] = str(process_time)
+    logger.write(f"completed_in={process_time}ms status_code={response.status_code}\n")
     return response
 
 
