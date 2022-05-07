@@ -37,8 +37,8 @@ async def log_requests(request: Request, call_next):
     logger.write(f"time={str(datetime.now())} ip={request.client.host} method={request.method} path=\"{request.url.path}\" ")
     response: Response = await call_next(request)
     process_time = f"{(datetime.now() - start_time).microseconds / 1000}ms"
-    response.headers["X-Process-Time"] = str(process_time)
-    logger.write(f"completed_in={process_time}ms status_code={response.status_code}\n")
+    response.headers["X-Process-Time"] = process_time
+    logger.write(f"completed_in={process_time} status_code={response.status_code}\n")
     return response
 
 
