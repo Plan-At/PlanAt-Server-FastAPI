@@ -55,3 +55,7 @@ class CalendarEventObject(BaseModel):
 
 class RegistrationUser(BaseModel):
     name: str
+
+class UnsafeLoginBody(BaseModel):
+    person_id: str
+    password: str

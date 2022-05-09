@@ -424,6 +424,23 @@ class V1:
         else:
             return JSONResponse(status_code=400, content={"status": "failed"})
 
+
+    @app.post("/v1/auth/login/unsafe")
+    @limiter.limit("3/10second")
+    def v1_auth_unsafe_login(request: Request, inputed: json_body.UnsafeLoginBody):
+        mongoSession = requests.Session()
+        q = DocumentDB.find_one("LoginV1", find_filter={"person_id": inputed.person_id}, requests_session=mongoSession)
+        if q == None:
+            return JSONResponse(status_code=403, content={"status": "not found or not match", "person_id": inputed.person_id, "password": inputed.password})
+        # There is no dp-while loop in Python
+        generated_token_not_dupelicated = False
+        while generated_token_not_dupelicated:
+            generated_token = "aaaaaaaa"
+            generated_token_not_dupelicated = True
+        token_record_query = DocumentDB.insert_one("TokenV1", document_body={}, requests_session=mongoSession)
+        print(token_record_query)
+        return JSONResponse(status_code=200, content={"status": "success", "pa_token": generated_token})
+
     
     @app.post("/v1/hosting/image", tags=["V1"])
     @limiter.limit(RateLimitConfig.MID_SIZE)
