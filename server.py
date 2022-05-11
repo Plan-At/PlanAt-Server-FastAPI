@@ -406,7 +406,7 @@ class V1:
     @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
     def v1_get_user_person_id(request: Request, pa_token: str = Header(None)):
         check_result = find_person_id_with_token(auth_token=pa_token)
-        if check_result != None:
+        if check_result is not None:
             return JSONResponse(status_code=200, content={"status": "success", "person_id": check_result})
         else:
             return JSONResponse(status_code=400, content={"status": "failed"})
@@ -417,10 +417,8 @@ class V1:
         mongoSession = requests.Session()
         credential_query = DocumentDB.find_one("LoginV1", find_filter={"person_id": name_and_password.person_id}, requests_session=mongoSession)
         print(credential_query)
-        if credential_query is None:
-            return JSONResponse(status_code=403, content={"status": "not found or not match", "person_id": name_and_password.person_id, "password": name_and_password.password})
         # the hash string generated using hashlib is lowercase
-        if not hashlib.sha512(name_and_password.password.encode("utf-8")).hexdigest() == credential_query["password_hash"]:
+        if (credential_query is None) or not (hashlib.sha512(name_and_password.password.encode("utf-8")).hexdigest() == credential_query["password_hash"]):
             return JSONResponse(status_code=403, content={"status": "not found or not match", "person_id": name_and_password.person_id, "password": name_and_password.password})
         # Checking if the same token already being use
         # There is no do-while loop in Python
@@ -430,7 +428,8 @@ class V1:
             if current_checking_query is None:
                 break
         token_record_query = DocumentDB.insert_one(
-            "TokenV1", document_body={
+            "TokenV1",
+            document_body={
                 "structure_version": 2,
                 "person_id": name_and_password.person_id,
                 "token_value": generated_token,
