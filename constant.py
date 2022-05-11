@@ -210,6 +210,20 @@ class DummyData:
         ]
     }
 
+    TOKEN_INFO = {
+        "structure_version": 2,
+        "person_id": "1234567890",
+        "token_value": "aaaaaaaa",
+        "token_hash": ""
+    }
+
+    PASSWORD_INFO = {
+        "structure_version": 1,
+        "person_id": "1234567890",
+        "password_hash": "12B03226A6D8BE9C6E8CD5E55DC6C7920CAAA39DF14AAB92D5E3EA9340D1C8A4D3D0B8E4314F1F6EF131BA4BF1CEB9186AB87C801AF0D5C95B1BEFB8CEDAE2B9",
+        "password_length": 8,
+    }
+
 class ExampleData:
     HOSTING_IMAGE = {
         "structure_version": 1,
