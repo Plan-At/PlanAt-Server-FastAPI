@@ -95,11 +95,13 @@ def api_server_list(request: Request):
 def api_server_assignment(request: Request):
     return JSONResponse(status_code=200, content={"recommended_servers": [{"priority": 0, "load": 0, "display_name": "", "URL": "", "provider": "", "location": ""}]})
 
+
 @app.get("/test/connection", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.SMALL_SIZE)
 def api_test_connection(request: Request):
     print(requests.get("https://www.google.com/", timeout=5).status_code)
     return JSONResponse(status_code=200, content={})
+
 
 @app.get("/tool/delay", tags=["Utility"])
 def api_tool_delay(request: Request, sleep_time: int):
@@ -113,18 +115,15 @@ class DummyMethod:
     def dummy(request: Request):
         return {"status": "ok"}
 
-
     @app.get("/dummy/user/profile", tags=["Dummy Data"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def dummy_user_profile(request: Request):
         return DummyData.USER_PROFILE
 
-
     @app.get("/dummy/user/calendar", tags=["Dummy Data"])
     @limiter.limit(RateLimitConfig.SOME_DB)
     def dummy_user_calendar(request: Request):
         return DummyData.USER_CALENDAR
-
 
     @app.get("/dummy/auth/decrypt", tags=["Dummy Data"])
     @limiter.limit(RateLimitConfig.LESS_COMPUTE)
@@ -144,16 +143,14 @@ class V1:
     def v1(request: Request):
         return JSONResponse(status_code=200, content={"status": "ok"})
 
-
     @app.get("/v1/auth/token/validate", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def v1_auth_token_validate(request: Request, pa_token: str):
         validate_token_result = check_token_exist(auth_token=pa_token)
-        if validate_token_result != True: 
+        if validate_token_result != True:
             return validate_token_result
         else:
             return JSONResponse(status_code=200, content={"status": "valid"})
-
 
     @app.get("/v1/public/user/profile", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
@@ -161,46 +158,43 @@ class V1:
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
             return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
         db_query = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
-        if db_query is None: 
+        if db_query is None:
             return JSONResponse(status_code=403, content={"status": "user not found"})
         return JSONFilter.public_user_profile(input_json=db_query)
 
-
     @app.get("/v1/private/user/profile", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_private_user_profile(request: Request, person_id: str, pa_token: str=Header(None)):
+    def v1_private_user_profile(request: Request, person_id: str, pa_token: str = Header(None)):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
-        if validate_token_result != True: 
+        if validate_token_result != True:
             return validate_token_result
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
             return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
         db_query = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
-        if db_query is None: 
+        if db_query is None:
             return JSONResponse(status_code=403, content={"status": "user not found"})
         return JSONFilter.private_user_profile(input_json=db_query)
 
-    
     @app.post("/v1/update/user/profile", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile(request: Request, person_id: str, pa_token: str=Header(None)):
+    def v1_update_user_profile(request: Request, person_id: str, pa_token: str = Header(None)):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
-        if validate_token_result != True: 
+        if validate_token_result != True:
             return validate_token_result
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
             return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
         return JSONResponse(status_code=501, content={"status": "not implemented"})
 
-
     @app.post("/v1/update/user/profile/name/display_name", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_name_displayName(request: Request, person_id: str, pa_token: str=Header(None), request_body: json_body.UpdateUserProfileName_DisplayName=None):
+    def v1_update_user_profile_name_displayName(request: Request, person_id: str, pa_token: str = Header(None), request_body: json_body.UpdateUserProfileName_DisplayName = None):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
-        if validate_token_result != True: 
+        if validate_token_result != True:
             return validate_token_result
-        if len(request_body.display_name) > ContentLimit.DISPLAY_NAME_LENGTH: 
+        if len(request_body.display_name) > ContentLimit.DISPLAY_NAME_LENGTH:
             return JSONResponse(status_code=400, content={"status": "new display_name too long"})
         old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
-        if old_profile is None: 
+        if old_profile is None:
             return JSONResponse(status_code=404, content={"status": "user not found"})
         del old_profile["_id"]
         old_profile["naming"]["display_name"] = request_body.display_name
@@ -210,40 +204,38 @@ class V1:
             return JSONResponse(status_code=200, content={"status": "success"})
         return JSONResponse(status_code=500, content={"status": "failed"})
 
-
     @app.post("/v1/update/user/profile/about/description", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_about_description(request: Request, person_id: str, pa_token: str=Header(None), request_body: json_body.UpdateUserProfileAbout_Description=None):
+    def v1_update_user_profile_about_description(request: Request, person_id: str, pa_token: str = Header(None), request_body: json_body.UpdateUserProfileAbout_Description = None):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
-        if validate_token_result != True: 
+        if validate_token_result != True:
             return validate_token_result
-        if len(request_body.short_description) > ContentLimit.SHORT_DESCRIPTION: 
+        if len(request_body.short_description) > ContentLimit.SHORT_DESCRIPTION:
             return JSONResponse(status_code=400, content={"status": "new short_description too long"})
         elif len(request_body.full_description) > ContentLimit.LONG_DESCRIPTION:
             return JSONResponse(status_code=400, content={"status": "new full_description too long"})
         old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
-        if old_profile is None: 
+        if old_profile is None:
             return JSONResponse(status_code=404, content={"status": "user not found"})
         del old_profile["_id"]
         old_profile["about"]["short_description"] = request_body.short_description
         old_profile["about"]["full_description"] = request_body.full_description
-        update_query = DocumentDB.replace_one( target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
+        update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
             return JSONResponse(status_code=200, content={"status": "success"})
         return JSONResponse(status_code=500, content={"status": "failed"})
 
-    
     @app.post("/v1/update/user/profile/status", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_status(request: Request, person_id: str, pa_token: str=Header(None), request_body: json_body.UpdateUserProfileStatus=None):
+    def v1_update_user_profile_status(request: Request, person_id: str, pa_token: str = Header(None), request_body: json_body.UpdateUserProfileStatus = None):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
-        if validate_token_result != True: 
+        if validate_token_result != True:
             return validate_token_result
-        if len(request_body.current_status) > ContentLimit.USER_STATUS: 
+        if len(request_body.current_status) > ContentLimit.USER_STATUS:
             return JSONResponse(status_code=400, content={"status": "new current_status too long"})
         old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
-        if old_profile is None: 
+        if old_profile is None:
             return JSONResponse(status_code=404, content={"status": "user not found"})
         del old_profile["_id"]
         old_profile["status"]["current_status"] = request_body.current_status
@@ -253,21 +245,19 @@ class V1:
             return JSONResponse(status_code=200, content={"status": "success"})
         return JSONResponse(status_code=500, content={"status": "failed"})
 
-    
     @app.get("/v1/private/user/calendar/event/index", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def v1_private_user_calendar_event_index(request: Request, person_id: str, pa_token: str = Header(None)):
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
-        if validate_token_result != True: 
+        if validate_token_result != True:
             return validate_token_result
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
             return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
         db_query = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
-        if db_query is None: 
+        if db_query is None:
             return JSONResponse(status_code=403, content={"status": "user not found"})
         return JSONFilter.private_user_calendar_event_index(input_json=db_query)
 
-    
     # TODO more efficient way to filter out
     @app.get("/v1/public/user/calendar/event/index", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
@@ -275,12 +265,12 @@ class V1:
         if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
             return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
         db_query = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
-        if db_query is None: 
+        if db_query is None:
             return JSONResponse(status_code=403, content={"status": "user not found"})
         filtered_result = {
-        "structure_version": db_query["structure_version"],
-        "person_id": db_query["person_id"],
-        "event_id_list": []
+            "structure_version": db_query["structure_version"],
+            "person_id": db_query["person_id"],
+            "event_id_list": []
         }
         for each_event_id in db_query["event_id_list"][:ContentLimit.PUBLIC_EVENT_ID_INDEX]:
             find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": each_event_id})
@@ -289,15 +279,14 @@ class V1:
                     filtered_result["event_id_list"].append(each_event_id)
         return JSONResponse(status_code=200, content=filtered_result)
 
-    
     # TODO check is the event_id already being used
     @app.post("/v1/add/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_add_user_calendar_event(request: Request, person_id: str, pa_token: str=Header(None), req_body: json_body.CalendarEventObject=None):
+    def v1_add_user_calendar_event(request: Request, person_id: str, pa_token: str = Header(None), req_body: json_body.CalendarEventObject = None):
         mongoSession = requests.Session()
         print(dict(req_body))
         validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token, requests_session=mongoSession)
-        if validate_token_result != True: 
+        if validate_token_result != True:
             return validate_token_result
         """add the event detail"""
         new_event_id = int(str(int(datetime.now().timestamp())) + str(random_content.get_int(length=6)))
@@ -333,10 +322,10 @@ class V1:
             print(each_access_control)
             if (each_access_control.canonical_name != None) or (each_access_control.person_id != None):
                 new_event_entry["access_control_list"].append({
-                    "canonical_name": each_access_control.canonical_name, 
-                    "person_id": each_access_control.person_id, 
+                    "canonical_name": each_access_control.canonical_name,
+                    "person_id": each_access_control.person_id,
                     "premission_list": each_access_control.premission_list
-                    })
+                })
                 least_one_access_control = True
         if not least_one_access_control:
             return JSONResponse(status_code=400, content={"status": "person_id or canonical_name in access_control_list is required"})
@@ -345,11 +334,12 @@ class V1:
         print(insert_query)
         """add record to the index"""
         event_id_index = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, requests_session=mongoSession)
-        if event_id_index is None: 
+        if event_id_index is None:
             return JSONResponse(status_code=404, content={"status": "user calander_event_index not found"})
-        del event_id_index["_id"] # If not remove _id when replace will get error
+        del event_id_index["_id"]  # If not remove _id when replace will get error
         event_id_index["event_id_list"].append(new_event_id)
-        update_query = DocumentDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, document_body=event_id_index, requests_session=mongoSession)
+        update_query = DocumentDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, document_body=event_id_index,
+                                              requests_session=mongoSession)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
             pass
@@ -357,12 +347,11 @@ class V1:
             return JSONResponse(status_code=500, content={"status": "failed to insert index"})
         return JSONResponse(status_code=200, content={"status": "success", "event_id": new_event_id})
 
-
     @app.get("/v1/universal/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.BURST)
-    def v1_universal_user_calendar_event(request: Request, pa_token: Optional[str]=Header(""), event_id: int = 1234567890123456):
+    def v1_universal_user_calendar_event(request: Request, pa_token: Optional[str] = Header(""), event_id: int = 1234567890123456):
         mongoSession = requests.Session()
-        person_id=find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+        person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
         if len(str(event_id)) != 16:
             return JSONResponse(status_code=400, content={"status": "malformed event_id"})
         find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id}, requests_session=mongoSession)
@@ -374,10 +363,9 @@ class V1:
         else:
             return JSONResponse(status_code=403, content={"status": f"unable to access calendar_event {event_id} with current token"})
 
-
     @app.post("/v1/delete/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_delete_user_calendar_event(request: Request, pa_token: str=Header(None), event_id: int = 1234567890123456):
+    def v1_delete_user_calendar_event(request: Request, pa_token: str = Header(None), event_id: int = 1234567890123456):
         mongoSession = requests.Session()
         if len(str(event_id)) != 16:
             return JSONResponse(status_code=400, content={"status": "malformed event_id"})
@@ -398,60 +386,73 @@ class V1:
             return JSONResponse(status_code=404, content={"status": "calendar_event deleted but some error occured", "event_id": event_id})
         """remove from the index"""
         event_id_index = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, requests_session=mongoSession)
-        if event_id_index is None: 
+        if event_id_index is None:
             return JSONResponse(status_code=404, content={"status": "user calander_event_index not found"})
-        del event_id_index["_id"] # If not remove _id when replace will get error
+        del event_id_index["_id"]  # If not remove _id when replace will get error
         event_id_index["event_id_list"].remove(event_id)
-        update_query = DocumentDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, document_body=event_id_index, requests_session=mongoSession)
+        update_query = DocumentDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, document_body=event_id_index,
+                                              requests_session=mongoSession)
         print(update_query)
         if update_query["matchedCount"] != 1 and update_query["modifiedCount"] != 1:
             return JSONResponse(status_code=500, content={"status": "failed to update index but calendar_event still deleted", "event_id": event_id})
         return JSONResponse(status_code=200, content={"status": "deletion success", "event_id": event_id})
-
 
     @app.post("/v1/registration/user", tags=["V1"])
     @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
     def v1_registration_user(request: Request):
         return JSONResponse(status_code=200, content={"status": "success", "person_id": "", "token": ""})
 
-
     @app.get("/v1/user/person_id")
     @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
-    def v1_get_user_person_id(request: Request, pa_token: str=Header(None)):
+    def v1_get_user_person_id(request: Request, pa_token: str = Header(None)):
         check_result = find_person_id_with_token(auth_token=pa_token)
         if check_result != None:
             return JSONResponse(status_code=200, content={"status": "success", "person_id": check_result})
         else:
             return JSONResponse(status_code=400, content={"status": "failed"})
 
-
-    @app.post("/v1/auth/login/unsafe")
+    @app.post("/v1/auth/unsafe/login")
     @limiter.limit("3/10second")
-    def v1_auth_unsafe_login(request: Request, inputed: json_body.UnsafeLoginBody):
+    def v1_auth_unsafe_login(request: Request, name_and_password: json_body.UnsafeLoginBody):
         mongoSession = requests.Session()
-        q = DocumentDB.find_one("LoginV1", find_filter={"person_id": inputed.person_id}, requests_session=mongoSession)
-        if q == None:
-            return JSONResponse(status_code=403, content={"status": "not found or not match", "person_id": inputed.person_id, "password": inputed.password})
-        # There is no dp-while loop in Python
-        generated_token_not_dupelicated = False
-        while generated_token_not_dupelicated:
-            generated_token = "aaaaaaaa"
-            generated_token_not_dupelicated = True
-        token_record_query = DocumentDB.insert_one("TokenV1", document_body={}, requests_session=mongoSession)
+        credential_query = DocumentDB.find_one("LoginV1", find_filter={"person_id": name_and_password.person_id}, requests_session=mongoSession)
+        print(credential_query)
+        if credential_query is None:
+            return JSONResponse(status_code=403, content={"status": "not found or not match", "person_id": name_and_password.person_id, "password": name_and_password.password})
+        # the hash string generated using hashlib is lowercase
+        if not hashlib.sha512(name_and_password.password.encode("utf-8")).hexdigest() == credential_query["password_hash"]:
+            return JSONResponse(status_code=403, content={"status": "not found or not match", "person_id": name_and_password.person_id, "password": name_and_password.password})
+        # Checking if the same token already being use
+        # There is no do-while loop in Python
+        while True:
+            generated_token = random_content.generator_access_token(length=AuthConfig.TOKEN_LENGTH)
+            current_checking_query = DocumentDB.find_one("TokenV1", find_filter={"token_value": generated_token}, requests_session=mongoSession)
+            if current_checking_query is None:
+                break
+        token_record_query = DocumentDB.insert_one(
+            "TokenV1", document_body={
+                "structure_version": 2,
+                "person_id": name_and_password.person_id,
+                "token_value": generated_token,
+                "token_hash": hashlib.sha512(generated_token.encode("utf-8")).hexdigest()
+            },
+            requests_session=mongoSession)
         print(token_record_query)
-        return JSONResponse(status_code=200, content={"status": "success", "pa_token": generated_token})
+        if (token_record_query is not None) and ("insertedId" in token_record_query):
+            return JSONResponse(status_code=200, content={"status": "success", "pa_token": generated_token})
+        else:
+            return JSONResponse(status_code=500, content={"status": "token generated but failed to insert that token to database"})
 
-    
     @app.post("/v1/hosting/image", tags=["V1"])
     @limiter.limit(RateLimitConfig.MID_SIZE)
     def v1_upload_image(request: Request, image_file: bytes = File(..., max_length=ContentLimit.IMAGE_SIZE)):
         resp = image4io.uploadImage(
-                            authorization=image4io.calculate_basic_auth(
-                                api_key=json.load(open("app.token.json"))["image4io"]["api_key"], 
-                                api_secret=json.load(open("app.token.json"))["image4io"]["api_secret"]),
-                            local_file_bytes=image_file,
-                            local_file_name=image4io.generate_file_name(local_file_bytes=image_file),
-                            remote_folder_path=ServerConfig.IMAGEBED_FOLDER)
+            authorization=image4io.calculate_basic_auth(
+                api_key=json.load(open("app.token.json"))["image4io"]["api_key"],
+                api_secret=json.load(open("app.token.json"))["image4io"]["api_secret"]),
+            local_file_bytes=image_file,
+            local_file_name=image4io.generate_file_name(local_file_bytes=image_file),
+            remote_folder_path=ServerConfig.IMAGEBED_FOLDER)
         if resp.status_code != 200:
             return JSONResponse(status_code=500, content={"status": "image upload failed"})
         else:
@@ -474,6 +475,8 @@ class V1:
 
 if __name__ == "__main__":
     if sys.platform == "win32":
-        uvicorn.run("server:app", debug=True, reload=True, port=ServerConfig.PORT, host=ServerConfig.HOST, limit_concurrency=ServerConfig.CONCURRENCY, log_level=ServerConfig.LOG_LEVEL)
+        uvicorn.run("server:app", debug=True, reload=True, port=ServerConfig.PORT, host=ServerConfig.HOST, limit_concurrency=ServerConfig.CONCURRENCY,
+                    log_level=ServerConfig.LOG_LEVEL)
     else:
-        uvicorn.run("server:app", debug=True, reload=False, port=ServerConfig.PORT, host=ServerConfig.HOST, limit_concurrency=ServerConfig.CONCURRENCY, log_level=ServerConfig.LOG_LEVEL)
+        uvicorn.run("server:app", debug=True, reload=False, port=ServerConfig.PORT, host=ServerConfig.HOST, limit_concurrency=ServerConfig.CONCURRENCY,
+                    log_level=ServerConfig.LOG_LEVEL)
