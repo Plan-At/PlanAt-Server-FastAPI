@@ -4,6 +4,7 @@ from datetime import datetime
 START_TIME = datetime.now()
 PROGRAM_HASH = hashlib.md5(open(__file__, mode="rb").read()).hexdigest()
 
+
 class ServerConfig:
     PORT = 8000
     HOST = "127.0.0.1"
@@ -18,6 +19,7 @@ class ServerConfig:
 class AuthConfig:
     PERSON_ID_LENGTH = 10
     TOKEN_LENGTH = 8
+
 
 class ContentLimit:
     DISPLAY_NAME_LENGTH = 20
@@ -74,9 +76,11 @@ class MediaAssets:
 TODO change the following key
 token
 """
+
+
 class DummyData:
-    USER_PROFILE = {
-        "structure_version": 2,
+    USER_PROFILE_5 = {
+        "structure_version": 5,
         "person_id": "1234567890",
         "metadata": {
             "uuid": "6cb63b46-00ce-4433-a7e1-c839e94c1315",
@@ -194,12 +198,12 @@ class DummyData:
                     },
                     "display_name": "work",
                     "description": "endless work",
-                    "type_list": [{"type_id": "","name": "work"}],
+                    "type_list": [{"type_id": "", "name": "work"}],
                     "tag_list": [{"tag_id": "", "name": "mandatory"}, {"tag_id": "", "name": "not fun"}]
                 }
             ]
-        }
-    
+    }
+
     USER_CALENDAR_EVENT_INDEX = {
         "structure_version": 1,
         "person_id": "1234567890",
@@ -223,6 +227,93 @@ class DummyData:
         "password_hash": "12B03226A6D8BE9C6E8CD5E55DC6C7920CAAA39DF14AAB92D5E3EA9340D1C8A4D3D0B8E4314F1F6EF131BA4BF1CEB9186AB87C801AF0D5C95B1BEFB8CEDAE2B9",
         "password_length": 8,
     }
+
+    # For directly compatible with vanilla JSON, do not add comma after each last item
+    # Abandoned some not very essential item, but possible to add back later
+    USER_PROFILE_6 = {
+        "structure_version": 6,
+        "person_id": "1234567890",
+        "metadata": {
+            "uuid": "6cb63b46-00ce-4433-a7e1-c839e94c1315",
+            "seed": "56467484686",
+            "registration_timestamp_int": "1646081914"
+        },
+        "naming": {
+            "unique_name": "abced",
+            "display_name_partial": "Hello",
+            "display_name_full": "HelloWorld",
+            "localization": [],
+            "historical_name": [],
+            "searchable": True
+        },
+        "picture": {
+            "avatar": {
+                "regular": {
+                    "image_id": "",
+                    "image_url": "https://cdn.statically.io/avatar/s=64/HW",
+                },
+                "original": {
+                    "image_id": "",
+                    "image_url": "https://cdn.statically.io/avatar/s=128/HW",
+                }
+            },
+            "background": {
+                "regular": {
+                    "image_id": "",
+                    "image_url": "https://cdn.statically.io/og/Hello%20World.jpg",
+                },
+                "original": {
+                    "image_id": "",
+                    "image_url": "https://cdn.statically.io/og/Hello%20World.jpg",
+                }
+            }
+        },
+        "status": {
+            "current_status": "Developing",
+            "until": {
+                "text": "Extraday 13AM",
+                "timestamp_int": 0,
+                "timezone_name": "Mars",
+                "timezone_offset": 0
+            },
+            "default_status": "Alive"
+        },
+        "about": {
+            "short_description": "I",
+            "full_description": "I'm here",
+            "company": "",
+            "job_title": ""
+        },
+        "contact_method_collection": {
+            "email_primary": {
+                "domain_name": "example.com",
+                "full_address": "example@example.com"
+            },
+            "phone": {
+                "country_code": "",
+                "regular_number": "1234567890"
+            },
+            "physical_address": {
+                "street_address": "",
+                "city": "",
+                "province": "",
+                "country": "",
+                "continent": "",
+                "post_code": ""
+            },
+            "twitter": {
+                "user_name": "",
+                "user_handle": "",
+                "user_id": ""
+            },
+            "github": {
+                "user_name": "",
+                "user_handle": "",
+                "user_id": ""
+            }
+        }
+    }
+
 
 class ExampleData:
     HOSTING_IMAGE = {

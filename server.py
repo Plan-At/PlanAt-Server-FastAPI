@@ -118,7 +118,7 @@ class DummyMethod:
     @app.get("/dummy/user/profile", tags=["Dummy Data"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def dummy_user_profile(request: Request):
-        return DummyData.USER_PROFILE
+        return DummyData.USER_PROFILE_5
 
     @app.get("/dummy/user/calendar", tags=["Dummy Data"])
     @limiter.limit(RateLimitConfig.SOME_DB)
