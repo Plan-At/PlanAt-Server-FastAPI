@@ -442,6 +442,25 @@ class V1:
         else:
             return JSONResponse(status_code=500, content={"status": "token generated but failed to insert that token to database"})
 
+    @app.post("/v1/auth/unsafe/logout")
+    @limiter.limit("3/10second")
+    def v1_auth_unsafe_logout(request: Request, pa_token: str = Header(None)):
+        mongoSession = requests.Session()
+        # Lack of extra verification
+        # But just assuming the token not leaking to hecker or any bad actors
+        token_deletion_query = DocumentDB.delete_one(
+            "TokenV1",
+            find_filter={"token_value": pa_token},
+            requests_session=mongoSession)
+        print(token_deletion_query)
+        if token_deletion_query is None:
+            return JSONResponse(status_code=500, content={"status": "failed to remove the old token to database"})
+        elif token_deletion_query["deletedCount"] == 0:
+            return JSONResponse(status_code=404, content={"status": "token not found", "pa_token": pa_token})
+        elif token_deletion_query["deletedCount"] == 1:
+            return JSONResponse(status_code=200, content={"status": "deleted", "pa_token": pa_token})
+
+
     @app.post("/v1/hosting/image", tags=["V1"])
     @limiter.limit(RateLimitConfig.MID_SIZE)
     def v1_upload_image(request: Request, image_file: bytes = File(..., max_length=ContentLimit.IMAGE_SIZE)):

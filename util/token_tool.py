@@ -3,6 +3,7 @@ import util.mongodb_data_api as DocumentDB
 from constant import AuthConfig
 import requests
 
+
 def check_token_exist(auth_token: str):
     if len(auth_token) != AuthConfig.TOKEN_LENGTH:
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed token"})
@@ -10,6 +11,7 @@ def check_token_exist(auth_token: str):
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "token not found"})
     return True
+
 
 def match_token_with_person_id(person_id: str, auth_token: str, requests_session=requests.Session()):
     """
@@ -28,6 +30,7 @@ def match_token_with_person_id(person_id: str, auth_token: str, requests_session
     if db_query["person_id"] != person_id:
         return JSONResponse(status_code=403, content={"status": "invalid token for this person_id"})
     return True
+
 
 def find_person_id_with_token(auth_token: str, requests_session=requests.Session()):
     """

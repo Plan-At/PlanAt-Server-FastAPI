@@ -40,7 +40,7 @@ def delete_one(target_collection: str, find_filter: dict, target_db: str=DB_NAME
         "Connection": "Keep-Alive",
     }
     response = requests.request("POST", url, headers=headers, data=payload)
-    return json.loads(response.text)
+    return response.json()
 
 
 def insert_one(target_collection: str, document_body: dict, target_db: str=DB_NAME, requests_session=requests.Session()):
@@ -58,7 +58,7 @@ def insert_one(target_collection: str, document_body: dict, target_db: str=DB_NA
         "Connection": "Keep-Alive",
     }
     response = requests_session.request("POST", url, headers=headers, data=payload)
-    return json.loads(response.text)
+    return response.json()
 
 
 def replace_one(target_collection: str, find_filter: dict, document_body: dict, target_db: str=DB_NAME, requests_session=requests.Session()):
@@ -77,4 +77,4 @@ def replace_one(target_collection: str, find_filter: dict, document_body: dict, 
         "Connection": "Keep-Alive",
     }
     response = requests_session.request("POST", url, headers=headers, data=payload)
-    return json.loads(response.text)
+    return response.json()
