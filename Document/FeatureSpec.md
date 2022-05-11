@@ -1,25 +1,26 @@
 # Feature Specification
 
 ### Feature Information
-|||
-|---|---|
-|Feature Name|Plan-At Server|
-|Area|Backend|
-|Related Features|LibGdx|
-|Requirement Specs||
-|Document Location|https://github.com/Plan-At/PlanAt-Server-FastAPI|
-|Spec Status|Draft|
+| Key               | Value                                            |
+|-------------------|--------------------------------------------------|
+| Feature Name      | Plan-At Server                                   |
+| Area              | Backend                                          |
+| Related Features  | REST API                                         |
+| Requirement Specs ||
+| Document Location | https://github.com/Plan-At/PlanAt-Server-FastAPI |
+| Spec Status       | Draft                                            |
 
 ### Contact Information
-|Role|Name|
-|---|---|
-|Manager|Chad Magendanz|
-|Developer||
+| Role      | Name           |
+|-----------|----------------|
+| Manager   | Chad Magendanz |
+| Developer ||
 
 ### Revision Summary
-|Author|Date|Version|Comment|
-|---|---|---|---|
-|-|04/19/2022|Initial Draft|Created this page|
+| Author | Date       | Version       | Comment                         |
+|--------|------------|---------------|---------------------------------|
+| -      | 04/19/2022 | Initial Draft | Created this page               |
+| -      | 05/11/2022 |               | Update to add more major points |
 
 ## Functional Specification
 backend server for Plan-At. Developed with the idea of "API First" to allow multiple variation of frontend/client
@@ -31,17 +32,27 @@ backend server for Plan-At. Developed with the idea of "API First" to allow mult
 Sections of the project:
 
 1. Framework Selection:
-    For the framework, we wanted a framework that's easy to use and shorten developemnt cycle; Python can produce some results with fewset lines of code; the FastAPI was created with the idea of "Asynchronous Server Gateway Interface", and as its name, it have relative better performance than other Python based web framework, and we don't really need this server to render actual HTML page. As a result, the dev solely decide to choose FastAPI and set up an enviornment and repo to began development.
+    For the framework, we wanted a framework that's easy to use and shorten development cycle; Python can produce some results with fewset lines of code; the FastAPI was created with the idea of "Asynchronous Server Gateway Interface", and as its name, it have relative better performance than other Python based web framework, and we don't really need this server to render actual HTML page. As a result, the dev solely decide to choose FastAPI and set up an enviornment and repo to began development.
 2. Project Breakdown: 
-    Our next step was to break down our project into multiple packages, and the priority is provide some mock  data for the frontend team. 
+    Our next step was to break down our project into multiple packages, and the priority is to provide some mock data for the frontend team. 
 
 ## Modules
 ### User Profile:
-
 ### Calendar Event:
 
+## System Design
+### Network Structure
+### Security Measurement
 
 ## Boneyard
+### Delayed Features
+#### Mobile Client (Portrait Interface)
+While resizing the text and image isn't hard, but is where to place elements: For example the navigation rail, available to put on the left side in landscape mode, but in mobile must place on the bottom of screen
+#### Tagging
+Might not a significant feature
+
+### Permanently Death
 #### SQL Database
+
 
  
