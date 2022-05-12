@@ -17,6 +17,7 @@ def public_user_profile(input_json: dict):
             return_json["contact_method_list"].append(contact_method)
     return return_json
 
+
 def private_user_profile(input_json: dict):
     print(input_json)
     return_json = {
@@ -32,7 +33,8 @@ def private_user_profile(input_json: dict):
         "public_team_list": input_json["public_team_list"]
     }
     return return_json
-    
+
+
 def private_user_calendar_event_index(input_json: dict):
     print(input_json)
     return_json = {
@@ -42,8 +44,9 @@ def private_user_calendar_event_index(input_json: dict):
     }
     return return_json
 
-def universal_user_calendar_event(input_json: dict, person_id="", required_premission_list=["read_full", "edit_full", "delete"]):
-    # Can also be used to verify does user have suffient premission
+
+def universal_user_calendar_event(input_json: dict, required_permission_list: list, person_id=""):
+    # Can also be used to verify does user have sufficient permission
     print(input_json)
     return_json = {
         "structure_version": input_json["structure_version"],
@@ -64,11 +67,11 @@ def universal_user_calendar_event(input_json: dict, person_id="", required_premi
         elif each_owner["person_id"] == person_id:
             is_controller = True
             print("event person_id matched")
-        have_premission = False
+        have_permission = False
         if is_controller:
-            for each_premisson in required_premission_list:
-                if each_premisson in each_owner["premission_list"]:
-                    have_premission = True
-        if have_premission:
+            for each_permission in required_permission_list:
+                if each_permission in each_owner["permission_list"]:
+                    have_permission = True
+        if have_permission:
             return return_json
     return False

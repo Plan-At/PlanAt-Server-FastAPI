@@ -118,7 +118,7 @@ class DummyMethod:
     @app.get("/dummy/user/profile", tags=["Dummy Data"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def dummy_user_profile(request: Request):
-        return DummyData.USER_PROFILE
+        return DummyData.USER_PROFILE_5
 
     @app.get("/dummy/user/calendar", tags=["Dummy Data"])
     @limiter.limit(RateLimitConfig.SOME_DB)
@@ -324,7 +324,7 @@ class V1:
                 new_event_entry["access_control_list"].append({
                     "canonical_name": each_access_control.canonical_name,
                     "person_id": each_access_control.person_id,
-                    "premission_list": each_access_control.premission_list
+                    "permission_list": each_access_control.permission_list
                 })
                 least_one_access_control = True
         if not least_one_access_control:
@@ -335,7 +335,7 @@ class V1:
         """add record to the index"""
         event_id_index = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, requests_session=mongoSession)
         if event_id_index is None:
-            return JSONResponse(status_code=404, content={"status": "user calander_event_index not found"})
+            return JSONResponse(status_code=404, content={"status": "user calender_event_index not found"})
         del event_id_index["_id"]  # If not remove _id when replace will get error
         event_id_index["event_id_list"].append(new_event_id)
         update_query = DocumentDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, document_body=event_id_index,
@@ -357,7 +357,7 @@ class V1:
         find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id}, requests_session=mongoSession)
         if find_query == None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
-        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id)
+        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id, required_permission_list=["read_full", "edit_full", "delete"])
         if processed_find_query != False:
             return JSONResponse(status_code=200, content=processed_find_query)
         else:
@@ -371,23 +371,23 @@ class V1:
             return JSONResponse(status_code=400, content={"status": "malformed event_id"})
         person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
         find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
-        if find_query == None:
+        if find_query is None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
-        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id)
+        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id, required_permission_list=["read_full", "edit_full", "delete"])
         if processed_find_query == False:
             return JSONResponse(status_code=403, content={"status": f"unable to delete calendar_event {event_id} with current token"})
         # else:
-        #     return JSONResponse(status_code=200, content={"status": "have sufficient premisson but CalendarEvent not deleted yet"})
+        #     return JSONResponse(status_code=200, content={"status": "have sufficient permission but CalendarEvent not deleted yet"})
         deletion_query = DocumentDB.delete_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id}, requests_session=mongoSession)
         print(deletion_query)
-        if deletion_query == None:
+        if deletion_query is None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found when trying to delete", "event_id": event_id})
         if deletion_query["deletedCount"] != 1:
-            return JSONResponse(status_code=404, content={"status": "calendar_event deleted but some error occured", "event_id": event_id})
+            return JSONResponse(status_code=404, content={"status": "calendar_event deleted but some error occurred", "event_id": event_id})
         """remove from the index"""
         event_id_index = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, requests_session=mongoSession)
         if event_id_index is None:
-            return JSONResponse(status_code=404, content={"status": "user calander_event_index not found"})
+            return JSONResponse(status_code=404, content={"status": "user calendar_event_index not found"})
         del event_id_index["_id"]  # If not remove _id when replace will get error
         event_id_index["event_id_list"].remove(event_id)
         update_query = DocumentDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id}, document_body=event_id_index,

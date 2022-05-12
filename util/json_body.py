@@ -1,5 +1,6 @@
-from typing import Dict, List, Optional
+from typing import  List, Optional
 from pydantic import BaseModel
+
 
 class TimeObject(BaseModel):
     text: str
@@ -17,15 +18,17 @@ class TagObject(BaseModel):
     tag_id: str
     name: str
 
+
 class ACObject(BaseModel):
     canonical_name: Optional[str]
     person_id: Optional[str]
-    premission_list: List[str] = ["read_full", "edit_full", "delete"]
-    
+    permission_list: List[str] = ["read_full", "edit_full", "delete"]
+
 
 """
 Is possible to stack multiple BaseModel class into one
 """
+
 
 class RequestUserProfile(BaseModel):
     person_id: str
@@ -53,8 +56,10 @@ class CalendarEventObject(BaseModel):
     type_list: List[TypeObject]
     tag_list: List[TagObject]
 
+
 class RegistrationUser(BaseModel):
     name: str
+
 
 class UnsafeLoginBody(BaseModel):
     person_id: str
