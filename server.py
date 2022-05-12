@@ -173,16 +173,6 @@ class V1:
             return JSONResponse(status_code=403, content={"status": "user not found"})
         return JSONFilter.private_user_profile(input_json=db_query)
 
-    @app.post("/v1/update/user/profile", tags=["V1"])
-    @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile(request: Request, person_id: str, pa_token: str = Header(None)):
-        validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
-        if validate_token_result != True:
-            return validate_token_result
-        if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
-            return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-        return JSONResponse(status_code=501, content={"status": "not implemented"})
-
     @app.post("/v1/update/user/profile/name/display_name", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def v1_update_user_profile_name_displayName(request: Request, person_id: str, pa_token: str = Header(None), request_body: json_body.UpdateUserProfileName_DisplayName = None):
@@ -242,6 +232,88 @@ class V1:
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
             return JSONResponse(status_code=200, content={"status": "success"})
         return JSONResponse(status_code=500, content={"status": "failed"})
+
+    # All of them are copy and pasted
+    @app.post("/v1/update/user/profile/contact/email_primary", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_update_user_profile_contact_email_primary(request: Request, full_address:str, pa_token: str = Header(None)):
+        mongoSession = requests.Session()
+        person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+        if person_id == "":
+            return JSONResponse(status_code=403, content={"status": "user not found"})
+        old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id}, requests_session=mongoSession)
+        if old_profile is None:
+            return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
+        del old_profile["_id"]
+        old_profile["contact_method_collection"]["email_primary"]["full_address"] = full_address
+        old_profile["contact_method_collection"]["email_primary"]["domain_name"] = full_address.split("@")[1]
+        update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile, requests_session=mongoSession)
+        print(update_query)
+        if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
+            return JSONResponse(status_code=200, content={"status": "success", "full_address": full_address})
+        return JSONResponse(status_code=500, content={"status": "failed to update"})
+
+    @app.post("/v1/update/user/profile/contact/phone", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_update_user_profile_contact_phone(request: Request, country_code:str, regular_number:str, pa_token: str = Header(None)):
+        mongoSession = requests.Session()
+        person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+        if person_id == "":
+            return JSONResponse(status_code=403, content={"status": "user not found"})
+        old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id}, requests_session=mongoSession)
+        if old_profile is None:
+            return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
+        del old_profile["_id"]
+        old_profile["contact_method_collection"]["phone"]["country_code"] = country_code
+        old_profile["contact_method_collection"]["phone"]["regular_number"] = regular_number
+        update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile, requests_session=mongoSession)
+        print(update_query)
+        if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
+            return JSONResponse(status_code=200, content={"status": "success", "country_code":country_code, "regular_number": regular_number})
+        return JSONResponse(status_code=500, content={"status": "failed to update"})
+
+    @app.post("/v1/update/user/profile/contact/physical_address", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_update_user_profile_contact_physical_address(request: Request, street_address:str, city:str, province:str, country:str, continent:str, post_code:str, pa_token: str = Header(None)):
+        mongoSession = requests.Session()
+        person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+        if person_id == "":
+            return JSONResponse(status_code=403, content={"status": "user not found"})
+        old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id}, requests_session=mongoSession)
+        if old_profile is None:
+            return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
+        del old_profile["_id"]
+        old_profile["contact_method_collection"]["physical_address"]["street_address"] = street_address
+        old_profile["contact_method_collection"]["physical_address"]["city"] = city
+        old_profile["contact_method_collection"]["physical_address"]["province"] = province
+        old_profile["contact_method_collection"]["physical_address"]["country"] = country
+        old_profile["contact_method_collection"]["physical_address"]["continent"] = continent
+        old_profile["contact_method_collection"]["physical_address"]["post_code"] = post_code
+        update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile, requests_session=mongoSession)
+        print(update_query)
+        if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
+            return JSONResponse(status_code=200, content={"status": "success", "street_address": street_address, "city": city, "province": province, "country":country, "continent": continent, "post_code": post_code})
+        return JSONResponse(status_code=500, content={"status": "failed to update"})
+
+    @app.post("/v1/update/user/profile/contact/twitter", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_update_user_profile_contact_twitter(request: Request, user_name:str, user_handle:str, user_id:str, pa_token: str = Header(None)):
+        mongoSession = requests.Session()
+        person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+        if person_id == "":
+            return JSONResponse(status_code=403, content={"status": "user not found"})
+        old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id}, requests_session=mongoSession)
+        if old_profile is None:
+            return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
+        del old_profile["_id"]
+        old_profile["contact_method_collection"]["twitter"]["user_name"] = user_name
+        old_profile["contact_method_collection"]["twitter"]["user_handle"] = user_handle
+        old_profile["contact_method_collection"]["twitter"]["user_id"] = user_id
+        update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile, requests_session=mongoSession)
+        print(update_query)
+        if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
+            return JSONResponse(status_code=200, content={"status": "success", "user_name":user_name, "user_handle": user_handle, "user_id": user_id})
+        return JSONResponse(status_code=500, content={"status": "failed to update"})
 
     @app.get("/v1/private/user/calendar/event/index", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
