@@ -243,28 +243,27 @@ class DummyData:
             "display_name_partial": "Hello",
             "display_name_full": "HelloWorld",
             "localization": [],
-            "historical_name": [],
-            "searchable": True
+            "historical_name": []
         },
         "picture": {
             "avatar": {
                 "regular": {
                     "image_id": "",
-                    "image_url": "https://cdn.statically.io/avatar/s=64/HW",
+                    "image_url": "https://cdn.statically.io/avatar/s=64/HW"
                 },
                 "original": {
                     "image_id": "",
-                    "image_url": "https://cdn.statically.io/avatar/s=128/HW",
+                    "image_url": "https://cdn.statically.io/avatar/s=128/HW"
                 }
             },
             "background": {
                 "regular": {
                     "image_id": "",
-                    "image_url": "https://cdn.statically.io/og/Hello%20World.jpg",
+                    "image_url": "https://cdn.statically.io/og/Hello%20World.jpg"
                 },
                 "original": {
                     "image_id": "",
-                    "image_url": "https://cdn.statically.io/og/Hello%20World.jpg",
+                    "image_url": "https://cdn.statically.io/og/Hello%20World.jpg"
                 }
             }
         },
