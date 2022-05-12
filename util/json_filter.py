@@ -1,4 +1,4 @@
-def public_user_profile(input_json: dict):
+def public_user_profile_5(input_json: dict):
     print(input_json)
     return_json = {
         "structure_version": input_json["structure_version"],
@@ -18,7 +18,7 @@ def public_user_profile(input_json: dict):
     return return_json
 
 
-def private_user_profile(input_json: dict):
+def private_user_profile_5(input_json: dict):
     print(input_json)
     return_json = {
         "structure_version": input_json["structure_version"],
@@ -31,6 +31,34 @@ def private_user_profile(input_json: dict):
         "public_tag_list": input_json["public_tag_list"],
         "public_friend_list": input_json["public_friend_list"],
         "public_team_list": input_json["public_team_list"]
+    }
+    return return_json
+
+
+def public_user_profile(input_json: dict):
+    print(input_json)
+    return_json = {
+        "structure_version": input_json["structure_version"],
+        "person_id": input_json["person_id"],
+        "naming": input_json["naming"],
+        "picture": input_json["picture"],
+        "status": input_json["status"],
+        "about": input_json["about"],
+        "contact_method_collection": input_json["contact_method_collection"]
+    }
+    return return_json
+
+
+def private_user_profile(input_json: dict):
+    print(input_json)
+    return_json = {
+        "structure_version": input_json["structure_version"],
+        "person_id": input_json["person_id"],
+        "naming": input_json["naming"],
+        "picture": input_json["picture"],
+        "status": input_json["status"],
+        "about": input_json["about"],
+        "contact_method_collection": input_json["contact_method_collection"]
     }
     return return_json
 

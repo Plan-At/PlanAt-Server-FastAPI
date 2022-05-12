@@ -349,7 +349,7 @@ class V1:
 
     @app.get("/v1/universal/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.BURST)
-    def v1_universal_user_calendar_event(request: Request, pa_token: Optional[str] = Header(""), event_id: int = 1234567890123456):
+    def v1_universal_user_calendar_event(request: Request, event_id: int, pa_token: Optional[str] = Header("")):
         mongoSession = requests.Session()
         person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
         if len(str(event_id)) != 16:
@@ -365,7 +365,7 @@ class V1:
 
     @app.post("/v1/delete/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_delete_user_calendar_event(request: Request, pa_token: str = Header(None), event_id: int = 1234567890123456):
+    def v1_delete_user_calendar_event(request: Request, event_id: int, pa_token: str = Header(None)):
         mongoSession = requests.Session()
         if len(str(event_id)) != 16:
             return JSONResponse(status_code=400, content={"status": "malformed event_id"})
@@ -402,7 +402,7 @@ class V1:
     def v1_registration_user(request: Request):
         return JSONResponse(status_code=200, content={"status": "success", "person_id": "", "token": ""})
 
-    @app.get("/v1/user/person_id")
+    @app.get("/v1/user/person_id", tags=["V1"])
     @limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
     def v1_get_user_person_id(request: Request, pa_token: str = Header(None)):
         check_result = find_person_id_with_token(auth_token=pa_token)
@@ -411,7 +411,7 @@ class V1:
         else:
             return JSONResponse(status_code=400, content={"status": "failed"})
 
-    @app.post("/v1/auth/unsafe/login")
+    @app.post("/v1/auth/unsafe/login", tags=["V1"])
     @limiter.limit("3/10second")
     def v1_auth_unsafe_login(request: Request, name_and_password: json_body.UnsafeLoginBody):
         mongoSession = requests.Session()
@@ -442,7 +442,7 @@ class V1:
         else:
             return JSONResponse(status_code=500, content={"status": "token generated but failed to insert that token to database"})
 
-    @app.post("/v1/auth/unsafe/logout")
+    @app.post("/v1/auth/unsafe/logout", tags=["V1"])
     @limiter.limit("3/10second")
     def v1_auth_unsafe_logout(request: Request, pa_token: str = Header(None)):
         mongoSession = requests.Session()
