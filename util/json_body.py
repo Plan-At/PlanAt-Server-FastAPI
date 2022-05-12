@@ -4,19 +4,19 @@ from pydantic import BaseModel
 
 class TimeObject(BaseModel):
     text: str
-    timestamp: int
+    timestamp_int: int
     timezone_name: str
     timezone_offset: int
 
 
 class TypeObject(BaseModel):
     type_id: str
-    name: str
+    display_name: str
 
 
 class TagObject(BaseModel):
     tag_id: str
-    name: str
+    display_name: str
 
 
 class ACObject(BaseModel):
