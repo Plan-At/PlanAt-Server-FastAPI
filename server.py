@@ -1,31 +1,29 @@
-import json
+from typing import Optional, List
 import sys
+import json
 from datetime import datetime
 import time
-
+import hashlib
 import requests
+
 import uvicorn
+from starlette.requests import Request
+from starlette.responses import Response, RedirectResponse
 from fastapi import FastAPI, Header, File, Query
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
-from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse
-import hashlib
-from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, MediaAssets, ContentLimit
+
 import util.mongodb_data_api as DocumentDB
 import util.json_filter as JSONFilter
 from util.token_tool import match_token_with_person_id, check_token_exist, find_person_id_with_token
-from util import json_body, random_content
-from typing import Optional, List
-from util import image4io
-from constant import START_TIME, PROGRAM_HASH
+from util import json_body, random_content, image4io
+from constant import DummyData, ServerConfig, AuthConfig, RateLimitConfig, MediaAssets, ContentLimit, START_TIME, PROGRAM_HASH
 
 app = FastAPI()
 
 limiter = Limiter(key_func=get_remote_address)
-
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
