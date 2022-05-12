@@ -5,7 +5,7 @@ import time
 
 import requests
 import uvicorn
-from fastapi import FastAPI, Header, File
+from fastapi import FastAPI, Header, File, Query
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -18,7 +18,7 @@ import util.mongodb_data_api as DocumentDB
 import util.json_filter as JSONFilter
 from util.token_tool import match_token_with_person_id, check_token_exist, find_person_id_with_token
 from util import json_body, random_content
-from typing import Optional
+from typing import Optional, List
 from util import image4io
 from constant import START_TIME, PROGRAM_HASH
 
@@ -362,6 +362,33 @@ class V1:
             return JSONResponse(status_code=200, content=processed_find_query)
         else:
             return JSONResponse(status_code=403, content={"status": f"unable to access calendar_event {event_id} with current token"})
+
+    @app.get("/v1/universal/user/calendar/multipleEvent", tags=["V1"])
+    @limiter.limit(RateLimitConfig.BURST)
+    def v1_universal_user_calendar_event(request: Request, event_id_list: List[int] = Query(None), pa_token: Optional[str] = Header("")):
+        print(event_id_list)
+        mongoSession = requests.Session()
+        person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+        result_calendar_event = []
+        for event_id in event_id_list:
+            try:
+                if len(str(event_id)) != 16:
+                    result_calendar_event.append({"status": "malformed event_id", "event_id": event_id})
+                else:
+                    find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id}, requests_session=mongoSession)
+                    if find_query is None:
+                        result_calendar_event.append({"status": "calendar_event not found", "event_id": event_id})
+                    processed_find_query = JSONFilter.universal_user_calendar_event(
+                        input_json=find_query,
+                        person_id=person_id,
+                        required_permission_list=["read_full", "edit_full", "delete"])
+                    if processed_find_query != False:
+                        result_calendar_event.append(processed_find_query)
+            except (Exception, OSError, IOError) as e:
+                print(e)
+                result_calendar_event.append({"status": str(e), "event_id": event_id})
+        return JSONResponse(status_code=200, content={"status": "finished", "result": result_calendar_event})
+
 
     @app.post("/v1/delete/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
