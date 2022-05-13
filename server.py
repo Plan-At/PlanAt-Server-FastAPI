@@ -236,7 +236,7 @@ class V1:
     # All of them are copy and pasted
     @app.post("/v1/update/user/profile/contact/email_primary", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_contact_email_primary(request: Request, full_address:str, pa_token: str = Header(None)):
+    def v1_update_user_profile_contact_email_primary(request: Request, full_address: str, pa_token: str = Header(None)):
         mongoSession = requests.Session()
         person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
         if person_id == "":
@@ -255,7 +255,7 @@ class V1:
 
     @app.post("/v1/update/user/profile/contact/phone", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_contact_phone(request: Request, country_code:str, regular_number:str, pa_token: str = Header(None)):
+    def v1_update_user_profile_contact_phone(request: Request, country_code: str, regular_number: str, pa_token: str = Header(None)):
         mongoSession = requests.Session()
         person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
         if person_id == "":
@@ -269,12 +269,12 @@ class V1:
         update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile, requests_session=mongoSession)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
-            return JSONResponse(status_code=200, content={"status": "success", "country_code":country_code, "regular_number": regular_number})
+            return JSONResponse(status_code=200, content={"status": "success", "country_code": country_code, "regular_number": regular_number})
         return JSONResponse(status_code=500, content={"status": "failed to update"})
 
     @app.post("/v1/update/user/profile/contact/physical_address", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_contact_physical_address(request: Request, street_address:str, city:str, province:str, country:str, continent:str, post_code:str, pa_token: str = Header(None)):
+    def v1_update_user_profile_contact_physical_address(request: Request, street_address: str, city: str, province: str, country: str, continent: str, post_code: str, pa_token: str = Header(None)):
         mongoSession = requests.Session()
         person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
         if person_id == "":
@@ -292,12 +292,12 @@ class V1:
         update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile, requests_session=mongoSession)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
-            return JSONResponse(status_code=200, content={"status": "success", "street_address": street_address, "city": city, "province": province, "country":country, "continent": continent, "post_code": post_code})
+            return JSONResponse(status_code=200, content={"status": "success", "street_address": street_address, "city": city, "province": province, "country": country, "continent": continent, "post_code": post_code})
         return JSONResponse(status_code=500, content={"status": "failed to update"})
 
     @app.post("/v1/update/user/profile/contact/twitter", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_update_user_profile_contact_twitter(request: Request, user_name:str, user_handle:str, user_id:str, pa_token: str = Header(None)):
+    def v1_update_user_profile_contact_twitter(request: Request, user_name: str, user_handle: str, user_id: str, pa_token: str = Header(None)):
         mongoSession = requests.Session()
         person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
         if person_id == "":
@@ -312,7 +312,7 @@ class V1:
         update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile, requests_session=mongoSession)
         print(update_query)
         if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
-            return JSONResponse(status_code=200, content={"status": "success", "user_name":user_name, "user_handle": user_handle, "user_id": user_id})
+            return JSONResponse(status_code=200, content={"status": "success", "user_name": user_name, "user_handle": user_handle, "user_id": user_id})
         return JSONResponse(status_code=500, content={"status": "failed to update"})
 
     @app.get("/v1/private/user/calendar/event/index", tags=["V1"])
@@ -418,7 +418,7 @@ class V1:
 
     @app.post("/v1/update/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
-    def v1_add_user_calendar_event(request: Request, event_id:str, req_body: json_body.CalendarEventObject, pa_token:str = Header(None)):
+    def v1_add_user_calendar_event(request: Request, event_id: int, req_body: json_body.CalendarEventObject, pa_token: str = Header(None)):
         mongoSession = requests.Session()
         print(dict(req_body))
         # Check user input
@@ -433,6 +433,7 @@ class V1:
         print(find_query)
         if find_query == None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
+        # The event_id in DB is int
         processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id, required_permission_list=["edit_full"])
         if processed_find_query == False:
             return JSONResponse(status_code=403, content={"status": "unable to modify current calendar_event with current token", "event_id": event_id})
@@ -490,7 +491,7 @@ class V1:
         find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id}, requests_session=mongoSession)
         if find_query == None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
-        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id, required_permission_list=["read_full", "edit_full", "delete"])
+        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id, required_permission_list=["read_full"])
         if processed_find_query != False:
             return JSONResponse(status_code=200, content=processed_find_query)
         else:
@@ -514,14 +515,13 @@ class V1:
                     processed_find_query = JSONFilter.universal_user_calendar_event(
                         input_json=find_query,
                         person_id=person_id,
-                        required_permission_list=["read_full", "edit_full", "delete"])
+                        required_permission_list=["read_full"])
                     if processed_find_query != False:
                         result_calendar_event.append(processed_find_query)
             except (Exception, OSError, IOError) as e:
                 print(e)
                 result_calendar_event.append({"status": str(e), "event_id": event_id})
         return JSONResponse(status_code=200, content={"status": "finished", "result": result_calendar_event})
-
 
     @app.post("/v1/delete/user/calendar/event", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
@@ -533,7 +533,7 @@ class V1:
         find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
         if find_query is None:
             return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
-        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id, required_permission_list=["read_full", "edit_full", "delete"])
+        processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id, required_permission_list=["delete"])
         if processed_find_query == False:
             return JSONResponse(status_code=403, content={"status": f"unable to delete calendar_event {event_id} with current token"})
         # else:
@@ -619,7 +619,6 @@ class V1:
             return JSONResponse(status_code=404, content={"status": "token not found", "pa_token": pa_token})
         elif token_deletion_query["deletedCount"] == 1:
             return JSONResponse(status_code=200, content={"status": "deleted", "pa_token": pa_token})
-
 
     @app.post("/v1/hosting/image", tags=["V1"])
     @limiter.limit(RateLimitConfig.MID_SIZE)
