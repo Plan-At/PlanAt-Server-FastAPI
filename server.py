@@ -315,6 +315,27 @@ class V1:
             return JSONResponse(status_code=200, content={"status": "success", "user_name": user_name, "user_handle": user_handle, "user_id": user_id})
         return JSONResponse(status_code=500, content={"status": "failed to update"})
 
+    @app.post("/v1/update/user/profile/picture", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_update_user_profile_picture(request: Request, image_url: str, target: str = "avatar", pa_token: str = Header(None)):
+        mongoSession = requests.Session()
+        person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+        if person_id == "":
+            return JSONResponse(status_code=403, content={"status": "user not found"})
+        old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id}, requests_session=mongoSession)
+        if old_profile is None:
+            return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
+        del old_profile["_id"]
+        if target == "avatar":
+            old_profile["picture"]["avatar"]["original"]["image_url"] = image_url
+        elif target == "background":
+            old_profile["picture"]["background"]["original"]["image_url"] = image_url
+        update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id}, document_body=old_profile, requests_session=mongoSession)
+        print(update_query)
+        if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
+            return JSONResponse(status_code=200, content={"status": "success", "target_image": target, "image_url": image_url})
+        return JSONResponse(status_code=500, content={"status": "failed to update"})
+
     @app.get("/v1/private/user/calendar/event/index", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def v1_private_user_calendar_event_index(request: Request, person_id: str, pa_token: str = Header(None)):
