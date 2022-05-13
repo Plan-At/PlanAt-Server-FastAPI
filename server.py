@@ -150,6 +150,12 @@ class V1:
         else:
             return JSONResponse(status_code=200, content={"status": "valid"})
 
+    @app.post("/v1/create/user", tags=["V1"])
+    @limiter.limit(RateLimitConfig.MIN_DB)
+    def v1_create_user(request: Request, user_profile: json_body.UserProfileObject, password: str = Header(None)):
+        person_id = random_content.get_int(length=10)
+        return JSONResponse(status_code=200, content={"status": "created", "body": user_profile, "person_id": person_id, "password": password})
+
     @app.get("/v1/public/user/profile", tags=["V1"])
     @limiter.limit(RateLimitConfig.MIN_DB)
     def v1_public_user_profile(request: Request, person_id: str):

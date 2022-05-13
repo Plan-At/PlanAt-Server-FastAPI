@@ -280,7 +280,7 @@ class DummyData:
         "about": {
             "short_description": "I",
             "full_description": "I'm here",
-            "company": "",
+            "company_name": "",
             "job_title": ""
         },
         "contact_method_collection": {

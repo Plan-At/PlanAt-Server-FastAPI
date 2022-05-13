@@ -9,7 +9,7 @@ def check_token_exist(auth_token: str):
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed token"})
     db_query = DocumentDB.find_one(target_collection="TokenV1", find_filter={"token_value": auth_token})
     if db_query is None:
-        return JSONResponse(status_code=403, content={"status": "token not found"})
+        return JSONResponse(status_code=403, content={"status": "token not found", "pa-token": auth_token})
     return True
 
 
