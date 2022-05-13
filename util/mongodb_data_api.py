@@ -22,6 +22,7 @@ def find_one(target_collection: str, find_filter: dict, target_db: str=DB_NAME, 
         # "Connection": "Keep-Alive",
     }
     response = requests_session.request("POST", url, headers=headers, data=payload)
+    print(response.json())
     return json.loads(response.text)["document"]
 
 

@@ -300,12 +300,11 @@ class DummyData:
                 "continent": "",
                 "post_code": ""
             },
-            "twitter": {
-                "user_name": "",
-                "user_handle": "",
-                "user_id": ""
-            },
             "github": {
+                "user_name": "",
+                "user_handle": ""
+            },
+            "twitter": {
                 "user_name": "",
                 "user_handle": "",
                 "user_id": ""

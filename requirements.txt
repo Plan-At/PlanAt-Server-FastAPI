@@ -4,3 +4,4 @@ uvicorn
 fastapi
 slowapi
 starlette
+python-multipart
