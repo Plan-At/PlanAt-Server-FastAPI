@@ -647,6 +647,26 @@ class V1:
         elif token_deletion_query["deletedCount"] == 1:
             return JSONResponse(status_code=200, content={"status": "deleted", "pa_token": pa_token})
 
+    @app.post("/v1/auth/unsafe/password", tags=["V1"])
+    @limiter.limit("3/10second")
+    def v1_auth_unsafe_change_password(request: Request, old_password: json_body.UnsafeLoginBody, new_password: json_body.UnsafeLoginBody):
+        mongoSession = requests.Session()
+        credential_verify_query = DocumentDB.find_one("LoginV1", find_filter={"person_id": old_password.person_id}, requests_session=mongoSession)
+        print(credential_verify_query)
+        # the hash string generated using hashlib is lowercase
+        if (credential_verify_query is None) or not (hashlib.sha512(old_password.password.encode("utf-8")).hexdigest() == credential_verify_query["password_hash"]):
+            return JSONResponse(status_code=403, content={"status": "not found or not match", "person_id": old_password.person_id, "password": old_password.password})
+        new_credential_entry = {
+            
+        }   
+        credential_update_query = DocumentDB.replace_one("LoginV1", find_filter={"person_id": old_password.person_id}, document_body=new_credential_entry, requests_session=mongoSession)
+        print(credential_update_query)
+        # the hash string generated using hashlib is lowercase
+        if credential_update_query["matchedCount"] != 1 and credential_update_query["modifiedCount"] != 1:
+            return JSONResponse(status_code=500, content={"status": "failed to update", "person_id": old_password.person_id, "password": old_password.password})
+        else:
+            return JSONResponse(status_code=200, content={"status": "success", "voided": old_password.password})
+
     @app.post("/v1/hosting/image", tags=["V1"])
     @limiter.limit(RateLimitConfig.MID_SIZE)
     def v1_upload_image(request: Request, image_file: bytes = File(..., max_length=ContentLimit.IMAGE_SIZE)):
