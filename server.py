@@ -647,6 +647,7 @@ class V1:
         elif token_deletion_query["deletedCount"] == 1:
             return JSONResponse(status_code=200, content={"status": "deleted", "pa_token": pa_token})
 
+    # TODO: revoke existing session/token
     @app.post("/v1/auth/unsafe/password", tags=["V1"])
     @limiter.limit("3/10second")
     def v1_auth_unsafe_change_password(request: Request, old_password: json_body.UnsafeLoginBody, new_password: json_body.UnsafeLoginBody):
