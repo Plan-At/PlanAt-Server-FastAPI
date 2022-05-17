@@ -653,16 +653,18 @@ class V1:
         mongoSession = requests.Session()
         credential_verify_query = DocumentDB.find_one("LoginV1", find_filter={"person_id": old_password.person_id}, requests_session=mongoSession)
         print(credential_verify_query)
-        # the hash string generated using hashlib is lowercase
+        # verify the old password
         if (credential_verify_query is None) or not (hashlib.sha512(old_password.password.encode("utf-8")).hexdigest() == credential_verify_query["password_hash"]):
             return JSONResponse(status_code=403, content={"status": "not found or not match", "person_id": old_password.person_id, "password": old_password.password})
         new_credential_entry = {
-            
+            "structure_version": 1,
+            "person_id": old_password.person_id,
+            "password_hash": hashlib.sha512(new_password.password.encode("utf-8")).hexdigest(),
+            "password_length": len(new_password.password),
         }   
         credential_update_query = DocumentDB.replace_one("LoginV1", find_filter={"person_id": old_password.person_id}, document_body=new_credential_entry, requests_session=mongoSession)
         print(credential_update_query)
-        # the hash string generated using hashlib is lowercase
-        if credential_update_query["matchedCount"] != 1 and credential_update_query["modifiedCount"] != 1:
+        if credential_update_query["matchedCount"] != 1 and credential_update_query["modifiedCount"] != 1:  # trying to make the break in the first place, if no error might proceed to other steps
             return JSONResponse(status_code=500, content={"status": "failed to update", "person_id": old_password.person_id, "password": old_password.password})
         else:
             return JSONResponse(status_code=200, content={"status": "success", "voided": old_password.password})
