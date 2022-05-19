@@ -5,6 +5,7 @@ from datetime import datetime
 import time
 import hashlib
 import requests
+import uuid
 
 from starlette.requests import Request
 from starlette.responses import Response, RedirectResponse, StreamingResponse
@@ -65,6 +66,10 @@ async def v2_get_calendar_event():
 
 @router.get("/captcha/image", tags=["V2"])
 async def v2_generate_captcha_image():
-    image_content = str(random_content.get_int(4))
-    image_data = ImageCaptcha().generate(image_content)
-    return StreamingResponse(content=image_data, media_type="image/png", headers={"image_content": image_content})
+    image_content = random_content.get_int(4)
+    image_data = ImageCaptcha().generate(str(image_content))
+    return StreamingResponse(content=image_data, media_type="image/png", headers={"captcha_id": str(uuid.uuid4())})
+
+@router.get("/captcha/verify", tags=["V2"])
+async def v2_verify_captcha():
+    pass
