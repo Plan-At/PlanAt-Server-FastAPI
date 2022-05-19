@@ -65,4 +65,6 @@ async def v2_get_calendar_event():
 
 @router.get("/captcha/image", tags=["V2"])
 async def v2_generate_captcha_image():
-    return StreamingResponse(ImageCaptcha().generate(str(random_content.get_int(4))), media_type="image/png")
+    image_content = str(random_content.get_int(4))
+    image_data = ImageCaptcha().generate(image_content)
+    return StreamingResponse(content=image_data, media_type="image/png", headers={"image_content": image_content})
