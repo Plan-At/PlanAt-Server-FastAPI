@@ -26,7 +26,7 @@ def match_token_with_person_id(person_id: str, auth_token: str, requests_session
         return ""
     if len(auth_token) != AuthConfig.TOKEN_LENGTH:
         return JSONResponse(status_code=403, content={"status": "malformed token"})
-    db_query = DocumentDB.find_one(target_collection="TokenV1", find_filter={"token_value": auth_token}, requests_session=requests_session)
+    db_query = DocumentDB.find_one(target_collection="TokenV3", find_filter={"token_value": auth_token}, requests_session=requests_session)
     print(db_query)
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "token not found"})
