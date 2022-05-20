@@ -22,21 +22,31 @@ import util.mongodb_data_api as DocumentDB
 router = APIRouter()
 
 
-@router.get("", tags=["V2"])
-async def v2_endpoint():
-    return JSONResponse(status_code=200, content={"status": "implementing"})
-
-
-@router.post("/calendar/event/create", tags=["V2"])
-async def v2_create_calendar_event():
+@router.post("/create", tags=["V2"])
+async def v2_create_user():
     pass
 
 
-@router.post("/calendar/event/edit", tags=["V2"])
-async def v2_edit_calendar_event():
+@router.get("/profile")
+async def v2_get_user_profile():
     pass
 
 
-@router.get("/calendar/event/get", tags=["V2"])
-async def v2_get_calendar_event():
+@router.post("/profile/name/display_name", tags=["V2"])
+async def v2_update_user_profile_name_displayname():
+    pass
+
+
+@router.post("/profile/about/description", tags=["V2"])
+async def v2_update_user_profile_about_description():
+    pass
+
+
+@router.post("/profile/status", tags=["V2"])
+async def v2_update_user_profile_status():
+    pass
+
+
+@router.post("/profile/picture", tags=["V2"])
+async def v2_update_user_profile_picture():
     pass
