@@ -27,7 +27,7 @@ async def v2_create_user():
     pass
 
 
-@router.get("/profile")
+@router.get("/profile", tags=["V2"])
 async def v2_get_user_profile():
     pass
 
