@@ -547,8 +547,7 @@ def v1_auth_unsafe_login(request: Request, name_and_password: json_body.UnsafeLo
     print(credential_query)
     # the hash string generated using hashlib is lowercase
     if (credential_query is None) or not (
-            hashlib.sha512(name_and_password.password.encode("utf-8")).hexdigest() == credential_query[
-        "password_hash"]):
+            hashlib.sha512(name_and_password.password.encode("utf-8")).hexdigest() == credential_query["password_hash"]):
         return JSONResponse(status_code=403,
                             content={"status": "not found or not match", "person_id": name_and_password.person_id,
                                      "password": name_and_password.password})

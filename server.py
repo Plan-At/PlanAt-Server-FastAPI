@@ -2,6 +2,7 @@ import sys
 from datetime import datetime
 import time
 import requests
+import traceback
 
 import uvicorn
 from starlette.requests import Request
@@ -35,6 +36,18 @@ async def log_requests(request: Request, call_next):
     response.headers["X-Process-Time"] = process_time
     logger.write(f"completed_in={process_time} status_code={response.status_code}\n")
     return response
+
+
+@app.exception_handler(Exception)
+async def debug_exception_handler(request: Request, exc: Exception):
+    return Response(
+        status_code=200,  # return 500 here might not show any text
+        content="".join(
+            traceback.format_exception(
+                etype=type(exc), value=exc, tb=exc.__traceback__
+            )
+        )
+    )
 
 
 @app.get("/")

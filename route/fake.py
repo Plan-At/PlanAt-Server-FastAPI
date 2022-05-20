@@ -32,3 +32,8 @@ def dummy_auth_decrypt(request: Request, encrypted_sha512_string: str, auth_toke
             return {"auth_status": "failed", "error": "auth_token not match"}
     else:
         return {"auth_status": "failed", "error": "invalid auth_token format"}
+
+
+@router.get("/error/internal", tags=["Dummy Data"])
+async def fake_internal_error(request: Request):
+    raise Exception

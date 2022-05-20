@@ -5,3 +5,4 @@ fastapi
 slowapi
 starlette
 python-multipart
+captcha

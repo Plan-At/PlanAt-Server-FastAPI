@@ -214,11 +214,20 @@ class DummyData:
         ]
     }
 
-    TOKEN_INFO = {
+    TOKEN_INFO_2 = {
         "structure_version": 2,
         "person_id": "1234567890",
         "token_value": "aaaaaaaa",
         "token_hash": ""
+    }
+
+    TOKEN_INFO_3 = {
+        "structure_version": 3,
+        "person_id": "1234567890",
+        "token_value": "aaaaaaaa",
+        "token_hash": "f74f2603939a53656948480ce71f1ce466685b6654fd22c61c1f2ce4e2c96d1cd02d162b560c4beaf1ae45f3471dc5cbc1ce040701c0b5c38457988aa00fe97f",
+        "creation_timestamp_int": 1653022969,
+        "expiration_timestamp_int": 1658293369
     }
 
     PASSWORD_INFO = {

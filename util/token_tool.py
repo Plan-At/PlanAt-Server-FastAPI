@@ -2,6 +2,9 @@ from fastapi.responses import JSONResponse
 import util.mongodb_data_api as DocumentDB
 from constant import AuthConfig
 import requests
+from datetime import datetime
+
+from util.custom_exception import TokenExpiredException
 
 
 def check_token_exist(auth_token: str):
@@ -48,3 +51,24 @@ def find_person_id_with_token(auth_token: str, requests_session=requests.Session
         return ""
     else:
         return db_query["person_id"]
+
+
+def get_person_id_with_token(pa_token: str, requests_session=requests.Session()):
+    """
+    All the check to the token is done here
+    Will validate person_id
+    """
+    print(pa_token)
+    if pa_token == None:
+        return ""
+    if len(pa_token) != AuthConfig.TOKEN_LENGTH:
+        return ""
+    db_query = DocumentDB.find_one(target_collection="TokenV3", find_filter={"token_value": pa_token}, requests_session=requests_session)
+    print(db_query)
+    if db_query is None:
+        return ""
+    if db_query["expiration_timestamp_int"] <= datetime.now().timestamp():
+        deletion_query = DocumentDB.delete_one(target_collection="TokenV3", find_filter={"token_value": pa_token}, requests_session=requests_session)
+        print(deletion_query)
+        raise TokenExpiredException(db_query["token_value"], db_query["expiration_timestamp_int"])
+    return db_query["person_id"]
