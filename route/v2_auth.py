@@ -63,6 +63,24 @@ async def v2_auth_unsafe_login(request: Request, name_and_password: json_body.Un
                             content={"status": "token generated but failed to insert that token to database"})
 
 
+@router.post("/token/revoke", tags=["V2"])
+async def v2_auth_token_revoke(request: Request, pa_token: str = Header(None)):
+    mongoSession = requests.Session()
+    # Lack of extra verification
+    # But just assuming the token not leaking to hecker or any bad actors
+    token_deletion_query = DocumentDB.delete_one(
+        "TokenV3",
+        find_filter={"token_value": pa_token},
+        requests_session=mongoSession)
+    print(token_deletion_query)
+    if token_deletion_query is None:
+        return JSONResponse(status_code=500, content={"status": "failed to remove the old token to database", "pa_token": pa_token})
+    elif token_deletion_query["deletedCount"] == 0:
+        return JSONResponse(status_code=404, content={"status": "token not found", "pa_token": pa_token})
+    elif token_deletion_query["deletedCount"] == 1:
+        return JSONResponse(status_code=200, content={"status": "deleted", "pa_token": pa_token})
+
+
 # TODO: revoke existing session/token
 @router.post("/password/update", tags=["V2"])
 async def v2_update_auth_password(request: Request, old_password: json_body.UnsafeLoginBody, new_password: json_body.UnsafeLoginBody):
