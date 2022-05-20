@@ -64,3 +64,72 @@ class RegistrationUser(BaseModel):
 class UnsafeLoginBody(BaseModel):
     person_id: str
     password: str
+    lifespan: int = 60 * 60 * 24 * 1
+
+
+class PictureObject(BaseModel):
+    image_id: str
+    image_url: str
+
+
+class EmailObject(BaseModel):
+    domain_name: str
+    full_address: str
+
+
+class PhoneNumberObject(BaseModel):
+    country_code: str
+    regular_number: str
+
+
+class PhysicalAddressObject(BaseModel):
+    street_address: str
+    city: str
+    province: str
+    country: str
+    continent: str
+    post_code: str
+
+
+class TwitterObject(BaseModel):
+    user_name: str
+    user_handle: str
+    user_id: str
+
+
+class NamingSection(BaseModel):
+    unique_name: str
+    display_name_partial: str
+    display_name_full: str
+
+
+class PictureSection(BaseModel):
+    avatar: PictureObject
+    background: PictureObject
+
+
+class StatusSection(BaseModel):
+    current_status: str
+    until: TimeObject
+    default_status: str
+
+
+class AboutSection(BaseModel):
+    short_description: str
+    full_description: str
+    company_name: str
+    job_title: str
+
+
+class ContactMethodSection(BaseModel):
+    email_primary: EmailObject
+    phone: PhoneNumberObject
+    physical_address: PhysicalAddressObject
+    twitter: TwitterObject
+
+
+class UserProfileObject(BaseModel):
+    naming: NamingSection
+    picture: PictureSection
+    status: StatusSection
+    contact_method_collection: ContactMethodSection
