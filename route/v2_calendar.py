@@ -3,7 +3,7 @@ from typing import Optional, List
 
 # Framework core library
 from starlette.requests import Request
-from fastapi import APIRouter, Header, File, Query
+from fastapi import APIRouter, Header, Query
 from fastapi.responses import JSONResponse
 
 # Local file

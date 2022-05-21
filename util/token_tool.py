@@ -61,7 +61,7 @@ def get_person_id_with_token(pa_token: str, db_client: Database):
     Return an empty string any anything goes wrong or not matched
     """
     print(pa_token)
-    if pa_token == None:
+    if pa_token is None:
         return ""
     if len(pa_token) != AuthConfig.TOKEN_LENGTH:
         return ""

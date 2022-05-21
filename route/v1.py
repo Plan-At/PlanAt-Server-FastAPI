@@ -634,7 +634,7 @@ def v1_upload_image(request: Request, image_file: bytes = File(..., max_length=C
             api_key=json.load(open("app.token.json"))["image4io"]["api_key"],
             api_secret=json.load(open("app.token.json"))["image4io"]["api_secret"]),
         local_file_bytes=image_file,
-        local_file_name=image4io.generate_file_name(local_file_bytes=image_file),
+        local_file_name=image4io.generate_file_id(local_file_bytes=image_file),
         remote_folder_path=ServerConfig.IMAGEBED_FOLDER)
     if resp.status_code != 200:
         return JSONResponse(status_code=500, content={"status": "image upload failed"})
