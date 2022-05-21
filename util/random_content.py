@@ -1,5 +1,5 @@
 import random
-
+from datetime import datetime
 
 def get_str_from_base(base: str, length: int) -> str:
     generated_string = ""
@@ -21,3 +21,10 @@ def get_int(length: int) -> int:
 
 def generator_access_token(length: int) -> str:
     return get_str_from_base(base="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890", length=length)
+
+
+def generate_event_id():
+    generated_event_id = int(str(int(datetime.now().timestamp())) + str(get_int(length=6)))
+    if len(str(generated_event_id)) != 16:
+        raise Exception("random did not generator correct length of number")
+    return generated_event_id

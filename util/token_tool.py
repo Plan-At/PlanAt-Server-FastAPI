@@ -58,7 +58,7 @@ def find_person_id_with_token_http(auth_token: str, requests_session=requests.Se
 def get_person_id_with_token(pa_token: str, db_client: Database):
     """
     All the check to the token is done here
-    Will validate person_id
+    Return an empty string any anything goes wrong or not matched
     """
     print(pa_token)
     if pa_token == None:

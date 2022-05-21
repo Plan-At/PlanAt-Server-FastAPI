@@ -73,8 +73,8 @@ def private_user_calendar_event_index(input_json: dict):
     return return_json
 
 
-def universal_user_calendar_event(input_json: dict, required_permission_list: list, person_id=""):
-    # Can also be used to verify does user have sufficient permission
+def universal_user_calendar_event(input_json: dict, required_permission_list: list, person_id: str):
+    # Return False if user doesn't have sufficient permission
     print(input_json)
     return_json = {
         "structure_version": input_json["structure_version"],
@@ -88,18 +88,10 @@ def universal_user_calendar_event(input_json: dict, required_permission_list: li
         "tag_list": input_json["tag_list"]
     }
     for each_owner in input_json["access_control_list"]:
-        is_controller = False
-        if each_owner["canonical_name"] == "public":
-            is_controller = True
-            print("event is public")
-        elif each_owner["person_id"] == person_id:
-            is_controller = True
-            print("event person_id matched")
-        have_permission = False
-        if is_controller:
+        if each_owner["canonical_name"] == "public" or each_owner["person_id"] == person_id:
+            print("is the controller: ", each_owner)
             for each_permission in required_permission_list:
                 if each_permission in each_owner["permission_list"]:
-                    have_permission = True
-        if have_permission:
-            return return_json
+                    print("have permission")
+                    return return_json
     return False

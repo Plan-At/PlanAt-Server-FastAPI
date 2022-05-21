@@ -36,9 +36,7 @@ async def v2_create_calendar_event(request: Request, req_body: json_body.Calenda
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "no user found for this token", "pa_token": pa_token})
     """add the event detail"""
-    new_event_id = int(str(int(datetime.now().timestamp())) + str(random_content.get_int(length=6)))
-    if len(str(new_event_id)) != 16:
-        raise Exception("random did not generator correct length of number")
+    new_event_id = random_content.generate_event_id()
     new_event_entry = {
         "structure_version": 4,
         "event_id": new_event_id,
@@ -95,8 +93,79 @@ async def v2_create_calendar_event(request: Request, req_body: json_body.Calenda
 
 
 @router.post("/calendar/event/edit", tags=["V2"])
-async def v2_edit_calendar_event():
-    pass
+async def v2_edit_calendar_event(request: Request,
+                                 event_id: int,
+                                 req_body: json_body.CalendarEventObject,
+                                 pa_token: str = Header(None)):
+    mongoSession = DocumentDB.get_client()
+    print(dict(req_body))
+    # Check user input
+    if len(str(event_id)) != 16:
+        return JSONResponse(status_code=400, content={"status": "malformed event_id"})
+    # Get person_id from token
+    person_id = get_person_id_with_token(pa_token=pa_token, db_client=mongoSession)
+    if person_id == "":
+        return JSONResponse(status_code=403, content={"status": "user not found"})
+    # Check is have sufficient permission to modify the event
+    find_query = DocumentDB.find_one(collection="CalendarEventEntry",
+                                     find_filter={"event_id": event_id},
+                                     db_client=mongoSession)
+    print(find_query)
+    if find_query == None:
+        return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
+    # The event_id in DB is int
+    processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query,
+                                                                    person_id=person_id,
+                                                                    required_permission_list=["edit_full"])
+    if not processed_find_query:
+        return JSONResponse(status_code=403,
+                            content={"status": "unable to modify current calendar_event with current token",
+                                     "event_id": event_id})
+    # Add the event detail
+    # Copy and paste the create event
+    updated_event_entry = {
+        "structure_version": 4,
+        "event_id": event_id,
+        "access_control_list": [],
+        "start_time": {
+            "text": req_body.start_time.text,
+            "timestamp_int": req_body.start_time.timestamp_int,
+            "timezone_name": req_body.start_time.timezone_name,
+            "timezone_offset": req_body.start_time.timezone_offset
+        },
+        "end_time": {
+            "text": req_body.end_time.text,
+            "timestamp_int": req_body.end_time.timestamp_int,
+            "timezone_name": req_body.end_time.timezone_name,
+            "timezone_offset": req_body.end_time.timezone_offset
+        },
+        "display_name": req_body.display_name,
+        "description": req_body.description,
+        "type_list": [],
+        "tag_list": []
+    }
+    for each_type in req_body.type_list:
+        updated_event_entry["type_list"].append({"type_id": each_type.type_id, "display_name": each_type.display_name})
+    for each_tag in req_body.tag_list:
+        updated_event_entry["tag_list"].append({"tag_id": each_tag.tag_id, "display_name": each_tag.display_name})
+    least_one_access_control = False
+    for each_access_control in req_body.access_control_list:
+        print(each_access_control)
+        if (each_access_control.canonical_name != None) or (each_access_control.person_id != None):
+            updated_event_entry["access_control_list"].append({
+                "canonical_name": each_access_control.canonical_name,
+                "person_id": each_access_control.person_id,
+                "permission_list": each_access_control.permission_list
+            })
+            least_one_access_control = True
+    if not least_one_access_control:
+        return JSONResponse(status_code=400,
+                            content={"status": "person_id or canonical_name in access_control_list is required"})
+    print(updated_event_entry)
+    insert_query = DocumentDB.replace_one(collection="CalendarEventEntry", find_filter={"event_id": event_id},
+                                          document_body=updated_event_entry, db_client=mongoSession)
+    print(insert_query)
+    return JSONResponse(status_code=200, content={"status": "success", "event_id": event_id})
 
 
 @router.get("/calendar/event/get", tags=["V2"])
