@@ -73,7 +73,7 @@ def private_user_calendar_event_index(input_json: dict):
     return return_json
 
 
-def universal_user_calendar_event(input_json: dict, required_permission_list: list, person_id: str):
+def universal_calendar_event(input_json: dict, required_permission_list: list, person_id: str):
     # Return False if user doesn't have sufficient permission
     print(input_json)
     return_json = {

@@ -383,8 +383,8 @@ def v1_add_user_calendar_event(request: Request, event_id: int, req_body: json_b
     if find_query == None:
         return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
     # The event_id in DB is int
-    processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id,
-                                                                    required_permission_list=["edit_full"])
+    processed_find_query = JSONFilter.universal_calendar_event(input_json=find_query, person_id=person_id,
+                                                               required_permission_list=["edit_full"])
     if processed_find_query == False:
         return JSONResponse(status_code=403,
                             content={"status": "unable to modify current calendar_event with current token",
@@ -446,8 +446,8 @@ def v1_universal_user_calendar_event(request: Request, event_id: int, pa_token: 
                                      requests_session=mongoSession)
     if find_query == None:
         return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
-    processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id,
-                                                                    required_permission_list=["read_full"])
+    processed_find_query = JSONFilter.universal_calendar_event(input_json=find_query, person_id=person_id,
+                                                               required_permission_list=["read_full"])
     if processed_find_query != False:
         return JSONResponse(status_code=200, content=processed_find_query)
     else:
@@ -471,7 +471,7 @@ def v1_universal_user_calendar_event(request: Request, event_id_list: List[int] 
                                                  find_filter={"event_id": event_id}, requests_session=mongoSession)
                 if find_query is None:
                     result_calendar_event.append({"status": "calendar_event not found", "event_id": event_id})
-                processed_find_query = JSONFilter.universal_user_calendar_event(
+                processed_find_query = JSONFilter.universal_calendar_event(
                     input_json=find_query,
                     person_id=person_id,
                     required_permission_list=["read_full"])
@@ -492,8 +492,8 @@ def v1_delete_user_calendar_event(request: Request, event_id: int, pa_token: str
     find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
     if find_query is None:
         return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
-    processed_find_query = JSONFilter.universal_user_calendar_event(input_json=find_query, person_id=person_id,
-                                                                    required_permission_list=["delete"])
+    processed_find_query = JSONFilter.universal_calendar_event(input_json=find_query, person_id=person_id,
+                                                               required_permission_list=["delete"])
     if processed_find_query == False:
         return JSONResponse(status_code=403,
                             content={"status": f"unable to delete calendar_event {event_id} with current token"})
