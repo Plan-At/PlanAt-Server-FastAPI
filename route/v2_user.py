@@ -23,8 +23,27 @@ router = APIRouter()
 
 
 @router.post("/create", tags=["V2"])
-async def v2_create_user():
-    pass
+async def v2_create_user(request: Request, user_profile: json_body.UserProfileObject, password: str = Header(None)):
+    person_id = random_content.get_int(length=10)
+    return JSONResponse(status_code=200, content={"status": "created",
+                                                  "person_id": person_id,
+                                                  "password": password})
+
+
+@router.post("/delete", tags=["V2"])
+async def v2_delete_user(request: Request, name_and_password: json_body.UnsafeLoginBody):
+    mongoSession = requests.Session()
+    credential_verify_query = DocumentDB.find_one("LoginV1",
+                                                  find_filter={"person_id": name_and_password.person_id},
+                                                  requests_session=mongoSession)
+    print(credential_verify_query)
+    # the hash string generated using hashlib is lowercase
+    if (credential_verify_query is None) \
+            or not (hashlib.sha512(name_and_password.password.encode("utf-8")).hexdigest() == credential_verify_query["password_hash"]):
+        return JSONResponse(status_code=403,
+                            content={"status": "not found or not match",
+                                     "person_id": name_and_password.person_id,
+                                     "password": name_and_password.password})
 
 
 @router.get("/profile", tags=["V2"])

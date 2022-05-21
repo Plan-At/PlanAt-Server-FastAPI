@@ -21,28 +21,32 @@ import util.mongodb_data_api as DocumentDB
 
 router = APIRouter()
 
+
 @router.post("/token/generate", tags=["V2"])
 async def v2_auth_unsafe_login(request: Request, name_and_password: json_body.UnsafeLoginBody):
     mongoSession = requests.Session()
-    credential_query = DocumentDB.find_one("LoginV1", find_filter={"person_id": name_and_password.person_id},
-                                           requests_session=mongoSession)
-    print(credential_query)
+    credential_verify_query = DocumentDB.find_one("LoginV1",
+                                                  find_filter={"person_id": name_and_password.person_id},
+                                                  requests_session=mongoSession)
+    print(credential_verify_query)
     # the hash string generated using hashlib is lowercase
-    if (credential_query is None) or not (
-            hashlib.sha512(name_and_password.password.encode("utf-8")).hexdigest() == credential_query["password_hash"]):
+    if (credential_verify_query is None) or not (
+            hashlib.sha512(name_and_password.password.encode("utf-8")).hexdigest() == credential_verify_query["password_hash"]):
         return JSONResponse(status_code=403,
-                            content={"status": "not found or not match", "person_id": name_and_password.person_id,
+                            content={"status": "not found or not match",
+                                     "person_id": name_and_password.person_id,
                                      "password": name_and_password.password})
     while True:
         # Checking if the same token already being use
         # There is no do-while loop in Python
         generated_token = random_content.generator_access_token(length=AuthConfig.TOKEN_LENGTH)
-        current_checking_query = DocumentDB.find_one("TokenV1", find_filter={"token_value": generated_token},
+        current_checking_query = DocumentDB.find_one("TokenV1",
+                                                     find_filter={"token_value": generated_token},
                                                      requests_session=mongoSession)
         if current_checking_query is None:
             break
     create_at = int(datetime.now().timestamp())
-    expire_at = create_at + name_and_password.lifespan
+    expire_at = create_at + name_and_password.token_lifespan
     token_record_query = DocumentDB.insert_one(
         "TokenV3",
         document_body={
@@ -66,8 +70,6 @@ async def v2_auth_unsafe_login(request: Request, name_and_password: json_body.Un
 @router.post("/token/revoke", tags=["V2"])
 async def v2_auth_token_revoke(request: Request, pa_token: str = Header(None)):
     mongoSession = requests.Session()
-    # Lack of extra verification
-    # But just assuming the token not leaking to hecker or any bad actors
     token_deletion_query = DocumentDB.delete_one(
         "TokenV3",
         find_filter={"token_value": pa_token},
@@ -85,7 +87,7 @@ async def v2_auth_token_revoke(request: Request, pa_token: str = Header(None)):
 @router.post("/password/update", tags=["V2"])
 async def v2_update_auth_password(request: Request, old_password: json_body.UnsafeLoginBody, new_password: json_body.UnsafeLoginBody):
     mongoSession = requests.Session()
-    credential_verify_query = DocumentDB.find_one("LoginV1", 
+    credential_verify_query = DocumentDB.find_one("LoginV1",
                                                   find_filter={"person_id": old_password.person_id},
                                                   requests_session=mongoSession)
     print(credential_verify_query)
@@ -93,7 +95,7 @@ async def v2_update_auth_password(request: Request, old_password: json_body.Unsa
     if (credential_verify_query is None) or not (
             hashlib.sha512(old_password.password.encode("utf-8")).hexdigest() == credential_verify_query["password_hash"]):
         return JSONResponse(status_code=403,
-                            content={"status": "not found or not match", 
+                            content={"status": "not found or not match",
                                      "person_id": old_password.person_id,
                                      "password": old_password.password})
     new_credential_entry = {
@@ -102,13 +104,14 @@ async def v2_update_auth_password(request: Request, old_password: json_body.Unsa
         "password_hash": hashlib.sha512(new_password.password.encode("utf-8")).hexdigest(),
         "password_length": len(new_password.password),
     }
-    credential_update_query = DocumentDB.replace_one("LoginV1", 
+    credential_update_query = DocumentDB.replace_one("LoginV1",
                                                      find_filter={"person_id": old_password.person_id},
-                                                     document_body=new_credential_entry, requests_session=mongoSession)
+                                                     document_body=new_credential_entry,
+                                                     requests_session=mongoSession)
     print(credential_update_query)
-    if credential_update_query["matchedCount"] != 1 and credential_update_query[
-        "modifiedCount"] != 1:  # trying to make the break in the first place, if no error might proceed to other steps
-        return JSONResponse(status_code=500, content={"status": "failed to update", 
+    if credential_update_query["matchedCount"] != 1 and credential_update_query["modifiedCount"] != 1:
+        # trying to make the break in the first place, if no error might proceed to other steps
+        return JSONResponse(status_code=500, content={"status": "failed to update",
                                                       "person_id": old_password.person_id,
                                                       "password": old_password.password})
     else:

@@ -22,7 +22,7 @@ router = APIRouter()
 
 @router.get("/v1", tags=["V1"])
 def v1(request: Request):
-    return JSONResponse(status_code=200, content={"status": "ok"})
+    return JSONResponse(status_code=200, content={"status": "deprecate-ing"})
 
 
 @router.get("/v1/auth/token/validate", tags=["V1"])
