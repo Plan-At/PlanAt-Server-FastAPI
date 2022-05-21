@@ -3,7 +3,8 @@ import hashlib
 from starlette.requests import Request
 from fastapi import APIRouter
 
-from constant import DummyData, AuthConfig
+from constant import AuthConfig
+import example_data
 
 router = APIRouter()
 
@@ -15,12 +16,12 @@ def dummy(request: Request):
 
 @router.get("/user/profile", tags=["Dummy Data"])
 def dummy_user_profile(request: Request):
-    return DummyData.USER_PROFILE_5
+    return example_data.USER_PROFILE_5
 
 
 @router.get("/user/calendar", tags=["Dummy Data"])
 def dummy_user_calendar(request: Request):
-    return DummyData.USER_CALENDAR
+    return example_data.USER_CALENDAR
 
 
 @router.get("/auth/decrypt", tags=["Dummy Data"])
