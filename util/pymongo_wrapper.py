@@ -1,12 +1,14 @@
-import pymongo
-import json
 from typing import List
+import json
 
-from pymongo.database import Database
-from pymongo.collection import Collection
 from pymongo import MongoClient
+from pymongo.database import Database
 
 TOKEN = json.load(open("app.token.json"))
+
+
+def get_client():
+    return MongoClient(TOKEN["mongodb"]["driver_url"]).get_database("PlanAtDev")
 
 
 def find_one(db_client: Database, collection: str, find_filter: dict):
@@ -37,18 +39,3 @@ def insert_many(db_client: Database, collection: str, document_body: List[dict])
 
 def replace_one(db_client: Database, collection: str, find_filter: dict, document_body: dict):
     return db_client[collection].replace_one(filter=find_filter, replacement=document_body)
-
-
-if __name__ == "__main__":
-    client = MongoClient(TOKEN["mongodb"]["driver_url"])
-    db = client.get_database("PlanAtDev")
-    # print(db, type(db))
-    # print(db["User"], type(db["User"]))
-    # print(delete_one(db, "User", {"person_id": "1234567890_5"}))
-    # print(find_many(db, "TokenV3", {"person_id": "1234567890"}))
-    # print(delete_one(db, "TokenV3", {"token_value": ""}).deleted_count)
-    # print(delete_many(db, "TokenV3", {"person_id": "1234567890"}).deleted_count)
-    # print(insert_one(db, "TokenV3", {"a": "b"}).inserted_id)
-    # print(insert_many(db, "TokenV3", [{}, {}]).inserted_ids)
-    _replace_one = replace_one(db, "TokenV3", {"a": "b"}, {"a": "x"})
-    print(_replace_one.matched_count, _replace_one.modified_count)

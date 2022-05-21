@@ -8,6 +8,10 @@ DB_CLUSTER = "Cluster1"
 DB_NAME = "PlanAtDev"
 
 
+def get_client():
+    return requests.Session()
+
+
 def find_one(target_collection: str, find_filter: dict, target_db: str = DB_NAME, requests_session=requests.Session()):
     url = "https://data.mongodb-api.com/app/data-whsfw/endpoint/data/beta/action/findOne"
     payload = json.dumps({

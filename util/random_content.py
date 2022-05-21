@@ -5,7 +5,7 @@ def get_str_from_base(base: str, length: int) -> str:
     generated_string = ""
     while True:
         generated_string += random.choice(base)
-        generated_string = generated_string.strip()  # to remove space being generated
+        generated_string = generated_string.replace(" ", "")  # to remove space being generated
         if len(generated_string) == length:
             return generated_string
 

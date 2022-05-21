@@ -17,17 +17,17 @@ from fastapi.responses import JSONResponse
 # Local file
 from constant import AuthConfig
 from util import random_content, json_body
-import util.mongodb_data_api as DocumentDB
+import util.pymongo_wrapper as DocumentDB
 
 router = APIRouter()
 
 
 @router.post("/token/generate", tags=["V2"])
-async def v2_auth_unsafe_login(request: Request, name_and_password: json_body.UnsafeLoginBody):
-    mongoSession = requests.Session()
-    credential_verify_query = DocumentDB.find_one("LoginV1",
+async def v2_generate_auth_token(request: Request, name_and_password: json_body.UnsafeLoginBody):
+    mongoSession = DocumentDB.get_client()
+    credential_verify_query = DocumentDB.find_one(collection="LoginV1",
                                                   find_filter={"person_id": name_and_password.person_id},
-                                                  requests_session=mongoSession)
+                                                  db_client=mongoSession)
     print(credential_verify_query)
     # the hash string generated using hashlib is lowercase
     if (credential_verify_query is None) or not (
@@ -40,15 +40,15 @@ async def v2_auth_unsafe_login(request: Request, name_and_password: json_body.Un
         # Checking if the same token already being use
         # There is no do-while loop in Python
         generated_token = random_content.generator_access_token(length=AuthConfig.TOKEN_LENGTH)
-        current_checking_query = DocumentDB.find_one("TokenV1",
+        current_checking_query = DocumentDB.find_one(collection="TokenV1",
                                                      find_filter={"token_value": generated_token},
-                                                     requests_session=mongoSession)
+                                                     db_client=mongoSession)
         if current_checking_query is None:
             break
     create_at = int(datetime.now().timestamp())
     expire_at = create_at + name_and_password.token_lifespan
     token_record_query = DocumentDB.insert_one(
-        "TokenV3",
+        collection="TokenV3",
         document_body={
             "structure_version": 3,
             "person_id": name_and_password.person_id,
@@ -57,39 +57,36 @@ async def v2_auth_unsafe_login(request: Request, name_and_password: json_body.Un
             "creation_timestamp_int": create_at,
             "expiration_timestamp_int": expire_at
         },
-        requests_session=mongoSession)
-    print(token_record_query)
-    if (token_record_query is not None) and ("insertedId" in token_record_query):
-        return JSONResponse(status_code=200,
-                            content={"status": "success", "pa_token": generated_token, "expiration_timestamp": expire_at})
-    else:
+        db_client=mongoSession)
+    if token_record_query is None:
         return JSONResponse(status_code=500,
                             content={"status": "token generated but failed to insert that token to database"})
+    return JSONResponse(status_code=200,
+                        content={"status": "success", "pa_token": generated_token, "expiration_timestamp": expire_at})
 
 
 @router.post("/token/revoke", tags=["V2"])
-async def v2_auth_token_revoke(request: Request, pa_token: str = Header(None)):
-    mongoSession = requests.Session()
+async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
+    mongoSession = DocumentDB.get_client()
     token_deletion_query = DocumentDB.delete_one(
-        "TokenV3",
+        collection="TokenV3",
         find_filter={"token_value": pa_token},
-        requests_session=mongoSession)
-    print(token_deletion_query)
+        db_client=mongoSession)
     if token_deletion_query is None:
         return JSONResponse(status_code=500, content={"status": "failed to remove the old token to database", "pa_token": pa_token})
-    elif token_deletion_query["deletedCount"] == 0:
+    elif token_deletion_query.deleted_count == 0:
         return JSONResponse(status_code=404, content={"status": "token not found", "pa_token": pa_token})
-    elif token_deletion_query["deletedCount"] == 1:
+    elif token_deletion_query.deleted_count == 1:
         return JSONResponse(status_code=200, content={"status": "deleted", "pa_token": pa_token})
 
 
 # TODO: revoke existing session/token
 @router.post("/password/update", tags=["V2"])
 async def v2_update_auth_password(request: Request, old_password: json_body.UnsafeLoginBody, new_password: json_body.UnsafeLoginBody):
-    mongoSession = requests.Session()
-    credential_verify_query = DocumentDB.find_one("LoginV1",
+    mongoSession = DocumentDB.get_client()
+    credential_verify_query = DocumentDB.find_one(collection="LoginV1",
                                                   find_filter={"person_id": old_password.person_id},
-                                                  requests_session=mongoSession)
+                                                  db_client=mongoSession)
     print(credential_verify_query)
     # verify the old password
     if (credential_verify_query is None) or not (
@@ -104,12 +101,12 @@ async def v2_update_auth_password(request: Request, old_password: json_body.Unsa
         "password_hash": hashlib.sha512(new_password.password.encode("utf-8")).hexdigest(),
         "password_length": len(new_password.password),
     }
-    credential_update_query = DocumentDB.replace_one("LoginV1",
+    credential_update_query = DocumentDB.replace_one(collection="LoginV1",
                                                      find_filter={"person_id": old_password.person_id},
                                                      document_body=new_credential_entry,
-                                                     requests_session=mongoSession)
+                                                     db_client=mongoSession)
     print(credential_update_query)
-    if credential_update_query["matchedCount"] != 1 and credential_update_query["modifiedCount"] != 1:
+    if credential_update_query.matched_count != 1 and credential_update_query.modified_count != 1:
         # trying to make the break in the first place, if no error might proceed to other steps
         return JSONResponse(status_code=500, content={"status": "failed to update",
                                                       "person_id": old_password.person_id,
