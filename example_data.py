@@ -241,6 +241,78 @@ USER_PROFILE_6 = {
     }
 }
 
+
+USER_PROFILE_7 = {
+    "structure_version": 7,
+    "person_id": "1234567890",
+    "metadata": {
+        "uuid": "6cb63b46-00ce-4433-a7e1-c839e94c1315",
+        "seed": "56467484686",
+        "registration_timestamp_int": "1646081914"
+    },
+    "naming": {
+        "unique_name": "abced",
+        "display_name_partial": "Hello",
+        "display_name_full": "HelloWorld",
+        "localization": [],
+        "historical_name": []
+    },
+    "picture": {
+        "avatar": {
+            "image_id": "",
+            "image_url": "https://cdn.statically.io/avatar/s=128/HW"
+        },
+        "background": {
+            "image_id": "",
+            "image_url": "https://cdn.statically.io/og/Hello%20World.jpg"
+        }
+    },
+    "about": {
+        "short_description": "I",
+        "full_description": "I'm here",
+        "company_name": "",
+        "job_title": ""
+    },
+    "status": {
+        "current_status": "Developing",
+        "until": {
+            "text": "Extraday 13AM",
+            "timestamp_int": 0,
+            "timezone_name": "Mars",
+            "timezone_offset": 0
+        },
+        "default_status": "Alive"
+    },
+    "contact_method_collection": {
+        "email_primary": {
+            "domain_name": "example.com",
+            "full_address": "example@example.com"
+        },
+        "phone": {
+            "country_code": "",
+            "regular_number": "1234567890"
+        },
+        "physical_address": {
+            "full_address": "",
+            "street_address": "",
+            "city": "",
+            "province": "",
+            "country": "",
+            "continent": "",
+            "post_code": ""
+        },
+        "github": {
+            "user_name": "",
+            "user_handle": ""
+        },
+        "twitter": {
+            "user_name": "",
+            "user_handle": "",
+            "user_id": ""
+        }
+    }
+}
+
 HOSTING_IMAGE = {
     "structure_version": 1,
     "image_url": "https://cdn.image4.io/as-an-imagebed/f_auto/Plan-At/usercontent/16490351977f8394ebab084c34406531918337c425.png",

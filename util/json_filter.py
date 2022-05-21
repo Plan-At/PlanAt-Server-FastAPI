@@ -63,6 +63,20 @@ def private_user_profile(input_json: dict):
     return return_json
 
 
+def universal_user_profile(input_json: dict):
+    print(input_json)
+    return_json = {
+        "structure_version": input_json["structure_version"],
+        "person_id": input_json["person_id"],
+        "naming": input_json["naming"],
+        "picture": input_json["picture"],
+        "status": input_json["status"],
+        "about": input_json["about"],
+        "contact_method_collection": input_json["contact_method_collection"]
+    }
+    return return_json
+
+
 def private_user_calendar_event_index(input_json: dict):
     print(input_json)
     return_json = {

@@ -177,7 +177,7 @@ def v1_update_user_profile_contact_phone(request: Request, country_code: str, re
 
 
 @router.post("/v1/update/user/profile/contact/physical_address", tags=["V1"])
-def v1_update_user_profile_contact_physical_address(request: Request, street_address: str, city: str, province: str,
+def v1_update_user_profile_contact_physical_address(request: Request, full_address: str, street_address: str, city: str, province: str,
                                                     country: str, continent: str, post_code: str,
                                                     pa_token: str = Header(None)):
     mongoSession = requests.Session()
@@ -189,6 +189,7 @@ def v1_update_user_profile_contact_physical_address(request: Request, street_add
     if old_profile is None:
         return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
     del old_profile["_id"]
+    old_profile["contact_method_collection"]["physical_address"]["full_address"] = full_address
     old_profile["contact_method_collection"]["physical_address"]["street_address"] = street_address
     old_profile["contact_method_collection"]["physical_address"]["city"] = city
     old_profile["contact_method_collection"]["physical_address"]["province"] = province
@@ -244,9 +245,9 @@ def v1_update_user_profile_picture(request: Request, image_url: str, target: str
         return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
     del old_profile["_id"]
     if target == "avatar":
-        old_profile["picture"]["avatar"]["original"]["image_url"] = image_url
+        old_profile["picture"]["avatar"]["image_url"] = image_url
     elif target == "background":
-        old_profile["picture"]["background"]["original"]["image_url"] = image_url
+        old_profile["picture"]["background"]["image_url"] = image_url
     update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
                                           document_body=old_profile, requests_session=mongoSession)
     print(update_query)
