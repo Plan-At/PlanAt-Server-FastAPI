@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse
 if sys.platform == "win32":
     import util.mongodb_data_api as DocumentDB
 import util.json_filter as JSONFilter
-from util.token_tool import match_token_with_person_id, check_token_exist, find_person_id_with_token
+from util.token_tool import match_token_with_person_id_http, check_token_exist_http, find_person_id_with_token_http
 from util import json_body, random_content, image4io
 from constant import ServerConfig, AuthConfig, ContentLimit
 
@@ -28,7 +28,7 @@ def v1(request: Request):
 
 @router.get("/v1/auth/token/validate", tags=["V1"])
 def v1_auth_token_validate(request: Request, pa_token: str):
-    validate_token_result = check_token_exist(auth_token=pa_token)
+    validate_token_result = check_token_exist_http(auth_token=pa_token)
     if validate_token_result != True:
         return validate_token_result
     else:
@@ -54,7 +54,7 @@ def v1_public_user_profile(request: Request, person_id: str):
 
 @router.get("/v1/private/user/profile", tags=["V1"])
 def v1_private_user_profile(request: Request, person_id: str, pa_token: str = Header(None)):
-    validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
+    validate_token_result = match_token_with_person_id_http(person_id=person_id, auth_token=pa_token)
     if validate_token_result != True:
         return validate_token_result
     if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
@@ -68,7 +68,7 @@ def v1_private_user_profile(request: Request, person_id: str, pa_token: str = He
 @router.post("/v1/update/user/profile/name/display_name", tags=["V1"])
 def v1_update_user_profile_name_displayName(request: Request, person_id: str, pa_token: str = Header(None),
                                             request_body: json_body.UpdateUserProfileName_DisplayName = None):
-    validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
+    validate_token_result = match_token_with_person_id_http(person_id=person_id, auth_token=pa_token)
     if validate_token_result != True:
         return validate_token_result
     if len(request_body.display_name) > ContentLimit.DISPLAY_NAME_LENGTH:
@@ -89,7 +89,7 @@ def v1_update_user_profile_name_displayName(request: Request, person_id: str, pa
 @router.post("/v1/update/user/profile/about/description", tags=["V1"])
 def v1_update_user_profile_about_description(request: Request, person_id: str, pa_token: str = Header(None),
                                              request_body: json_body.UpdateUserProfileAbout_Description = None):
-    validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
+    validate_token_result = match_token_with_person_id_http(person_id=person_id, auth_token=pa_token)
     if validate_token_result != True:
         return validate_token_result
     if len(request_body.short_description) > ContentLimit.SHORT_DESCRIPTION:
@@ -113,7 +113,7 @@ def v1_update_user_profile_about_description(request: Request, person_id: str, p
 @router.post("/v1/update/user/profile/status", tags=["V1"])
 def v1_update_user_profile_status(request: Request, person_id: str, pa_token: str = Header(None),
                                   request_body: json_body.UpdateUserProfileStatus = None):
-    validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
+    validate_token_result = match_token_with_person_id_http(person_id=person_id, auth_token=pa_token)
     if validate_token_result != True:
         return validate_token_result
     if len(request_body.current_status) > ContentLimit.USER_STATUS:
@@ -135,7 +135,7 @@ def v1_update_user_profile_status(request: Request, person_id: str, pa_token: st
 @router.post("/v1/update/user/profile/contact/email_primary", tags=["V1"])
 def v1_update_user_profile_contact_email_primary(request: Request, full_address: str, pa_token: str = Header(None)):
     mongoSession = requests.Session()
-    person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+    person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
     old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id},
@@ -157,7 +157,7 @@ def v1_update_user_profile_contact_email_primary(request: Request, full_address:
 def v1_update_user_profile_contact_phone(request: Request, country_code: str, regular_number: str,
                                          pa_token: str = Header(None)):
     mongoSession = requests.Session()
-    person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+    person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
     old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id},
@@ -181,7 +181,7 @@ def v1_update_user_profile_contact_physical_address(request: Request, street_add
                                                     country: str, continent: str, post_code: str,
                                                     pa_token: str = Header(None)):
     mongoSession = requests.Session()
-    person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+    person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
     old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id},
@@ -210,7 +210,7 @@ def v1_update_user_profile_contact_physical_address(request: Request, street_add
 def v1_update_user_profile_contact_twitter(request: Request, user_name: str, user_handle: str, user_id: str,
                                            pa_token: str = Header(None)):
     mongoSession = requests.Session()
-    person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+    person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
     old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id},
@@ -235,7 +235,7 @@ def v1_update_user_profile_contact_twitter(request: Request, user_name: str, use
 def v1_update_user_profile_picture(request: Request, image_url: str, target: str = "avatar",
                                    pa_token: str = Header(None)):
     mongoSession = requests.Session()
-    person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+    person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
     old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id},
@@ -258,7 +258,7 @@ def v1_update_user_profile_picture(request: Request, image_url: str, target: str
 
 @router.get("/v1/private/user/calendar/event/index", tags=["V1"])
 def v1_private_user_calendar_event_index(request: Request, person_id: str, pa_token: str = Header(None)):
-    validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token)
+    validate_token_result = match_token_with_person_id_http(person_id=person_id, auth_token=pa_token)
     if validate_token_result != True:
         return validate_token_result
     if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
@@ -297,8 +297,8 @@ def v1_add_user_calendar_event(request: Request, person_id: str, pa_token: str =
                                req_body: json_body.CalendarEventObject = None):
     mongoSession = requests.Session()
     print(dict(req_body))
-    validate_token_result = match_token_with_person_id(person_id=person_id, auth_token=pa_token,
-                                                       requests_session=mongoSession)
+    validate_token_result = match_token_with_person_id_http(person_id=person_id, auth_token=pa_token,
+                                                            requests_session=mongoSession)
     if validate_token_result != True:
         return validate_token_result
     """add the event detail"""
@@ -373,7 +373,7 @@ def v1_add_user_calendar_event(request: Request, event_id: int, req_body: json_b
     if len(str(event_id)) != 16:
         return JSONResponse(status_code=400, content={"status": "malformed event_id"})
     # Get person_id from token
-    person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+    person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
     # Check is have sufficient permission to modify the event
@@ -439,7 +439,7 @@ def v1_add_user_calendar_event(request: Request, event_id: int, req_body: json_b
 @router.get("/v1/universal/user/calendar/event", tags=["V1"])
 def v1_universal_user_calendar_event(request: Request, event_id: int, pa_token: Optional[str] = Header("")):
     mongoSession = requests.Session()
-    person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+    person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if len(str(event_id)) != 16:
         return JSONResponse(status_code=400, content={"status": "malformed event_id"})
     find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id},
@@ -460,7 +460,7 @@ def v1_universal_user_calendar_event(request: Request, event_id_list: List[int] 
                                      pa_token: Optional[str] = Header("")):
     print(event_id_list)
     mongoSession = requests.Session()
-    person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+    person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     result_calendar_event = []
     for event_id in event_id_list:
         try:
@@ -488,7 +488,7 @@ def v1_delete_user_calendar_event(request: Request, event_id: int, pa_token: str
     mongoSession = requests.Session()
     if len(str(event_id)) != 16:
         return JSONResponse(status_code=400, content={"status": "malformed event_id"})
-    person_id = find_person_id_with_token(auth_token=pa_token, requests_session=mongoSession)
+    person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
     if find_query is None:
         return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
@@ -533,7 +533,7 @@ def v1_registration_user(request: Request):
 
 @router.get("/v1/user/person_id", tags=["V1"])
 def v1_get_user_person_id(request: Request, pa_token: str = Header(None)):
-    check_result = find_person_id_with_token(auth_token=pa_token)
+    check_result = find_person_id_with_token_http(auth_token=pa_token)
     if check_result is not None:
         return JSONResponse(status_code=200, content={"status": "success", "person_id": check_result})
     else:

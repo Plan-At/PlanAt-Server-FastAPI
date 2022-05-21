@@ -39,3 +39,7 @@ def insert_many(db_client: Database, collection: str, document_body: List[dict])
 
 def replace_one(db_client: Database, collection: str, find_filter: dict, document_body: dict):
     return db_client[collection].replace_one(filter=find_filter, replacement=document_body)
+
+
+def update_one(db_client: Database, collection: str, find_filter: dict, changes: dict):
+    return db_client[collection].update_one(filter=find_filter, update=changes)

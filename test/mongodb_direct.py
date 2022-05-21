@@ -39,6 +39,10 @@ def replace_one(db_client: Database, collection: str, find_filter: dict, documen
     return db_client[collection].replace_one(filter=find_filter, replacement=document_body)
 
 
+def update_one(db_client: Database, collection: str, find_filter: dict, changes: dict):
+    return db_client[collection].update_one(filter=find_filter, update=changes)
+
+
 if __name__ == "__main__":
     client = MongoClient(TOKEN["mongodb"]["driver_url"])
     db = client.get_database("PlanAtDev")
@@ -50,5 +54,9 @@ if __name__ == "__main__":
     # print(delete_many(db, "TokenV3", {"person_id": "1234567890"}).deleted_count)
     # print(insert_one(db, "TokenV3", {"a": "b"}).inserted_id)
     # print(insert_many(db, "TokenV3", [{}, {}]).inserted_ids)
-    _replace_one = replace_one(db, "TokenV3", {"a": "b"}, {"a": "x"})
-    print(_replace_one.matched_count, _replace_one.modified_count)
+    # _replace_one = replace_one(db, "TokenV3", {"a": "b"}, {"a": "x"})
+    # print(_replace_one.matched_count, _replace_one.modified_count)
+    # _update_one = update_one(db, "CalendarEventIndex", {"person_id": "1"}, {"$push": {"event_id_list": 114514}})
+    # print(_update_one.matched_count, _update_one.modified_count)
+    _update_one = update_one(db, "CalendarEventIndex", {"person_id": "1"}, {"$pull": {"event_id_list": 114514}})
+    print(_update_one.matched_count, _update_one.modified_count)

@@ -22,6 +22,7 @@ from util import random_content
 
 router = APIRouter()
 
+
 # TODO return both image body and the captcha id
 @router.get("/image", tags=["V2"])
 async def v2_generate_captcha_image():

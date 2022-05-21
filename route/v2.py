@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 
 # Local file
 from util import random_content, json_body
-from util.token_tool import get_person_id_with_token, find_person_id_with_token
+from util.token_tool import get_person_id_with_token
 import util.pymongo_wrapper as DocumentDB
 import util.json_filter as JSONFilter
 
@@ -32,7 +32,7 @@ async def v2_endpoint():
 async def v2_create_calendar_event(request: Request, req_body: json_body.CalendarEventObject, pa_token: str = Header(None)):
     mongoSession = DocumentDB.get_client()
     print(dict(req_body))
-    person_id = get_person_id_with_token(pa_token=pa_token)
+    person_id = get_person_id_with_token(pa_token=pa_token, db_client=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "no user found for this token", "pa_token": pa_token})
     """add the event detail"""
@@ -83,17 +83,10 @@ async def v2_create_calendar_event(request: Request, req_body: json_body.Calenda
                                          db_client=mongoSession)
     print(insert_query.inserted_id)
     """add record to the index"""
-    event_id_index = DocumentDB.find_one(collection="CalendarEventIndex",
-                                         find_filter={"person_id": person_id},
-                                         db_client=mongoSession)
-    if event_id_index is None:
-        return JSONResponse(status_code=404, content={"status": "user calender_event_index not found", "event_id": new_event_id})
-    del event_id_index["_id"]  # If not remove _id when replace will get error
-    event_id_index["event_id_list"].append(new_event_id)
-    index_update_query = DocumentDB.replace_one(
+    index_update_query = DocumentDB.update_one(
                                           collection="CalendarEventIndex",
                                           find_filter={"person_id": person_id},
-                                          document_body=event_id_index,
+                                          changes={"$push": {"event_id_list": new_event_id}},
                                           db_client=mongoSession)
     print(index_update_query)
     if index_update_query.matched_count != 1 and index_update_query.modified_count != 1:
@@ -112,7 +105,7 @@ async def v2_get_calendar_event(request: Request,
                                 pa_token: Optional[str] = Header("")):
     print(event_id_list)
     mongoSession = DocumentDB.get_client()
-    person_id = find_person_id_with_token(auth_token=pa_token)
+    person_id = get_person_id_with_token(pa_token=pa_token, db_client=mongoSession)
     result_calendar_event = []
     for event_id in event_id_list:
         try:
