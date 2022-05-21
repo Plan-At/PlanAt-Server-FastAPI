@@ -53,7 +53,7 @@ def find_person_id_with_token(auth_token: str, requests_session=requests.Session
         return db_query["person_id"]
 
 
-def get_person_id_with_token(pa_token: str, requests_session=requests.Session()):
+def get_person_id_with_token(pa_token: str, requests_session: requests.Session = requests.Session()):
     """
     All the check to the token is done here
     Will validate person_id
