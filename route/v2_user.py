@@ -1,15 +1,10 @@
 # Builtin library
-from typing import Optional, List
-import json
 from datetime import datetime
-import time
 import hashlib
-import requests
 import uuid
 
 # Framework core library
 from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse, StreamingResponse
 from fastapi import APIRouter, Header
 from fastapi.responses import JSONResponse
 
@@ -135,7 +130,7 @@ async def v2_delete_user(request: Request, name_and_password: json_body.UnsafeLo
         calendar_event_index = calendar_event_index_query["event_id_list"]
         for each_calendar_event_id in calendar_event_index:
             calendar_event_count += DocumentDB.delete_one(db_client=db_client, collection="CalendarEventEntry", find_filter={"event_id": each_calendar_event_id}).deleted_count
-    # deleted based on the rank of importance and regenerate possibility
+    # Order based on the rank of importance and regenerate possibility
     token_count = DocumentDB.delete_many(db_client=db_client, collection="TokenV3", find_filter={"person_id": person_id}).deleted_count
     image_count = DocumentDB.delete_one(db_client=db_client, collection="ImageHosting", find_filter={"person_id": person_id}).deleted_count
     collection_CalendarEventIndex = DocumentDB.delete_one(db_client=db_client, collection="CalendarEventIndex", find_filter={"person_id": person_id}).deleted_count
@@ -147,9 +142,9 @@ async def v2_delete_user(request: Request, name_and_password: json_body.UnsafeLo
                                  "deleted_token_count": token_count,
                                  "deleted_calendar_event_count": calendar_event_count,
                                  "deleted_image_count": image_count,
-                                 "deleted_calendar_event_index": collection_CalendarEventIndex == 1,
-                                 "deleted_user_profile": collection_User == 1,
-                                 "deleted_login_credential": collection_Login == 1})
+                                 "delete_calendar_event_index": collection_CalendarEventIndex == 1,
+                                 "delete_user_profile": collection_User == 1,
+                                 "delete_login_credential": collection_Login == 1})
 
 
 @router.get("/profile", tags=["V2"])

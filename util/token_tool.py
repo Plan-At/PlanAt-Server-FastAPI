@@ -12,7 +12,7 @@ from util.custom_exception import TokenExpiredException
 def check_token_exist_http(auth_token: str):
     if len(auth_token) != AuthConfig.TOKEN_LENGTH:
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed token"})
-    db_query = DocumentDBRelay.find_one(target_collection="TokenV1", find_filter={"token_value": auth_token})
+    db_query = DocumentDBRelay.find_one(target_collection="TokenV3", find_filter={"token_value": auth_token})
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "token not found", "pa-token": auth_token})
     return True
@@ -47,7 +47,7 @@ def find_person_id_with_token_http(auth_token: str, requests_session=requests.Se
         return ""
     if len(auth_token) != AuthConfig.TOKEN_LENGTH:
         return ""
-    db_query = DocumentDBRelay.find_one(target_collection="TokenV1", find_filter={"token_value": auth_token}, requests_session=requests_session)
+    db_query = DocumentDBRelay.find_one(target_collection="TokenV3", find_filter={"token_value": auth_token}, requests_session=requests_session)
     print(db_query)
     if db_query is None:
         return ""
