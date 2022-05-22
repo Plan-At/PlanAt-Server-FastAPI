@@ -1,6 +1,5 @@
 # Builtin library
 from typing import Optional, List
-import sys
 import json
 from datetime import datetime
 import time

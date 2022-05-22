@@ -1,6 +1,5 @@
 # Builtin library
 from typing import Optional, List
-import sys
 import json
 from datetime import datetime
 import time
@@ -17,7 +16,6 @@ from fastapi.responses import JSONResponse
 # Local file
 from util import random_content, json_body
 import util.pymongo_wrapper as DocumentDB
-from util.pymongo_wrapper import DB
 
 router = APIRouter()
 
@@ -120,8 +118,9 @@ async def v2_create_user(request: Request, user_profile: json_body.UserProfileOb
 async def v2_delete_user(request: Request, name_and_password: json_body.UnsafeLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
+    person_id = name_and_password.person_id
     credential_verify_query = DocumentDB.find_one(collection="LoginV1",
-                                                  find_filter={"person_id": name_and_password.person_id},
+                                                  find_filter={"person_id": person_id},
                                                   db_client=db_client)
     print(credential_verify_query)
     # the hash string generated using hashlib is lowercase
@@ -130,7 +129,27 @@ async def v2_delete_user(request: Request, name_and_password: json_body.UnsafeLo
                             content={"status": "not found or not match",
                                      "person_id": name_and_password.person_id,
                                      "password": name_and_password.password})
+    calendar_event_index_query = DocumentDB.find_one(db_client=db_client, collection="CalendarEventIndex", find_filter={"person_id": person_id})
+    calendar_event_count = 0
+    if calendar_event_index_query is not None:
+        calendar_event_index = calendar_event_index_query["event_id_list"]
+        for each_calendar_event_id in calendar_event_index:
+            calendar_event_count += DocumentDB.delete_one(db_client=db_client, collection="CalendarEventEntry", find_filter={"event_id": each_calendar_event_id}).deleted_count
+    # deleted based on the rank of importance and regenerate possibility
+    token_count = DocumentDB.delete_many(db_client=db_client, collection="TokenV3", find_filter={"person_id": person_id}).deleted_count
+    image_count = DocumentDB.delete_one(db_client=db_client, collection="ImageHosting", find_filter={"person_id": person_id}).deleted_count
+    collection_CalendarEventIndex = DocumentDB.delete_one(db_client=db_client, collection="CalendarEventIndex", find_filter={"person_id": person_id}).deleted_count
+    collection_User = DocumentDB.delete_one(db_client=db_client, collection="User", find_filter={"person_id": person_id}).deleted_count
+    collection_Login = DocumentDB.delete_one(db_client=db_client, collection="LoginV1", find_filter={"person_id": person_id}).deleted_count
     mongo_client.close()
+    return JSONResponse(status_code=200,
+                        content={"status": "everything bind to this person_id being deleted and unrecoverable",
+                                 "deleted_token_count": token_count,
+                                 "deleted_calendar_event_count": calendar_event_count,
+                                 "deleted_image_count": image_count,
+                                 "deleted_calendar_event_index": collection_CalendarEventIndex == 1,
+                                 "deleted_user_profile": collection_User == 1,
+                                 "deleted_login_credential": collection_Login == 1})
 
 
 @router.get("/profile", tags=["V2"])

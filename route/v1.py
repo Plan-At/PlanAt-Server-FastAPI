@@ -1,5 +1,4 @@
 from typing import Optional, List
-import sys
 import json
 from datetime import datetime
 import time
@@ -11,8 +10,7 @@ from starlette.responses import Response, RedirectResponse
 from fastapi import APIRouter, Header, File, Query
 from fastapi.responses import JSONResponse
 
-if sys.platform == "win32":
-    import util.mongodb_data_api as DocumentDB
+import util.mongodb_data_api as DocumentDB
 import util.json_filter as JSONFilter
 from util.token_tool import match_token_with_person_id_http, check_token_exist_http, find_person_id_with_token_http
 from util import json_body, random_content, image4io
