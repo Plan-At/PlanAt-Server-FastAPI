@@ -1,20 +1,13 @@
 # Builtin library
-from typing import Optional, List
-import json
 from datetime import datetime
-import time
 import hashlib
-import requests
-import uuid
 
 # Framework core library
 from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse, StreamingResponse
-from fastapi import APIRouter, Header, File, Query
+from fastapi import APIRouter, Header
 from fastapi.responses import JSONResponse
 
 # Local file
-from constant import AuthConfig
 from util import random_content, json_body
 import util.pymongo_wrapper as DocumentDB
 
@@ -40,7 +33,7 @@ async def v2_generate_auth_token(request: Request, name_and_password: json_body.
     while True:
         # Checking if the same token already being use
         # There is no do-while loop in Python
-        generated_token = random_content.generator_access_token(length=AuthConfig.TOKEN_LENGTH)
+        generated_token = random_content.generate_access_token()
         current_checking_query = DocumentDB.find_one(collection="TokenV1",
                                                      find_filter={"token_value": generated_token},
                                                      db_client=db_client)

@@ -1,5 +1,6 @@
 import random
 from datetime import datetime
+from constant import AuthConfig
 
 
 def get_str_from_base(base: str, length: int) -> str:
@@ -20,8 +21,8 @@ def get_int(length: int) -> int:
             print("length not match that the result contain space")
 
 
-def generator_access_token(length: int) -> str:
-    return get_str_from_base(base="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890", length=length)
+def generate_access_token() -> str:
+    return get_str_from_base(base="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890", length=AuthConfig.TOKEN_LENGTH)
 
 
 def generate_event_id():

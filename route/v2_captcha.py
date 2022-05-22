@@ -1,17 +1,9 @@
 # Builtin library
-from typing import Optional, List
-import json
-from datetime import datetime
-import time
-import hashlib
-import requests
 import uuid
 
 # Framework core library
-from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse, StreamingResponse
-from fastapi import APIRouter, Header, File, Query
-from fastapi.responses import JSONResponse
+from starlette.responses import StreamingResponse
+from fastapi import APIRouter
 
 # External library
 from captcha.image import ImageCaptcha

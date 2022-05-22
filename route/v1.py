@@ -1,12 +1,10 @@
 from typing import Optional, List
 import json
 from datetime import datetime
-import time
 import hashlib
 import requests
 
 from starlette.requests import Request
-from starlette.responses import Response, RedirectResponse
 from fastapi import APIRouter, Header, File, Query
 from fastapi.responses import JSONResponse
 
@@ -554,7 +552,7 @@ def v1_auth_unsafe_login(request: Request, name_and_password: json_body.UnsafeLo
     # Checking if the same token already being use
     # There is no do-while loop in Python
     while True:
-        generated_token = random_content.generator_access_token(length=AuthConfig.TOKEN_LENGTH)
+        generated_token = random_content.generate_access_token()
         current_checking_query = DocumentDB.find_one("TokenV1", find_filter={"token_value": generated_token},
                                                      requests_session=mongoSession)
         if current_checking_query is None:
