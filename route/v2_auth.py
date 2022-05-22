@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.post("/token/generate", tags=["V2"])
-async def v2_generate_auth_token(request: Request, name_and_password: json_body.UnsafeLoginBody):
+async def v2_generate_auth_token(request: Request, name_and_password: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     credential_verify_query = DocumentDB.find_one(collection="LoginV1",
@@ -79,7 +79,7 @@ async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
 
 # TODO: revoke existing session/token
 @router.post("/password/update", tags=["V2"])
-async def v2_update_auth_password(request: Request, old_password: json_body.UnsafeLoginBody, new_password: json_body.UnsafeLoginBody):
+async def v2_update_auth_password(request: Request, old_password: json_body.PasswordLoginBody, new_password: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     credential_verify_query = DocumentDB.find_one(collection="LoginV1",

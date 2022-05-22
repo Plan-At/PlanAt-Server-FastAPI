@@ -48,11 +48,11 @@ class UpdateUserProfileStatus(BaseModel):
 
 
 class CalendarEventObject(BaseModel):
-    access_control_list: List[ACObject]
     display_name: str = "my event"
     description: str = "my description"
     start_time: TimeObject
     end_time: TimeObject
+    access_control_list: List[ACObject]
     type_list: List[TypeObject]
     tag_list: List[TagObject]
 
@@ -61,7 +61,7 @@ class RegistrationUser(BaseModel):
     name: str
 
 
-class UnsafeLoginBody(BaseModel):
+class PasswordLoginBody(BaseModel):
     person_id: str
     password: str
     token_lifespan: int = 60 * 60 * 24 * 1
