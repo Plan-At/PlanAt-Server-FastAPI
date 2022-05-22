@@ -14,7 +14,8 @@ router = APIRouter()
 
 @router.post("/image/upload", tags=["V2"])
 async def v2_upload_image(request: Request, image_file_bytes: bytes = File(..., max_length=ContentLimit.IMAGE_SIZE), pa_token: str = Header(None)):
-    db_client = DocumentDB.get_client()
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
     person_id = get_person_id_with_token(pa_token, db_client)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "you need to upload an image", "pa_token": pa_token})
@@ -44,13 +45,15 @@ async def v2_upload_image(request: Request, image_file_bytes: bytes = File(..., 
     }
     db_action_result = DocumentDB.insert_one(collection="ImageHosting", document_body=report_card, db_client=db_client)
     print(db_action_result)
+    mongo_client.close()
     return JSONResponse(status_code=201,
                         content={"status": "success", "image_id": assigned_id, "image_url": image_info["uploadedFiles"][0]["url"]})
 
 
 @router.post("/image/delete", tags=["V2"])
 async def v2_delete_image(request: Request, image_id: str, pa_token: str = Header(None)):
-    db_client = DocumentDB.get_client()
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
     person_id = get_person_id_with_token(pa_token, db_client)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "you need to upload an image", "pa_token": pa_token})
@@ -70,5 +73,6 @@ async def v2_delete_image(request: Request, image_id: str, pa_token: str = Heade
     if db_action_result.deleted_count != 1:
         return JSONResponse(status_code=500,
                             content={"status": "image deleted from hosting service but failed to remove relevant record from our database", "image_id": image_id})
+    mongo_client.close()
     return JSONResponse(status_code=201,
                         content={"status": "success", "image_id": image_id})

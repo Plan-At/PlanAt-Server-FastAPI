@@ -5,10 +5,11 @@ from pymongo import MongoClient
 from pymongo.database import Database
 
 TOKEN = json.load(open("app.token.json"))
+DB = "PlanAtDev"
 
 
-def get_client():
-    return MongoClient(TOKEN["mongodb"]["driver_url"]).get_database("PlanAtDev")
+def get_client() -> MongoClient:
+    return MongoClient(TOKEN["mongodb"]["driver_url"])
 
 
 def find_one(db_client: Database, collection: str, find_filter: dict):
