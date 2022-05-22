@@ -6,3 +6,4 @@ slowapi
 starlette
 python-multipart
 captcha
+pymongo

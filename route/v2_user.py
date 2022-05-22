@@ -11,6 +11,9 @@ from fastapi.responses import JSONResponse
 # Local file
 from util import random_content, json_body
 import util.pymongo_wrapper as DocumentDB
+import util.json_filter as JSONFilter
+from util.token_tool import get_person_id_with_token
+from constant import AuthConfig
 
 router = APIRouter()
 
@@ -147,26 +150,49 @@ async def v2_delete_user(request: Request, name_and_password: json_body.UnsafeLo
                                  "delete_login_credential": collection_Login == 1})
 
 
-@router.get("/profile", tags=["V2"])
-async def v2_get_user_profile():
-    pass
+@router.get("/profile/get", tags=["V2"])
+async def v2_get_user_profile(request: Request, person_id: str):
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
+        return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
+    db_query = DocumentDB.find_one(collection="User", find_filter={"person_id": person_id}, db_client=db_client)
+    if db_query is None:
+        return JSONResponse(status_code=403, content={"status": "user not found"})
+    return JSONFilter.public_user_profile(input_json=db_query)
 
 
-@router.post("/profile/name/display_name", tags=["V2"])
-async def v2_update_user_profile_name_displayname():
-    pass
+@router.post("/profile/name/display_name/update", tags=["V2"])
+async def v2_update_user_profile_name_displayname(request: Request, req_body: json_body.UpdateUserProfileName_DisplayName, pa_token: str = Header(None)):
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    person_id = get_person_id_with_token(pa_token=pa_token, db_client=db_client)
+    if person_id == "":
+        return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
+    # This based on assumption of structure version is matched
+    update_query = DocumentDB.update_one(collection="User",
+                                         find_filter={"person_id": person_id},
+                                         changes={"$set": {"naming.display_name_full": req_body.display_name},  # Need use "." to connect on nested object
+                                                  "$push": {"naming.historical_name": req_body.display_name}},
+                                         db_client=db_client)
+    if update_query.matched_count != 1 and update_query.modified_count != 1:
+        return JSONResponse(status_code=500,
+                            content={"status": "failed to update",
+                                     "matched_count": update_query.matched_count,
+                                     "modified_count": update_query.modified_count})
+    return JSONResponse(status_code=200, content={"status": "success"})
 
 
-@router.post("/profile/about/description", tags=["V2"])
+@router.post("/profile/about/description/update", tags=["V2"])
 async def v2_update_user_profile_about_description():
     pass
 
 
-@router.post("/profile/status", tags=["V2"])
+@router.post("/profile/status/update", tags=["V2"])
 async def v2_update_user_profile_status():
     pass
 
 
-@router.post("/profile/picture", tags=["V2"])
+@router.post("/profile/picture/update", tags=["V2"])
 async def v2_update_user_profile_picture():
     pass

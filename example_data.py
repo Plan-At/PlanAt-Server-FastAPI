@@ -316,7 +316,7 @@ USER_PROFILE_7 = {
 HOSTING_IMAGE = {
     "structure_version": 1,
     "image_url": "https://cdn.image4.io/as-an-imagebed/f_auto/Plan-At/usercontent/16490351977f8394ebab084c34406531918337c425.png",
-    "image_id": "",
+    "image_id": "16490351977f8394ebab084c34406531918337c425",
     "image_file_name": "16490351977f8394ebab084c34406531918337c425.png",
     "image_file_path": "/Plan-At/usercontent/16490351977f8394ebab084c34406531918337c425.png",
     "image_size": 0,
