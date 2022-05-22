@@ -14,15 +14,20 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from constant import ServerConfig, RateLimitConfig, MediaAssets, START_TIME, PROGRAM_HASH
-from route import fake, v1, v2
+from route import fake, v1, v2, v2_captcha, v2_auth, v2_user, v2_calendar, v2_hosting
 
 app = FastAPI()
 
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-app.include_router(v1.router)
 app.include_router(v2.router, prefix="/v2")
+app.include_router(v2_auth.router, prefix="/v2/auth")
+app.include_router(v2_calendar.router, prefix="/v2/calendar")
+app.include_router(v2_user.router, prefix="/v2/user")
+app.include_router(v2_captcha.router, prefix="/v2/captcha")
+app.include_router(v2_hosting.router, prefix="/v2/hosting")
+app.include_router(v1.router)
 app.include_router(fake.router, prefix="/fake")
 
 

@@ -64,7 +64,7 @@ class RegistrationUser(BaseModel):
 class UnsafeLoginBody(BaseModel):
     person_id: str
     password: str
-    lifespan: int = 60 * 60 * 24 * 1
+    token_lifespan: int = 60 * 60 * 24 * 1
 
 
 class PictureObject(BaseModel):
@@ -83,6 +83,7 @@ class PhoneNumberObject(BaseModel):
 
 
 class PhysicalAddressObject(BaseModel):
+    full_address: str
     street_address: str
     city: str
     province: str
@@ -131,5 +132,6 @@ class ContactMethodSection(BaseModel):
 class UserProfileObject(BaseModel):
     naming: NamingSection
     picture: PictureSection
+    about: AboutSection
     status: StatusSection
     contact_method_collection: ContactMethodSection
