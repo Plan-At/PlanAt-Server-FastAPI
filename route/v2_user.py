@@ -162,18 +162,21 @@ async def v2_get_user_profile(request: Request, person_id: str):
     return JSONFilter.public_user_profile(input_json=db_query)
 
 
-@router.post("/profile/name/display_name/update", tags=["V2"])
-async def v2_update_user_profile_name_displayname(request: Request, req_body: json_body.UpdateUserProfileName_DisplayName, pa_token: str = Header(None)):
+@router.post("/profile/name/update", tags=["V2"])
+async def v2_update_user_profile_name(request: Request, req_body: json_body.NamingSection, pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     person_id = get_person_id_with_token(pa_token=pa_token, db_client=db_client)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
     # This based on assumption of structure version is matched
+    # TODO: forbid special characters check if unique_name already being used
     update_query = DocumentDB.update_one(collection="User",
                                          find_filter={"person_id": person_id},
-                                         changes={"$set": {"naming.display_name_full": req_body.display_name},  # Need use "." to connect on nested object
-                                                  "$push": {"naming.historical_name": req_body.display_name}},
+                                         changes={"$set": {"naming.unique_name": req_body.unique_name,  # Need use "." to connect on nested object
+                                                           "naming.display_name_full": req_body.display_name_full,
+                                                           "naming.display_name_partial": req_body.display_name_partial},
+                                                  "$push": {"naming.historical_name": req_body.display_name_full}},
                                          db_client=db_client)
     if update_query.matched_count != 1 and update_query.modified_count != 1:
         return JSONResponse(status_code=500,
@@ -183,8 +186,8 @@ async def v2_update_user_profile_name_displayname(request: Request, req_body: js
     return JSONResponse(status_code=200, content={"status": "success"})
 
 
-@router.post("/profile/about/description/update", tags=["V2"])
-async def v2_update_user_profile_about_description():
+@router.post("/profile/about/update", tags=["V2"])
+async def v2_update_user_profile_about():
     pass
 
 
