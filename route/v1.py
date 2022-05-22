@@ -8,7 +8,7 @@ from starlette.requests import Request
 from fastapi import APIRouter, Header, File, Query
 from fastapi.responses import JSONResponse
 
-import util.mongodb_data_api as DocumentDB
+import util.mongodb_data_api as SlowDB
 import util.json_filter as JSONFilter
 from util.token_tool import match_token_with_person_id_http, check_token_exist_http, find_person_id_with_token_http
 from util import json_body, random_content, image4io
@@ -42,7 +42,7 @@ def v1_create_user(request: Request, user_profile: json_body.UserProfileObject, 
 def v1_public_user_profile(request: Request, person_id: str):
     if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-    db_query = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
+    db_query = SlowDB.find_one(target_collection="User", find_filter={"person_id": person_id})
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "user not found"})
     return JSONFilter.public_user_profile(input_json=db_query)
@@ -55,7 +55,7 @@ def v1_private_user_profile(request: Request, person_id: str, pa_token: str = He
         return validate_token_result
     if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-    db_query = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
+    db_query = SlowDB.find_one(target_collection="User", find_filter={"person_id": person_id})
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "user not found"})
     return JSONFilter.private_user_profile(input_json=db_query)
@@ -69,13 +69,13 @@ def v1_update_user_profile_name_displayName(request: Request, person_id: str, pa
         return validate_token_result
     if len(request_body.display_name) > ContentLimit.DISPLAY_NAME_LENGTH:
         return JSONResponse(status_code=400, content={"status": "new display_name too long"})
-    old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
+    old_profile = SlowDB.find_one(target_collection="User", find_filter={"person_id": person_id})
     if old_profile is None:
         return JSONResponse(status_code=404, content={"status": "user not found"})
     del old_profile["_id"]
     old_profile["naming"]["display_name"] = request_body.display_name
-    update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
-                                          document_body=old_profile)
+    update_query = SlowDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
+                                      document_body=old_profile)
     print(update_query)
     if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
         return JSONResponse(status_code=200, content={"status": "success"})
@@ -92,14 +92,14 @@ def v1_update_user_profile_about_description(request: Request, person_id: str, p
         return JSONResponse(status_code=400, content={"status": "new short_description too long"})
     elif len(request_body.full_description) > ContentLimit.LONG_DESCRIPTION:
         return JSONResponse(status_code=400, content={"status": "new full_description too long"})
-    old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
+    old_profile = SlowDB.find_one(target_collection="User", find_filter={"person_id": person_id})
     if old_profile is None:
         return JSONResponse(status_code=404, content={"status": "user not found"})
     del old_profile["_id"]
     old_profile["about"]["short_description"] = request_body.short_description
     old_profile["about"]["full_description"] = request_body.full_description
-    update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
-                                          document_body=old_profile)
+    update_query = SlowDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
+                                      document_body=old_profile)
     print(update_query)
     if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
         return JSONResponse(status_code=200, content={"status": "success"})
@@ -114,13 +114,13 @@ def v1_update_user_profile_status(request: Request, person_id: str, pa_token: st
         return validate_token_result
     if len(request_body.current_status) > ContentLimit.USER_STATUS:
         return JSONResponse(status_code=400, content={"status": "new current_status too long"})
-    old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id})
+    old_profile = SlowDB.find_one(target_collection="User", find_filter={"person_id": person_id})
     if old_profile is None:
         return JSONResponse(status_code=404, content={"status": "user not found"})
     del old_profile["_id"]
     old_profile["status"]["current_status"] = request_body.current_status
-    update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
-                                          document_body=old_profile)
+    update_query = SlowDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
+                                      document_body=old_profile)
     print(update_query)
     if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
         return JSONResponse(status_code=200, content={"status": "success"})
@@ -134,15 +134,15 @@ def v1_update_user_profile_contact_email_primary(request: Request, full_address:
     person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
-    old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id},
-                                      requests_session=mongoSession)
+    old_profile = SlowDB.find_one(target_collection="User", find_filter={"person_id": person_id},
+                                  requests_session=mongoSession)
     if old_profile is None:
         return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
     del old_profile["_id"]
     old_profile["contact_method_collection"]["email_primary"]["full_address"] = full_address
     old_profile["contact_method_collection"]["email_primary"]["domain_name"] = full_address.split("@")[1]
-    update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
-                                          document_body=old_profile, requests_session=mongoSession)
+    update_query = SlowDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
+                                      document_body=old_profile, requests_session=mongoSession)
     print(update_query)
     if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
         return JSONResponse(status_code=200, content={"status": "success", "full_address": full_address})
@@ -156,15 +156,15 @@ def v1_update_user_profile_contact_phone(request: Request, country_code: str, re
     person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
-    old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id},
-                                      requests_session=mongoSession)
+    old_profile = SlowDB.find_one(target_collection="User", find_filter={"person_id": person_id},
+                                  requests_session=mongoSession)
     if old_profile is None:
         return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
     del old_profile["_id"]
     old_profile["contact_method_collection"]["phone"]["country_code"] = country_code
     old_profile["contact_method_collection"]["phone"]["regular_number"] = regular_number
-    update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
-                                          document_body=old_profile, requests_session=mongoSession)
+    update_query = SlowDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
+                                      document_body=old_profile, requests_session=mongoSession)
     print(update_query)
     if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
         return JSONResponse(status_code=200, content={"status": "success", "country_code": country_code,
@@ -180,8 +180,8 @@ def v1_update_user_profile_contact_physical_address(request: Request, full_addre
     person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
-    old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id},
-                                      requests_session=mongoSession)
+    old_profile = SlowDB.find_one(target_collection="User", find_filter={"person_id": person_id},
+                                  requests_session=mongoSession)
     if old_profile is None:
         return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
     del old_profile["_id"]
@@ -192,8 +192,8 @@ def v1_update_user_profile_contact_physical_address(request: Request, full_addre
     old_profile["contact_method_collection"]["physical_address"]["country"] = country
     old_profile["contact_method_collection"]["physical_address"]["continent"] = continent
     old_profile["contact_method_collection"]["physical_address"]["post_code"] = post_code
-    update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
-                                          document_body=old_profile, requests_session=mongoSession)
+    update_query = SlowDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
+                                      document_body=old_profile, requests_session=mongoSession)
     print(update_query)
     if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
         return JSONResponse(status_code=200,
@@ -210,16 +210,16 @@ def v1_update_user_profile_contact_twitter(request: Request, user_name: str, use
     person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
-    old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id},
-                                      requests_session=mongoSession)
+    old_profile = SlowDB.find_one(target_collection="User", find_filter={"person_id": person_id},
+                                  requests_session=mongoSession)
     if old_profile is None:
         return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
     del old_profile["_id"]
     old_profile["contact_method_collection"]["twitter"]["user_name"] = user_name
     old_profile["contact_method_collection"]["twitter"]["user_handle"] = user_handle
     old_profile["contact_method_collection"]["twitter"]["user_id"] = user_id
-    update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
-                                          document_body=old_profile, requests_session=mongoSession)
+    update_query = SlowDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
+                                      document_body=old_profile, requests_session=mongoSession)
     print(update_query)
     if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
         return JSONResponse(status_code=200,
@@ -235,8 +235,8 @@ def v1_update_user_profile_picture(request: Request, image_url: str, target: str
     person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
-    old_profile = DocumentDB.find_one(target_collection="User", find_filter={"person_id": person_id},
-                                      requests_session=mongoSession)
+    old_profile = SlowDB.find_one(target_collection="User", find_filter={"person_id": person_id},
+                                  requests_session=mongoSession)
     if old_profile is None:
         return JSONResponse(status_code=404, content={"status": "user profile not found", "person_id": person_id})
     del old_profile["_id"]
@@ -244,8 +244,8 @@ def v1_update_user_profile_picture(request: Request, image_url: str, target: str
         old_profile["picture"]["avatar"]["image_url"] = image_url
     elif target == "background":
         old_profile["picture"]["background"]["image_url"] = image_url
-    update_query = DocumentDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
-                                          document_body=old_profile, requests_session=mongoSession)
+    update_query = SlowDB.replace_one(target_collection="User", find_filter={"person_id": person_id},
+                                      document_body=old_profile, requests_session=mongoSession)
     print(update_query)
     if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
         return JSONResponse(status_code=200,
@@ -260,7 +260,7 @@ def v1_private_user_calendar_event_index(request: Request, person_id: str, pa_to
         return validate_token_result
     if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-    db_query = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
+    db_query = SlowDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "user not found"})
     return JSONFilter.private_user_calendar_event_index(input_json=db_query)
@@ -271,7 +271,7 @@ def v1_private_user_calendar_event_index(request: Request, person_id: str, pa_to
 def v1_public_user_calendar_event_index(request: Request, person_id: str):
     if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-    db_query = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
+    db_query = SlowDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id})
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "user not found"})
     filtered_result = {
@@ -280,8 +280,8 @@ def v1_public_user_calendar_event_index(request: Request, person_id: str):
         "event_id_list": []
     }
     for each_event_id in db_query["event_id_list"][:ContentLimit.PUBLIC_EVENT_ID_INDEX]:
-        find_query = DocumentDB.find_one(target_collection="CalendarEventEntry",
-                                         find_filter={"event_id": each_event_id})
+        find_query = SlowDB.find_one(target_collection="CalendarEventEntry",
+                                     find_filter={"event_id": each_event_id})
         if find_query != None:
             if find_query["visibility"] == "public":
                 filtered_result["event_id_list"].append(each_event_id)
@@ -341,18 +341,18 @@ def v1_add_user_calendar_event(request: Request, person_id: str, pa_token: str =
         return JSONResponse(status_code=400,
                             content={"status": "person_id or canonical_name in access_control_list is required"})
     print(new_event_entry)
-    insert_query = DocumentDB.insert_one(target_collection="CalendarEventEntry", document_body=new_event_entry,
-                                         requests_session=mongoSession)
+    insert_query = SlowDB.insert_one(target_collection="CalendarEventEntry", document_body=new_event_entry,
+                                     requests_session=mongoSession)
     print(insert_query)
     """add record to the index"""
-    event_id_index = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id},
-                                         requests_session=mongoSession)
+    event_id_index = SlowDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id},
+                                     requests_session=mongoSession)
     if event_id_index is None:
         return JSONResponse(status_code=404, content={"status": "user calender_event_index not found"})
     del event_id_index["_id"]  # If not remove _id when replace will get error
     event_id_index["event_id_list"].append(new_event_id)
-    update_query = DocumentDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id},
-                                          document_body=event_id_index, requests_session=mongoSession)
+    update_query = SlowDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id},
+                                      document_body=event_id_index, requests_session=mongoSession)
     print(update_query)
     if update_query["matchedCount"] == 1 and update_query["modifiedCount"] == 1:
         pass
@@ -374,8 +374,8 @@ def v1_add_user_calendar_event(request: Request, event_id: int, req_body: json_b
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
     # Check is have sufficient permission to modify the event
-    find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id},
-                                     requests_session=mongoSession)
+    find_query = SlowDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id},
+                                 requests_session=mongoSession)
     print(find_query)
     if find_query == None:
         return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
@@ -427,8 +427,8 @@ def v1_add_user_calendar_event(request: Request, event_id: int, req_body: json_b
         return JSONResponse(status_code=400,
                             content={"status": "person_id or canonical_name in access_control_list is required"})
     print(updated_event_entry)
-    insert_query = DocumentDB.replace_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id},
-                                          document_body=updated_event_entry, requests_session=mongoSession)
+    insert_query = SlowDB.replace_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id},
+                                      document_body=updated_event_entry, requests_session=mongoSession)
     print(insert_query)
     return JSONResponse(status_code=200, content={"status": "success", "event_id": event_id})
 
@@ -439,8 +439,8 @@ def v1_universal_user_calendar_event(request: Request, event_id: int, pa_token: 
     person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
     if len(str(event_id)) != 16:
         return JSONResponse(status_code=400, content={"status": "malformed event_id"})
-    find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id},
-                                     requests_session=mongoSession)
+    find_query = SlowDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id},
+                                 requests_session=mongoSession)
     if find_query == None:
         return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
     processed_find_query = JSONFilter.universal_calendar_event(input_json=find_query, person_id=person_id,
@@ -464,8 +464,8 @@ def v1_universal_user_calendar_event(request: Request, event_id_list: List[int] 
             if len(str(event_id)) != 16:
                 result_calendar_event.append({"status": "malformed event_id", "event_id": event_id})
             else:
-                find_query = DocumentDB.find_one(target_collection="CalendarEventEntry",
-                                                 find_filter={"event_id": event_id}, requests_session=mongoSession)
+                find_query = SlowDB.find_one(target_collection="CalendarEventEntry",
+                                             find_filter={"event_id": event_id}, requests_session=mongoSession)
                 if find_query is None:
                     result_calendar_event.append({"status": "calendar_event not found", "event_id": event_id})
                 processed_find_query = JSONFilter.universal_calendar_event(
@@ -486,7 +486,7 @@ def v1_delete_user_calendar_event(request: Request, event_id: int, pa_token: str
     if len(str(event_id)) != 16:
         return JSONResponse(status_code=400, content={"status": "malformed event_id"})
     person_id = find_person_id_with_token_http(auth_token=pa_token, requests_session=mongoSession)
-    find_query = DocumentDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
+    find_query = SlowDB.find_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id})
     if find_query is None:
         return JSONResponse(status_code=404, content={"status": "calendar_event not found"})
     processed_find_query = JSONFilter.universal_calendar_event(input_json=find_query, person_id=person_id,
@@ -496,8 +496,8 @@ def v1_delete_user_calendar_event(request: Request, event_id: int, pa_token: str
                             content={"status": f"unable to delete calendar_event {event_id} with current token"})
     # else:
     #     return JSONResponse(status_code=200, content={"status": "have sufficient permission but CalendarEvent not deleted yet"})
-    deletion_query = DocumentDB.delete_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id},
-                                           requests_session=mongoSession)
+    deletion_query = SlowDB.delete_one(target_collection="CalendarEventEntry", find_filter={"event_id": event_id},
+                                       requests_session=mongoSession)
     print(deletion_query)
     if deletion_query is None:
         return JSONResponse(status_code=404,
@@ -506,15 +506,15 @@ def v1_delete_user_calendar_event(request: Request, event_id: int, pa_token: str
         return JSONResponse(status_code=404,
                             content={"status": "calendar_event deleted but some error occurred", "event_id": event_id})
     """remove from the index"""
-    event_id_index = DocumentDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id},
-                                         requests_session=mongoSession)
+    event_id_index = SlowDB.find_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id},
+                                     requests_session=mongoSession)
     if event_id_index is None:
         return JSONResponse(status_code=404, content={"status": "user calendar_event_index not found"})
     del event_id_index["_id"]  # If not remove _id when replace will get error
     event_id_index["event_id_list"].remove(event_id)
-    update_query = DocumentDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id},
-                                          document_body=event_id_index,
-                                          requests_session=mongoSession)
+    update_query = SlowDB.replace_one(target_collection="CalendarEventIndex", find_filter={"person_id": person_id},
+                                      document_body=event_id_index,
+                                      requests_session=mongoSession)
     print(update_query)
     if update_query["matchedCount"] != 1 and update_query["modifiedCount"] != 1:
         return JSONResponse(status_code=500,
@@ -538,10 +538,10 @@ def v1_get_user_person_id(request: Request, pa_token: str = Header(None)):
 
 
 @router.post("/v1/auth/unsafe/login", tags=["V1"])
-def v1_auth_unsafe_login(request: Request, name_and_password: json_body.UnsafeLoginBody):
+def v1_auth_unsafe_login(request: Request, name_and_password: json_body.PasswordLoginBody):
     mongoSession = requests.Session()
-    credential_query = DocumentDB.find_one("LoginV1", find_filter={"person_id": name_and_password.person_id},
-                                           requests_session=mongoSession)
+    credential_query = SlowDB.find_one("LoginV1", find_filter={"person_id": name_and_password.person_id},
+                                       requests_session=mongoSession)
     print(credential_query)
     # the hash string generated using hashlib is lowercase
     if (credential_query is None) or not (
@@ -553,11 +553,11 @@ def v1_auth_unsafe_login(request: Request, name_and_password: json_body.UnsafeLo
     # There is no do-while loop in Python
     while True:
         generated_token = random_content.generate_access_token()
-        current_checking_query = DocumentDB.find_one("TokenV1", find_filter={"token_value": generated_token},
-                                                     requests_session=mongoSession)
+        current_checking_query = SlowDB.find_one("TokenV1", find_filter={"token_value": generated_token},
+                                                 requests_session=mongoSession)
         if current_checking_query is None:
             break
-    token_record_query = DocumentDB.insert_one(
+    token_record_query = SlowDB.insert_one(
         "TokenV1",
         document_body={
             "structure_version": 2,
@@ -579,7 +579,7 @@ def v1_auth_unsafe_logout(request: Request, pa_token: str = Header(None)):
     mongoSession = requests.Session()
     # Lack of extra verification
     # But just assuming the token not leaking to hecker or any bad actors
-    token_deletion_query = DocumentDB.delete_one(
+    token_deletion_query = SlowDB.delete_one(
         "TokenV1",
         find_filter={"token_value": pa_token},
         requests_session=mongoSession)
@@ -594,11 +594,11 @@ def v1_auth_unsafe_logout(request: Request, pa_token: str = Header(None)):
 
 # TODO: revoke existing session/token
 @router.post("/v1/auth/unsafe/password", tags=["V1"])
-def v1_auth_unsafe_change_password(request: Request, old_password: json_body.UnsafeLoginBody,
-                                   new_password: json_body.UnsafeLoginBody):
+def v1_auth_unsafe_change_password(request: Request, old_password: json_body.PasswordLoginBody,
+                                   new_password: json_body.PasswordLoginBody):
     mongoSession = requests.Session()
-    credential_verify_query = DocumentDB.find_one("LoginV1", find_filter={"person_id": old_password.person_id},
-                                                  requests_session=mongoSession)
+    credential_verify_query = SlowDB.find_one("LoginV1", find_filter={"person_id": old_password.person_id},
+                                              requests_session=mongoSession)
     print(credential_verify_query)
     # verify the old password
     if (credential_verify_query is None) or not (
@@ -613,8 +613,8 @@ def v1_auth_unsafe_change_password(request: Request, old_password: json_body.Uns
         "password_hash": hashlib.sha512(new_password.password.encode("utf-8")).hexdigest(),
         "password_length": len(new_password.password),
     }
-    credential_update_query = DocumentDB.replace_one("LoginV1", find_filter={"person_id": old_password.person_id},
-                                                     document_body=new_credential_entry, requests_session=mongoSession)
+    credential_update_query = SlowDB.replace_one("LoginV1", find_filter={"person_id": old_password.person_id},
+                                                 document_body=new_credential_entry, requests_session=mongoSession)
     print(credential_update_query)
     if credential_update_query["matchedCount"] != 1 and credential_update_query[
         "modifiedCount"] != 1:  # trying to make the break in the first place, if no error might proceed to other steps
@@ -648,7 +648,7 @@ def v1_upload_image(request: Request, image_file: bytes = File(..., max_length=C
             "image_height": image_info["uploadedFiles"][0]["height"],
             "hosting_provider": "image4io"
         }
-        db_action_result = DocumentDB.insert_one(target_collection="ImageHosting", document_body=report_card)
+        db_action_result = SlowDB.insert_one(target_collection="ImageHosting", document_body=report_card)
         print(db_action_result)
         return JSONResponse(status_code=201,
                             content={"status": "success", "image_url": image_info["uploadedFiles"][0]["url"]})

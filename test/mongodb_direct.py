@@ -1,9 +1,7 @@
-import pymongo
 import json
 from typing import List
 
 from pymongo.database import Database
-from pymongo.collection import Collection
 from pymongo import MongoClient
 
 TOKEN = json.load(open("app.token.json"))

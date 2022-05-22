@@ -11,6 +11,9 @@ from fastapi.responses import JSONResponse
 # Local file
 from util import random_content, json_body
 import util.pymongo_wrapper as DocumentDB
+import util.json_filter as JSONFilter
+from util.token_tool import get_person_id_with_token
+from constant import AuthConfig
 
 router = APIRouter()
 
@@ -110,7 +113,7 @@ async def v2_create_user(request: Request, user_profile: json_body.UserProfileOb
 
 
 @router.post("/delete", tags=["V2"])
-async def v2_delete_user(request: Request, name_and_password: json_body.UnsafeLoginBody):
+async def v2_delete_user(request: Request, name_and_password: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     person_id = name_and_password.person_id
@@ -147,26 +150,123 @@ async def v2_delete_user(request: Request, name_and_password: json_body.UnsafeLo
                                  "delete_login_credential": collection_Login == 1})
 
 
-@router.get("/profile", tags=["V2"])
-async def v2_get_user_profile():
-    pass
+@router.get("/profile/get", tags=["V2"])
+async def v2_get_user_profile(request: Request, person_id: str):
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
+        return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
+    db_query = DocumentDB.find_one(collection="User", find_filter={"person_id": person_id}, db_client=db_client)
+    if db_query is None:
+        return JSONResponse(status_code=403, content={"status": "user not found"})
+    mongo_client.close()
+    return JSONFilter.public_user_profile(input_json=db_query)
 
 
-@router.post("/profile/name/display_name", tags=["V2"])
-async def v2_update_user_profile_name_displayname():
-    pass
+@router.post("/profile/name/update", tags=["V2"])
+async def v2_update_user_profile_name(request: Request, req_body: json_body.NamingSection, pa_token: str = Header(None)):
+    # All the update method of user profile is based on this
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    person_id = get_person_id_with_token(pa_token=pa_token, db_client=db_client)
+    if person_id == "":
+        mongo_client.close()
+        return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
+    # This based on assumption of structure version is matched
+    # TODO: forbid special characters check if unique_name already being used
+    update_query = DocumentDB.update_one(collection="User",
+                                         find_filter={"person_id": person_id},
+                                         changes={"$set": {"naming.unique_name": req_body.unique_name,  # Need use "." to connect on nested object
+                                                           "naming.display_name_full": req_body.display_name_full,
+                                                           "naming.display_name_partial": req_body.display_name_partial},
+                                                  "$push": {"naming.historical_name": req_body.display_name_full}},
+                                         db_client=db_client)
+    if update_query.matched_count != 1 and update_query.modified_count != 1:
+        return JSONResponse(status_code=500,
+                            content={"status": "failed to update",
+                                     "matched_count": update_query.matched_count,
+                                     "modified_count": update_query.modified_count})
+    mongo_client.close()
+    return JSONResponse(status_code=200, content={"status": "success"})
 
 
-@router.post("/profile/about/description", tags=["V2"])
-async def v2_update_user_profile_about_description():
-    pass
+@router.post("/profile/about/update", tags=["V2"])
+async def v2_update_user_profile_about(request: Request, req_body: json_body.AboutSection, pa_token: str = Header(None)):
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    person_id = get_person_id_with_token(pa_token=pa_token, db_client=db_client)
+    if person_id == "":
+        mongo_client.close()
+        return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
+    # This based on assumption of structure version is matched
+    # TODO: forbid special characters check length
+    update_query = DocumentDB.update_one(collection="User",
+                                         find_filter={"person_id": person_id},
+                                         changes={"$set": {"about.short_description": req_body.short_description,  # Need use "." to connect on nested object
+                                                           "about.full_description": req_body.full_description,
+                                                           "about.company_name": req_body.company_name,
+                                                           "about.job_title": req_body.job_title}},
+                                         db_client=db_client)
+    if update_query.matched_count != 1 and update_query.modified_count != 1:
+        return JSONResponse(status_code=500,
+                            content={"status": "failed to update",
+                                     "matched_count": update_query.matched_count,
+                                     "modified_count": update_query.modified_count})
+    mongo_client.close()
+    return JSONResponse(status_code=200, content={"status": "success"})
 
 
-@router.post("/profile/status", tags=["V2"])
-async def v2_update_user_profile_status():
-    pass
+@router.post("/profile/status/update", tags=["V2"])
+async def v2_update_user_profile_status(request: Request, req_body: json_body.StatusSection, pa_token: str = Header(None)):
+    # Clone of previous two endpoint
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    person_id = get_person_id_with_token(pa_token=pa_token, db_client=db_client)
+    if person_id == "":
+        mongo_client.close()
+        return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
+    # This based on assumption of structure version is matched
+    # TODO: check if the url passed in is a safe image
+    update_query = DocumentDB.update_one(collection="User",
+                                         find_filter={"person_id": person_id},
+                                         changes={"$set": {"status.current_status": req_body.current_status,  # Need use "." to connect on nested object
+                                                           "status.until.text": req_body.until.text,
+                                                           "status.until.timestamp_int": req_body.until.timestamp_int,
+                                                           "status.until.timezone_name": req_body.until.timezone_name,
+                                                           "status.until.timezone_offset": req_body.until.timezone_offset,
+                                                           "status.default_status": req_body.default_status}},
+                                         db_client=db_client)
+    if update_query.matched_count != 1 and update_query.modified_count != 1:
+        return JSONResponse(status_code=500,
+                            content={"status": "failed to update",
+                                     "matched_count": update_query.matched_count,
+                                     "modified_count": update_query.modified_count})
+    mongo_client.close()
+    return JSONResponse(status_code=200, content={"status": "success"})
 
 
-@router.post("/profile/picture", tags=["V2"])
-async def v2_update_user_profile_picture():
-    pass
+@router.post("/profile/picture/update", tags=["V2"])
+async def v2_update_user_profile_picture(request: Request, req_body: json_body.PictureSection, pa_token: str = Header(None)):
+    # Clone of these previous three endpoint
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    person_id = get_person_id_with_token(pa_token=pa_token, db_client=db_client)
+    if person_id == "":
+        mongo_client.close()
+        return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
+    # This based on assumption of structure version is matched
+    # TODO: check if the url passed in is a safe image
+    update_query = DocumentDB.update_one(collection="User",
+                                         find_filter={"person_id": person_id},
+                                         changes={"$set": {"about.avatar.image_id": req_body.avatar.image_id,  # Need use "." to connect on nested object
+                                                           "about.avatar.image_url": req_body.avatar.image_url,
+                                                           "about.background.image_id": req_body.background.image_id,
+                                                           "about.background.image_url": req_body.background.image_url}},
+                                         db_client=db_client)
+    if update_query.matched_count != 1 and update_query.modified_count != 1:
+        return JSONResponse(status_code=500,
+                            content={"status": "failed to update",
+                                     "matched_count": update_query.matched_count,
+                                     "modified_count": update_query.modified_count})
+    mongo_client.close()
+    return JSONResponse(status_code=200, content={"status": "success"})
