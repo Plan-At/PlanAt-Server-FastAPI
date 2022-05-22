@@ -9,6 +9,8 @@ from starlette.requests import Request
 from starlette.responses import Response, RedirectResponse
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from fastapi.openapi.utils import get_openapi
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -55,6 +57,25 @@ async def debug_exception_handler(request: Request, exc: Exception):
     )
 
 
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="Plan-At API",
+        version="2.0.0-alpha",
+        description="The official Plan-At backend, using FastAPI",
+        routes=app.routes,
+    )
+    openapi_schema["info"]["x-logo"] = {
+        "url": MediaAssets.FAVICON
+    }
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
+
+
 @app.get("/")
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def hello_world(request: Request):
@@ -66,6 +87,16 @@ def hello_world(request: Request):
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def get_favicon(request: Request):
     return RedirectResponse(url=MediaAssets.FAVICON)
+
+
+@app.get("/docs", include_in_schema=False)
+def overridden_swagger():
+    return get_swagger_ui_html(openapi_url="/openapi.json", title="Plan-At", swagger_favicon_url=MediaAssets.FAVICON)
+
+
+@app.get("/redoc", include_in_schema=False)
+def overridden_redoc():
+    return get_redoc_html(openapi_url="/openapi.json", title="Plan-At", redoc_favicon_url=MediaAssets.FAVICON)
 
 
 @app.get("/ip", tags=["General Methods"])
