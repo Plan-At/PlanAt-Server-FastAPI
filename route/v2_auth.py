@@ -146,3 +146,8 @@ async def v2_disenable_auth_totp():
 @router.post("/totp/verify", tags=["V2"])
 async def v2_verify_auth_totp():
     pass
+
+
+@router.post("/github/callback", tags=["V2"])
+async def v2_callback_auth_github():
+    pass

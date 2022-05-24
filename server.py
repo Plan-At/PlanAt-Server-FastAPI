@@ -162,6 +162,20 @@ def api_tool_delay(request: Request, sleep_time: int):
     return JSONResponse(status_code=200, content={"status": "finished"})
 
 
+@app.get("/everything")
+async def receive_everything(request: Request):
+    print(request.headers)
+    print(await request.body())
+    return JSONResponse(status_code=200, content={"status": "finished"})
+
+
+@app.post("/everything")
+async def receive_everything(request: Request):
+    print(request.headers)
+    print(await request.body())
+    return JSONResponse(status_code=200, content={"status": "finished"})
+
+
 if __name__ == "__main__":
     if sys.platform == "win32":
         uvicorn.run("server:app", debug=True, reload=True, port=ServerConfig.PORT, host=ServerConfig.HOST,
