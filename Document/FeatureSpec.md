@@ -43,6 +43,7 @@ Sections of the project:
     Our next step was to break down our project into multiple packages, and the priority is to provide some mock data for the frontend team. 
 3. Iteration:
     After developed several feature sets, we will teach the frontend how to use it, collect feedback and feature request to make the backend easier to use
+4. After period of development, while we're getting more functionality, the code are getting messier, so we rewrite most of the code
 
 ## Modules
 ### User Profile:
@@ -51,6 +52,9 @@ Sections of the project:
 While static password is the first and default method, after registration user can opt in other methods
 - OPT (Authenticator)
 ### API Documentation:
+The framework FastAPI we're using come with native support of [OpenAPI](https://www.openapis.org/),
+which including interactive interface with minial amount of explanation about how to use the API like
+[Swagger UI](https://swagger.io/tools/swagger-ui/) and [Redoc](https://github.com/Redocly/redoc)
 
 
 ## System Design
@@ -59,15 +63,14 @@ While static password is the first and default method, after registration user c
 ### V2 Endpoint
 After period of development, while we're getting more functionality, the code are getting messier, so it's time to rewrite some of these code
 - Break code into smaller file by utilize the Router API
-- New URL scheme that indicate the action of this endpoint at the end; 
-no longer differentiate whether an endpoint is public or not
-- Asynchronous possible, performance optimization is the priority now
+- New URL scheme that describe the action of this endpoint at the end; 
+combined public and private endpoint, authenticate based on the token passed-in
+- Performance is the priority now;
+using direct native connection to the database achieved resulted unnoticeable API latency
+optimized query to reduce overhead
 
 ## Boneyard
 ### Delayed Features
-#### Mobile Client (Portrait Interface)
-While resizing the text and image isn't hard, but is where to place elements: 
-For example the navigation rail, available to put on the left side in landscape mode, but in mobile must place on the bottom of screen
 #### Tagging
 Might not a significant feature
 
