@@ -150,11 +150,20 @@ TOKEN_INFO_3 = {
     "expiration_timestamp_int": 1658293369
 }
 
-PASSWORD_INFO = {
+LOGIN_INFO_1 = {
     "structure_version": 1,
     "person_id": "1234567890",
     "password_hash": "12B03226A6D8BE9C6E8CD5E55DC6C7920CAAA39DF14AAB92D5E3EA9340D1C8A4D3D0B8E4314F1F6EF131BA4BF1CEB9186AB87C801AF0D5C95B1BEFB8CEDAE2B9",
     "password_length": 8,
+}
+
+LOGIN_INFO_2 = {
+    "structure_version": 2,
+    "person_id": "1234567890",
+    "password_hash": "12B03226A6D8BE9C6E8CD5E55DC6C7920CAAA39DF14AAB92D5E3EA9340D1C8A4D3D0B8E4314F1F6EF131BA4BF1CEB9186AB87C801AF0D5C95B1BEFB8CEDAE2B9",
+    "password_length": 8,
+    "totp_status": "enabled",
+    "totp_secret_key": "MWKXM4SZS7O2Q7S5KU5TBJ2INYSH42UQ"  # pyotp.random_base32()
 }
 
 # For directly compatible with vanilla JSON, do not add comma after each last item
