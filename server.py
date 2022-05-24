@@ -8,7 +8,7 @@ import uvicorn
 from starlette.requests import Request
 from starlette.responses import Response, RedirectResponse
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -17,6 +17,7 @@ from slowapi.util import get_remote_address
 
 from constant import ServerConfig, RateLimitConfig, MediaAssets, START_TIME, PROGRAM_HASH
 from route import fake, v1, v2, v2_captcha, v2_auth, v2_user, v2_calendar, v2_hosting
+from util import docs_page
 
 app = FastAPI()
 
@@ -87,6 +88,11 @@ def hello_world(request: Request):
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def get_favicon(request: Request):
     return RedirectResponse(url=MediaAssets.FAVICON)
+
+
+@app.get("/doc", include_in_schema=False)
+def overridden_swagger():
+    return HTMLResponse(status_code=200, content=docs_page.HTML)
 
 
 @app.get("/docs", include_in_schema=False)
