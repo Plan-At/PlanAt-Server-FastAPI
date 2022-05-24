@@ -5,6 +5,11 @@
     <title>GitHub OAuth Demo</title>
 </head>
 <body>
-
+    <h1>OAuth Redirected</h1>
+    <a href="">To GitHub</a>
+    <script>
+        const url_parameter = new URLSearchParams(window.location.search);
+        console.log(parseInt(url_parameter.get("code")));
+    </script>
 </body>
 </html>
