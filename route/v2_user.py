@@ -150,6 +150,18 @@ async def v2_delete_user(request: Request, name_and_password: json_body.Password
                                  "delete_login_credential": collection_Login == 1})
 
 
+@router.get("/id/get", tags=["V2"])
+async def v2_get_user_id(request: Request, pa_token: str = Header(None)):
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    person_id = get_person_id_with_token(pa_token=pa_token, db_client=db_client)
+    if person_id == "":
+        mongo_client.close()
+        return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
+    mongo_client.close()
+    return JSONResponse(status_code=200, content={"status": "success", "person_id": person_id})
+
+
 @router.get("/profile/get", tags=["V2"])
 async def v2_get_user_profile(request: Request, person_id: str):
     mongo_client = DocumentDB.get_client()
@@ -262,6 +274,46 @@ async def v2_update_user_profile_picture(request: Request, req_body: json_body.P
                                                            "about.avatar.image_url": req_body.avatar.image_url,
                                                            "about.background.image_id": req_body.background.image_id,
                                                            "about.background.image_url": req_body.background.image_url}},
+                                         db_client=db_client)
+    if update_query.matched_count != 1 and update_query.modified_count != 1:
+        return JSONResponse(status_code=500,
+                            content={"status": "failed to update",
+                                     "matched_count": update_query.matched_count,
+                                     "modified_count": update_query.modified_count})
+    mongo_client.close()
+    return JSONResponse(status_code=200, content={"status": "success"})
+
+
+# TODO: test this
+@router.post("/profile/contact/update", tags=["V2"])
+async def v2_update_user_profile_contact(request: Request, req_body: json_body.ContactMethodSection, pa_token: str = Header(None)):
+    # Clone of these previous four endpoint
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    person_id = get_person_id_with_token(pa_token=pa_token, db_client=db_client)
+    if person_id == "":
+        mongo_client.close()
+        return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
+    # This based on assumption of structure version is matched
+    # TODO: check if the url passed in is a safe image
+    update_query = DocumentDB.update_one(collection="User",
+                                         find_filter={"person_id": person_id},
+                                         changes={"$set": {"contact_method_collection.email_primary.domain_name": req_body.email_primary.domain_name,
+                                                           "contact_method_collection.email_primary.full_address": req_body.email_primary.full_address,
+                                                           "contact_method_collection.phone.country_code": req_body.phone.country_code,
+                                                           "contact_method_collection.phone.regular_number": req_body.phone.regular_number,
+                                                           "contact_method_collection.physical_address.full_address": req_body.physical_address.full_address,
+                                                           "contact_method_collection.physical_address.street_address": req_body.physical_address.street_address,
+                                                           "contact_method_collection.physical_address.city": req_body.physical_address.city,
+                                                           "contact_method_collection.physical_address.province": req_body.physical_address.province,
+                                                           "contact_method_collection.physical_address.country": req_body.physical_address.country,
+                                                           "contact_method_collection.physical_address.continent": req_body.physical_address.continent,
+                                                           "contact_method_collection.physical_address.post_code": req_body.physical_address.post_code,
+                                                           "contact_method_collection.twitter.user_name": req_body.twitter.user_name,
+                                                           "contact_method_collection.twitter.user_handle": req_body.twitter.user_handle,
+                                                           "contact_method_collection.twitter.user_id": req_body.twitter.user_id,
+                                                           "contact_method_collection.github.user_name": req_body.github.user_name,
+                                                           "contact_method_collection.github.user_handle": req_body.github.user_handle}},
                                          db_client=db_client)
     if update_query.matched_count != 1 and update_query.modified_count != 1:
         return JSONResponse(status_code=500,
