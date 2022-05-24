@@ -27,10 +27,10 @@ app.include_router(v2.router, prefix="/v2")
 app.include_router(v2_auth.router, prefix="/v2/auth")
 app.include_router(v2_calendar.router, prefix="/v2/calendar")
 app.include_router(v2_user.router, prefix="/v2/user")
-app.include_router(v2_captcha.router, prefix="/v2/captcha")
 app.include_router(v2_hosting.router, prefix="/v2/hosting")
-app.include_router(v1.router)
+app.include_router(v2_captcha.router, prefix="/v2/captcha")
 app.include_router(fake.router, prefix="/fake")
+app.include_router(v1.router)
 
 
 @app.middleware("http")
@@ -62,7 +62,7 @@ def custom_openapi():
         return app.openapi_schema
     openapi_schema = get_openapi(
         title="Plan-At API",
-        version="2.0.0-alpha",
+        version="2.0.0",
         description="The official Plan-At backend, using FastAPI",
         routes=app.routes,
     )

@@ -9,7 +9,7 @@ class ServerConfig:
     PORT = 8000
     HOST = "127.0.0.1"
     CONCURRENCY = 8
-    CURRENT_VERSION = "v1"
+    CURRENT_VERSION = "v2"
     API_SERVER_LIST = [
         {"priority": 0, "load": 0, "name": "Primary", "URL": "https://api-0.752628.xyz/", "provider": "Official", "location": "US-West"}]
     IMAGEBED_FOLDER = "/Plan-At/usercontent"

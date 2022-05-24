@@ -92,10 +92,15 @@ class PhysicalAddressObject(BaseModel):
     post_code: str
 
 
-class TwitterObject(BaseModel):
+class TwitterUser(BaseModel):
     user_name: str
     user_handle: str
     user_id: str
+
+
+class GithubUser(BaseModel):
+    user_name: str
+    user_handle: str
 
 
 class NamingSection(BaseModel):
@@ -126,7 +131,8 @@ class ContactMethodSection(BaseModel):
     email_primary: EmailObject
     phone: PhoneNumberObject
     physical_address: PhysicalAddressObject
-    twitter: TwitterObject
+    twitter: TwitterUser
+    github: GithubUser
 
 
 class UserProfileObject(BaseModel):
