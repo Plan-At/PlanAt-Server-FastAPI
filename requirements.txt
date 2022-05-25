@@ -7,3 +7,5 @@ starlette
 python-multipart
 captcha
 pymongo
+dnspython
+pyotp

@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -32,6 +33,15 @@ app.include_router(v2_hosting.router, prefix="/v2/hosting")
 app.include_router(v2_captcha.router, prefix="/v2/captcha")
 app.include_router(fake.router, prefix="/fake")
 app.include_router(v1.router)
+
+"""enable this for local development or where have no nginx presence"""
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins="*",
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 
 @app.middleware("http")

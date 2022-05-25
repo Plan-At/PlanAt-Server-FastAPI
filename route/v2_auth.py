@@ -1,8 +1,10 @@
 # Builtin library
 from datetime import datetime
 import hashlib
+import aiohttp
 
 # Framework core library
+import requests
 from starlette.requests import Request
 from fastapi import APIRouter, Header
 from fastapi.responses import JSONResponse
@@ -138,8 +140,8 @@ async def v2_enable_auth_totp(request: Request, cred: json_body.PasswordLoginBod
 
 
 @router.post("/totp/disable", tags=["V2"])
-async def v2_disenable_auth_totp():
-    # Copy and Paste of the enable
+async def v2_disable_auth_totp():
+    # Copy and Paste of /enable
     pass
 
 
@@ -148,6 +150,22 @@ async def v2_verify_auth_totp():
     pass
 
 
-@router.post("/github/callback", tags=["V2"])
-async def v2_callback_auth_github():
+@router.post("/github/enable", tags=["V2"])
+async def v2_enable_auth_github(request: Request, req_body: json_body.GitHubOAuthCode):
+    github_session = aiohttp.ClientSession()
+    a = await github_session.post(f"https://github.com/login/oauth/access_token?client_id={1}&client_secret={2}&code={3}")
+    print(a.status, a.text())
+    a = a.json()
+    return JSONResponse(status_code=200, content={"status": "success", "code": req_body.code})
+
+
+@router.post("/github/disable", tags=["V2"])
+async def v2_disable_auth_github():
     pass
+
+
+@router.post("/github/verify", tags=["V2"])
+async def v2_verify_auth_github():
+    pass
+
+

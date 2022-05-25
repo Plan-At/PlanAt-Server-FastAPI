@@ -163,7 +163,9 @@ LOGIN_INFO_2 = {
     "password_hash": "12B03226A6D8BE9C6E8CD5E55DC6C7920CAAA39DF14AAB92D5E3EA9340D1C8A4D3D0B8E4314F1F6EF131BA4BF1CEB9186AB87C801AF0D5C95B1BEFB8CEDAE2B9",
     "password_length": 8,
     "totp_status": "enabled",
-    "totp_secret_key": "MWKXM4SZS7O2Q7S5KU5TBJ2INYSH42UQ"  # pyotp.random_base32()
+    "totp_secret_key": "MWKXM4SZS7O2Q7S5KU5TBJ2INYSH42UQ",  # pyotp.random_base32()
+    "github_oauth_status": "enabled",
+    "github_email": "example@752628.xyz"
 }
 
 # For directly compatible with vanilla JSON, do not add comma after each last item

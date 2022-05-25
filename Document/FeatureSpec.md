@@ -77,6 +77,8 @@ Might not a significant feature
 
 ### Permanently Death
 #### SQL Database
+Somewhat complicated to make SQL query for the data-structure I already made but seamlessly works with Document-Base NotOnlySQL database, 
+plus can immune common SQL-Injection attack
 
 
  
