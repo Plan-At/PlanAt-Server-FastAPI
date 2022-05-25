@@ -17,8 +17,25 @@ import util.pymongo_wrapper as DocumentDB
 router = APIRouter()
 
 
-@router.post("/token/generate", tags=["V2"])
-async def v2_generate_auth_token(request: Request, cred: json_body.PasswordLoginBody):
+@router.post("/token/revoke", tags=["V2"])
+async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    token_deletion_query = DocumentDB.delete_one(
+        collection="TokenV3",
+        find_filter={"token_value": pa_token},
+        db_client=db_client)
+    mongo_client.close()
+    if token_deletion_query is None:
+        return JSONResponse(status_code=500, content={"status": "failed to remove the old token to database", "pa_token": pa_token})
+    elif token_deletion_query.deleted_count == 0:
+        return JSONResponse(status_code=404, content={"status": "token not found", "pa_token": pa_token})
+    elif token_deletion_query.deleted_count == 1:
+        return JSONResponse(status_code=200, content={"status": "deleted", "pa_token": pa_token})
+
+
+@router.post("/password/verify", tags=["V2"])
+async def v2_verify_auth_password(request: Request, cred: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     credential_verify_query = DocumentDB.find_one(collection="LoginV1",
@@ -61,23 +78,6 @@ async def v2_generate_auth_token(request: Request, cred: json_body.PasswordLogin
     mongo_client.close()
     return JSONResponse(status_code=200,
                         content={"status": "success", "pa_token": generated_token, "expiration_timestamp": expire_at})
-
-
-@router.post("/token/revoke", tags=["V2"])
-async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
-    mongo_client = DocumentDB.get_client()
-    db_client = mongo_client.get_database(DocumentDB.DB)
-    token_deletion_query = DocumentDB.delete_one(
-        collection="TokenV3",
-        find_filter={"token_value": pa_token},
-        db_client=db_client)
-    mongo_client.close()
-    if token_deletion_query is None:
-        return JSONResponse(status_code=500, content={"status": "failed to remove the old token to database", "pa_token": pa_token})
-    elif token_deletion_query.deleted_count == 0:
-        return JSONResponse(status_code=404, content={"status": "token not found", "pa_token": pa_token})
-    elif token_deletion_query.deleted_count == 1:
-        return JSONResponse(status_code=200, content={"status": "deleted", "pa_token": pa_token})
 
 
 # TODO: revoke existing session/token
@@ -134,9 +134,12 @@ async def v2_enable_auth_totp(request: Request, cred: json_body.PasswordLoginBod
                                      "person_id": cred.person_id,
                                      "password": cred.password})
     if credential_verify_query["totp_status"] != "disabled":
-        return JSONResponse(status_code=200, content={"status": "Time-based OTP already enabled for this user", "person_id": cred.person_id})
+        return JSONResponse(status_code=200,
+                            content={"status": "Time-based OTP already enabled for this user",
+                                     "person_id": cred.person_id})
     new_secret_key = pyotp.random_base32()
-    authenticator_text = url = pyotp.totp.TOTP(new_secret_key).provisioning_uri(name=cred.person_id, issuer_name='Plan-At')
+    authenticator_text = url = pyotp.totp.TOTP(new_secret_key).provisioning_uri(name=cred.person_id,
+                                                                                issuer_name='Plan-At')
 
 
 @router.post("/totp/disable", tags=["V2"])
@@ -151,7 +154,7 @@ async def v2_verify_auth_totp():
 
 
 @router.post("/github/enable", tags=["V2"])
-async def v2_enable_auth_github(request: Request, req_body: json_body.GitHubOAuthCode):
+async def v2_enable_auth_github(request: Request, req_body: json_body.GitHubOAuthCode, pa_token: str = Header(None)):
     github_session = aiohttp.ClientSession()
     a = await github_session.post(f"https://github.com/login/oauth/access_token?client_id={1}&client_secret={2}&code={3}")
     print(a.status, a.text())
@@ -160,12 +163,12 @@ async def v2_enable_auth_github(request: Request, req_body: json_body.GitHubOAut
 
 
 @router.post("/github/disable", tags=["V2"])
-async def v2_disable_auth_github():
+async def v2_disable_auth_github(request: Request, req_body: json_body.GitHubOAuthCode, pa_token: str = Header(None)):
     pass
 
 
 @router.post("/github/verify", tags=["V2"])
-async def v2_verify_auth_github():
+async def v2_verify_auth_github(request: Request, req_body: json_body.GitHubOAuthCode):
     pass
 
 
