@@ -1,11 +1,13 @@
 from fastapi.responses import JSONResponse
-import util.mongodb_data_api as DocumentDBRelay
-import util.pymongo_wrapper as DocumentDB
 from pymongo.database import Database
 from constant import AuthConfig
 import requests
 from datetime import datetime
+import hashlib
 
+import util.mongodb_data_api as DocumentDBRelay
+import util.pymongo_wrapper as DocumentDB
+from util import random_content
 from util.custom_exception import TokenExpiredException
 
 
@@ -74,3 +76,32 @@ def get_person_id_with_token(pa_token: str, db_client: Database):
         print(deletion_query)
         raise TokenExpiredException(db_query["token_value"], db_query["expiration_timestamp_int"])
     return db_query["person_id"]
+
+
+def generate_pa_token_and_record(db_client: Database, person_id: str, token_lifespan: int):
+    #  Assuming identity of the user already being testified
+    while True:
+        # Checking if the same token already being use
+        # There is no do-while loop in Python
+        generated_token = random_content.generate_access_token()
+        current_checking_query = DocumentDB.find_one(collection="TokenV3",
+                                                     find_filter={"token_value": generated_token},
+                                                     db_client=db_client)
+        if current_checking_query is None:
+            break
+    create_at = int(datetime.now().timestamp())
+    expire_at = create_at + token_lifespan
+    token_record_query = DocumentDB.insert_one(
+        collection="TokenV3",
+        document_body={
+            "structure_version": 3,
+            "person_id": person_id,
+            "token_value": generated_token,
+            "token_hash": hashlib.sha512(generated_token.encode("utf-8")).hexdigest(),
+            "creation_timestamp_int": create_at,
+            "expiration_timestamp_int": expire_at
+        },
+        db_client=db_client)
+    print(token_record_query.inserted_id)
+    #  In some scenario we want to return the expiration time to user
+    return generated_token, expire_at

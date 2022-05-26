@@ -64,7 +64,8 @@ which including interactive interface with minial amount of explanation about ho
 After period of development, while we're getting more functionality, the code are getting messier, so it's time to rewrite some of these code
 - Break code into smaller file by utilize the Router API
 - New URL scheme that describe the action of this endpoint at the end; 
-combined public and private endpoint, authenticate based on the token passed-in
+combined public and private endpoint, authenticate based on the token passed-in;
+if the request modify any existing data then its POST request, GET is read-only
 - Performance is the priority now;
 using direct native connection to the database achieved resulted unnoticeable API latency
 optimized query to reduce overhead
@@ -76,6 +77,10 @@ Might not a significant feature
 
 ### Permanently Death
 #### SQL Database
+Somewhat complicated to make SQL query for the data-structure I already made but seamlessly works with Document-Base NotOnlySQL database, 
+plus can immune common SQL-Injection attack
 
-
+## Developer's notebook
+### Authentication
+#### GitHub OAuth
  

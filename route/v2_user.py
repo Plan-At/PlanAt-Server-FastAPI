@@ -100,12 +100,16 @@ async def v2_create_user(request: Request, user_profile: json_body.UserProfileOb
                                                         document_body={"structure_version": 1, "person_id": person_id, "event_id_list": []})
     print(calendar_index_insert_query.inserted_id)
     login_credential_insert_query = DocumentDB.insert_one(db_client=db_client,
-                                                          collection="LoginV1",
+                                                          collection="LoginV2",
                                                           document_body={
-                                                              "structure_version": 1,
+                                                              "structure_version": 2,
                                                               "person_id": person_id,
                                                               "password_hash": hashlib.sha512(password.encode("utf-8")).hexdigest(),
                                                               "password_length": len(password),
+                                                              "totp_status": "disabled",
+                                                              "totp_secret_key": "",
+                                                              "github_oauth_status": "disabled",
+                                                              "github_email": ""
                                                           })
     print(login_credential_insert_query.inserted_id)
     mongo_client.close()

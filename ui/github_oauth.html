@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GitHub OAuth Demo</title>
+</head>
+<body>
+    <h1>OAuth Redirected</h1>
+    <a href="https://github.com/login/oauth/authorize?client_id=b51eefe9d7a68dc9b193&scope=user:email">To GitHub</a>
+    <p id="status"></p>
+    <script>
+        async function report(code, action){
+            const resp = await fetch(`http://localhost:8000/v2/auth/github/${action}`, {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({"code": code})
+            });
+            console.log(resp.status);
+            const resp_json = await resp.json(); // double await here
+            console.log(resp_json);
+            console.log(resp_json["status"], resp_json["code"]);
+        }
+
+        const url_parameter = new URLSearchParams(window.location.search);
+        const returned_code = url_parameter.get("code");
+        const redirect_url = url_parameter.get("redirect_url");
+        console.log(returned_code);
+        if (returned_code == null){
+            console.log("User not being redirected back from GitHub");
+            document.getElementById("status").innerText = "User not being redirected back from GitHub";
+        } 
+        else if (returned_code.length === 20){
+            console.log("You have authenticated successfully using GitHub");
+            document.getElementById("status").innerText = "authenticated successfully using GitHub, now please let our backend generate a token for you";
+            report(returned_code, "enable");
+        }
+        else {
+            console.log("code length not matched    length:", returned_code.length);
+            document.getElementById("status").innerText = "code length not matched";
+        }
+    </script>
+</body>
+</html>

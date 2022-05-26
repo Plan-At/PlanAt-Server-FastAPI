@@ -141,3 +141,7 @@ class UserProfileObject(BaseModel):
     about: AboutSection
     status: StatusSection
     contact_method_collection: ContactMethodSection
+
+
+class GitHubOAuthCode(BaseModel):
+    code: str

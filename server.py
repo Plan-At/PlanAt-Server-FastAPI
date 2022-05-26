@@ -8,15 +8,17 @@ import uvicorn
 from starlette.requests import Request
 from starlette.responses import Response, RedirectResponse
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from constant import ServerConfig, RateLimitConfig, MediaAssets, START_TIME, PROGRAM_HASH
 from route import fake, v1, v2, v2_captcha, v2_auth, v2_user, v2_calendar, v2_hosting
+from util import docs_page
 
 app = FastAPI()
 
@@ -31,6 +33,15 @@ app.include_router(v2_hosting.router, prefix="/v2/hosting")
 app.include_router(v2_captcha.router, prefix="/v2/captcha")
 app.include_router(fake.router, prefix="/fake")
 app.include_router(v1.router)
+
+"""enable this for local development or where have no nginx presence"""
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins="*",
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 
 @app.middleware("http")
@@ -87,6 +98,11 @@ def hello_world(request: Request):
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def get_favicon(request: Request):
     return RedirectResponse(url=MediaAssets.FAVICON)
+
+
+@app.get("/doc", include_in_schema=False)
+def overridden_swagger():
+    return HTMLResponse(status_code=200, content=docs_page.HTML)
 
 
 @app.get("/docs", include_in_schema=False)
@@ -153,6 +169,20 @@ def api_test_connection(request: Request):
 @app.get("/tool/delay", tags=["Utility"])
 def api_tool_delay(request: Request, sleep_time: int):
     time.sleep(sleep_time)
+    return JSONResponse(status_code=200, content={"status": "finished"})
+
+
+@app.get("/everything")
+async def receive_everything(request: Request):
+    print(request.headers)
+    print(await request.body())
+    return JSONResponse(status_code=200, content={"status": "finished"})
+
+
+@app.post("/everything")
+async def receive_everything(request: Request):
+    print(request.headers)
+    print(await request.body())
     return JSONResponse(status_code=200, content={"status": "finished"})
 
 
