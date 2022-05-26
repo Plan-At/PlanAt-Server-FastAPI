@@ -4,14 +4,13 @@ import hashlib
 import aiohttp
 
 # Framework core library
-import requests
 from starlette.requests import Request
 from fastapi import APIRouter, Header
 from fastapi.responses import JSONResponse
 import pyotp
 
 # Local file
-from util import random_content, json_body
+from util import random_content, json_body, token_tool
 import util.pymongo_wrapper as DocumentDB
 
 router = APIRouter()
@@ -197,8 +196,48 @@ async def v2_disable_auth_totp(request: Request, cred: json_body.PasswordLoginBo
 
 
 @router.post("/totp/verify", tags=["V2"])
-async def v2_verify_auth_totp():
-    pass
+async def v2_verify_auth_totp(request: Request, person_id: str, totp_code: str):
+    # Copy and Paste of /disable
+    # Not require current output from Authenticator since the user might lose their
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    # if len(str(int(totp_code))) != 6:  # also verify if its actual int but not working if start with zero
+    if len(totp_code) != 6:  # also verify if its actual int but not working if start with zero
+        return JSONResponse(status_code=400,
+                            content={"status": "totp_code malformed",
+                                     "totp_code": totp_code})
+    # same as the traditional plain-password login
+    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
+                                                  find_filter={"person_id": person_id},
+                                                  db_client=db_client)
+    print(credential_verify_query)
+    if credential_verify_query is None:
+        mongo_client.close()
+        return JSONResponse(status_code=403,
+                            content={"status": "user not found or totp_code not match",
+                                     "person_id": person_id,
+                                     "totp_code": totp_code})
+    #  Checking current totp status
+    if credential_verify_query["totp_status"] != "enabled":
+        mongo_client.close()
+        return JSONResponse(status_code=200,
+                            content={"status": "Time-based OTP not enabled for this user",
+                                     "person_id": person_id})
+
+    if not pyotp.TOTP(credential_verify_query["totp_secret_key"]).verify(totp_code):
+        mongo_client.close()
+        return JSONResponse(status_code=403,
+                            content={"status": "user not found or totp_code not match",
+                                     "person_id": person_id,
+                                     "totp_code": totp_code})
+    pa_token = token_tool.generate_pa_token_and_record(db_client=db_client,
+                                                       person_id=person_id,
+                                                       token_lifespan=(60 * 60 * 24 * 1))
+    mongo_client.close()
+    return JSONResponse(status_code=200,
+                        content={"status": "success",
+                                 "person_id": person_id,
+                                 "pa_token": pa_token})
 
 
 @router.post("/github/enable", tags=["V2"])

@@ -9,3 +9,4 @@ captcha
 pymongo
 dnspython
 pyotp
+aiohttp
