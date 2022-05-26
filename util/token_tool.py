@@ -84,7 +84,7 @@ def generate_pa_token_and_record(db_client: Database, person_id: str, token_life
         # Checking if the same token already being use
         # There is no do-while loop in Python
         generated_token = random_content.generate_access_token()
-        current_checking_query = DocumentDB.find_one(collection="TokenV1",
+        current_checking_query = DocumentDB.find_one(collection="TokenV3",
                                                      find_filter={"token_value": generated_token},
                                                      db_client=db_client)
         if current_checking_query is None:

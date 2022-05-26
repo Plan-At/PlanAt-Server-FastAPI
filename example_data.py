@@ -154,14 +154,14 @@ LOGIN_INFO_1 = {
     "structure_version": 1,
     "person_id": "1234567890",
     "password_hash": "12b03226a6d8be9c6e8cd5e55dc6c7920caaa39df14aab92d5e3ea9340d1c8a4d3d0b8e4314f1f6ef131ba4bf1ceb9186ab87c801af0d5c95b1befb8cedae2b9",
-    "password_length": 8,
+    "password_length": 10,
 }
 
 LOGIN_INFO_2 = {
     "structure_version": 2,
     "person_id": "1234567890",
     "password_hash": "12b03226a6d8be9c6e8cd5e55dc6c7920caaa39df14aab92d5e3ea9340d1c8a4d3d0b8e4314f1f6ef131ba4bf1ceb9186ab87c801af0d5c95b1befb8cedae2b9",  # the generated from hashlib is in lowercase
-    "password_length": 8,
+    "password_length": 10,
     "totp_status": "enabled",
     "totp_secret_key": "MWKXM4SZS7O2Q7S5KU5TBJ2INYSH42UQ",  # pyotp.random_base32()
     "github_oauth_status": "enabled",
