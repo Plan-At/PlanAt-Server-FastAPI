@@ -121,7 +121,7 @@ async def v2_delete_user(request: Request, name_and_password: json_body.Password
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     person_id = name_and_password.person_id
-    credential_verify_query = DocumentDB.find_one(collection="LoginV1",
+    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
                                                   find_filter={"person_id": person_id},
                                                   db_client=db_client)
     print(credential_verify_query)
@@ -131,12 +131,16 @@ async def v2_delete_user(request: Request, name_and_password: json_body.Password
                             content={"status": "not found or not match",
                                      "person_id": name_and_password.person_id,
                                      "password": name_and_password.password})
-    calendar_event_index_query = DocumentDB.find_one(db_client=db_client, collection="CalendarEventIndex", find_filter={"person_id": person_id})
+    calendar_event_index_query = DocumentDB.find_one(db_client=db_client,
+                                                     collection="CalendarEventIndex",
+                                                     find_filter={"person_id": person_id})
     calendar_event_count = 0
     if calendar_event_index_query is not None:
         calendar_event_index = calendar_event_index_query["event_id_list"]
         for each_calendar_event_id in calendar_event_index:
-            calendar_event_count += DocumentDB.delete_one(db_client=db_client, collection="CalendarEventEntry", find_filter={"event_id": each_calendar_event_id}).deleted_count
+            calendar_event_count += DocumentDB.delete_one(db_client=db_client,
+                                                          collection="CalendarEventEntry",
+                                                          find_filter={"event_id": each_calendar_event_id}).deleted_count
     # Order based on the rank of importance and regenerate possibility
     token_count = DocumentDB.delete_many(db_client=db_client, collection="TokenV3", find_filter={"person_id": person_id}).deleted_count
     image_count = DocumentDB.delete_one(db_client=db_client, collection="ImageHosting", find_filter={"person_id": person_id}).deleted_count
