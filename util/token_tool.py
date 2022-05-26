@@ -103,4 +103,5 @@ def generate_pa_token_and_record(db_client: Database, person_id: str, token_life
         },
         db_client=db_client)
     print(token_record_query.inserted_id)
-    return generated_token
+    #  In some scenario we want to return the expiration time to user
+    return generated_token, expire_at

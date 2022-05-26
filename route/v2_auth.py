@@ -1,5 +1,4 @@
 # Builtin library
-from datetime import datetime
 import hashlib
 import aiohttp
 
@@ -10,7 +9,7 @@ from fastapi.responses import JSONResponse
 import pyotp
 
 # Local file
-from util import random_content, json_body, token_tool
+from util import json_body, token_tool
 import util.pymongo_wrapper as DocumentDB
 
 router = APIRouter()
@@ -49,34 +48,12 @@ async def v2_verify_auth_password(request: Request, cred: json_body.PasswordLogi
                             content={"status": "not found or not match",
                                      "person_id": cred.person_id,
                                      "password": cred.password})
-    while True:
-        # Checking if the same token already being use
-        # There is no do-while loop in Python
-        generated_token = random_content.generate_access_token()
-        current_checking_query = DocumentDB.find_one(collection="TokenV1",
-                                                     find_filter={"token_value": generated_token},
-                                                     db_client=db_client)
-        if current_checking_query is None:
-            break
-    create_at = int(datetime.now().timestamp())
-    expire_at = create_at + cred.token_lifespan
-    token_record_query = DocumentDB.insert_one(
-        collection="TokenV3",
-        document_body={
-            "structure_version": 3,
-            "person_id": cred.person_id,
-            "token_value": generated_token,
-            "token_hash": hashlib.sha512(generated_token.encode("utf-8")).hexdigest(),
-            "creation_timestamp_int": create_at,
-            "expiration_timestamp_int": expire_at
-        },
-        db_client=db_client)
-    if token_record_query is None:
-        return JSONResponse(status_code=500,
-                            content={"status": "token generated but failed to insert that token to database"})
+    generated_token = token_tool.generate_pa_token_and_record(db_client=db_client,
+                                                              person_id=cred.person_id,
+                                                              token_lifespan=cred.token_lifespan)
     mongo_client.close()
     return JSONResponse(status_code=200,
-                        content={"status": "success", "pa_token": generated_token, "expiration_timestamp": expire_at})
+                        content={"status": "success", "pa_token": generated_token[0], "expiration_timestamp": generated_token[1]})
 
 
 # TODO: revoke existing session/token
@@ -230,14 +207,15 @@ async def v2_verify_auth_totp(request: Request, person_id: str, totp_code: str):
                             content={"status": "user not found or totp_code not match",
                                      "person_id": person_id,
                                      "totp_code": totp_code})
-    pa_token = token_tool.generate_pa_token_and_record(db_client=db_client,
-                                                       person_id=person_id,
-                                                       token_lifespan=(60 * 60 * 24 * 1))
+    generated_token = token_tool.generate_pa_token_and_record(db_client=db_client,
+                                                              person_id=person_id,
+                                                              token_lifespan=(60 * 60 * 24 * 1))
     mongo_client.close()
     return JSONResponse(status_code=200,
                         content={"status": "success",
                                  "person_id": person_id,
-                                 "pa_token": pa_token})
+                                 "pa_token": generated_token[0],
+                                 "expiration_timestamp": generated_token[1]})
 
 
 @router.post("/github/enable", tags=["V2"])
