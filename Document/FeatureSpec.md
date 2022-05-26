@@ -6,7 +6,6 @@
 | Feature Name      | Plan-At Server                                   |
 | Area              | Backend                                          |
 | Related Features  | REST API                                         |
-| Requirement Specs ||
 | Document Location | https://github.com/Plan-At/PlanAt-Server-FastAPI |
 | Spec Status       | Draft                                            |
 
@@ -50,16 +49,21 @@ Sections of the project:
 ### Calendar Event:
 ### Login method:
 While static password is the first and default method, after registration user can opt in other methods
-- OPT (Authenticator)
+- Time-Based OPT (Authenticator)
+- GitHub OAuth (email)
 ### API Documentation:
 The framework FastAPI we're using come with native support of [OpenAPI](https://www.openapis.org/),
 which including interactive interface with minial amount of explanation about how to use the API like
 [Swagger UI](https://swagger.io/tools/swagger-ui/) and [Redoc](https://github.com/Redocly/redoc)
+and try-out these endpoint without worring about CORS issue
 
 
 ## System Design
 ### Network Structure
+To safeguard our infrastructure, we implemented multiple relay and firewall,
+this design will slightly increase in response delay
 ### Security Measurement
+Since all of our operation are REST API based, 
 ### V2 Endpoint
 After period of development, while we're getting more functionality, the code are getting messier, so it's time to rewrite some of these code
 - Break code into smaller file by utilize the Router API
@@ -74,6 +78,8 @@ optimized query to reduce overhead
 ### Delayed Features
 #### Tagging
 Might not a significant feature
+#### Schedule Comparison
+Since we're still struggling with calendar for just single user
 
 ### Permanently Death
 #### SQL Database
