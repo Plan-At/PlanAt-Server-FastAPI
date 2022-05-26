@@ -80,5 +80,7 @@ Might not a significant feature
 Somewhat complicated to make SQL query for the data-structure I already made but seamlessly works with Document-Base NotOnlySQL database, 
 plus can immune common SQL-Injection attack
 
-
+## Developer's notebook
+### Authentication
+#### GitHub OAuth
  

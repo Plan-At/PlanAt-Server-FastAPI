@@ -153,14 +153,14 @@ TOKEN_INFO_3 = {
 LOGIN_INFO_1 = {
     "structure_version": 1,
     "person_id": "1234567890",
-    "password_hash": "12B03226A6D8BE9C6E8CD5E55DC6C7920CAAA39DF14AAB92D5E3EA9340D1C8A4D3D0B8E4314F1F6EF131BA4BF1CEB9186AB87C801AF0D5C95B1BEFB8CEDAE2B9",
+    "password_hash": "12b03226a6d8be9c6e8cd5e55dc6c7920caaa39df14aab92d5e3ea9340d1c8a4d3d0b8e4314f1f6ef131ba4bf1ceb9186ab87c801af0d5c95b1befb8cedae2b9",
     "password_length": 8,
 }
 
 LOGIN_INFO_2 = {
     "structure_version": 2,
     "person_id": "1234567890",
-    "password_hash": "12B03226A6D8BE9C6E8CD5E55DC6C7920CAAA39DF14AAB92D5E3EA9340D1C8A4D3D0B8E4314F1F6EF131BA4BF1CEB9186AB87C801AF0D5C95B1BEFB8CEDAE2B9",
+    "password_hash": "12b03226a6d8be9c6e8cd5e55dc6c7920caaa39df14aab92d5e3ea9340d1c8a4d3d0b8e4314f1f6ef131ba4bf1ceb9186ab87c801af0d5c95b1befb8cedae2b9",  # the generated from hashlib is in lowercase
     "password_length": 8,
     "totp_status": "enabled",
     "totp_secret_key": "MWKXM4SZS7O2Q7S5KU5TBJ2INYSH42UQ",  # pyotp.random_base32()

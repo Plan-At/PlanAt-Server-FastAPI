@@ -122,30 +122,78 @@ async def v2_enable_auth_totp(request: Request, cred: json_body.PasswordLoginBod
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     # same as the traditional plain-password login
-    credential_verify_query = DocumentDB.find_one(collection="LoginV1",
+    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
                                                   find_filter={"person_id": cred.person_id},
                                                   db_client=db_client)
     print(credential_verify_query)
-    if (credential_verify_query is None) or not (
-            hashlib.sha512(cred.password.encode("utf-8")).hexdigest() == credential_verify_query["password_hash"]):
+    if (credential_verify_query is None) \
+            or (hashlib.sha512(cred.password.encode("utf-8")).hexdigest() != credential_verify_query["password_hash"]):
         mongo_client.close()
         return JSONResponse(status_code=403,
-                            content={"status": "not found or not match",
+                            content={"status": "user not found or not match",
                                      "person_id": cred.person_id,
                                      "password": cred.password})
     if credential_verify_query["totp_status"] != "disabled":
+        mongo_client.close()
         return JSONResponse(status_code=200,
                             content={"status": "Time-based OTP already enabled for this user",
                                      "person_id": cred.person_id})
     new_secret_key = pyotp.random_base32()
-    authenticator_text = url = pyotp.totp.TOTP(new_secret_key).provisioning_uri(name=cred.person_id,
-                                                                                issuer_name='Plan-At')
+    authenticator_url = pyotp.totp.TOTP(new_secret_key).provisioning_uri(name=cred.person_id,
+                                                                         issuer_name='Plan-At')
+    credential_modify_query = DocumentDB.update_one(db_client=db_client,
+                                                    collection="LoginV2",
+                                                    find_filter={"person_id": cred.person_id},
+                                                    changes={"$set": {"totp_status": "enabled",
+                                                                      "totp_secret_key": new_secret_key}})
+    if credential_modify_query.matched_count != 1 and credential_modify_query.modified_count != 1:
+        return JSONResponse(status_code=500, content={"status": "failed to register the secret_key for totp in database",
+                                                      "matched_count": credential_modify_query.matched_count,
+                                                      "modified_count": credential_modify_query.modified_count})
+    mongo_client.close()
+    return JSONResponse(status_code=200,
+                        content={"status": "Time-based OTP enabled for this user",
+                                 "person_id": cred.person_id,
+                                 "authenticator_url": authenticator_url})
 
 
 @router.post("/totp/disable", tags=["V2"])
-async def v2_disable_auth_totp():
+async def v2_disable_auth_totp(request: Request, cred: json_body.PasswordLoginBody):
     # Copy and Paste of /enable
-    pass
+    # Not require current output from Authenticator since the user might lose their
+    mongo_client = DocumentDB.get_client()
+    db_client = mongo_client.get_database(DocumentDB.DB)
+    # same as the traditional plain-password login
+    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
+                                                  find_filter={"person_id": cred.person_id},
+                                                  db_client=db_client)
+    print(credential_verify_query)
+    if (credential_verify_query is None) \
+            or (hashlib.sha512(cred.password.encode("utf-8")).hexdigest() != credential_verify_query["password_hash"]):
+        mongo_client.close()
+        return JSONResponse(status_code=403,
+                            content={"status": "user not found or not match",
+                                     "person_id": cred.person_id,
+                                     "password": cred.password})
+    #  checking current totp status
+    if credential_verify_query["totp_status"] != "enabled":
+        mongo_client.close()
+        return JSONResponse(status_code=200,
+                            content={"status": "Time-based OTP not enabled for this user",
+                                     "person_id": cred.person_id})
+    credential_modify_query = DocumentDB.update_one(db_client=db_client,
+                                                    collection="LoginV2",
+                                                    find_filter={"person_id": cred.person_id},
+                                                    changes={"$set": {"totp_status": "disabled",
+                                                                      "totp_secret_key": ""}})
+    if credential_modify_query.matched_count != 1 and credential_modify_query.modified_count != 1:
+        return JSONResponse(status_code=500, content={"status": "failed to delete existing secret_key for totp in database",
+                                                      "matched_count": credential_modify_query.matched_count,
+                                                      "modified_count": credential_modify_query.modified_count})
+    mongo_client.close()
+    return JSONResponse(status_code=200,
+                        content={"status": "Time-based OTP disabled for this user",
+                                 "person_id": cred.person_id})
 
 
 @router.post("/totp/verify", tags=["V2"])
@@ -170,5 +218,3 @@ async def v2_disable_auth_github(request: Request, req_body: json_body.GitHubOAu
 @router.post("/github/verify", tags=["V2"])
 async def v2_verify_auth_github(request: Request, req_body: json_body.GitHubOAuthCode):
     pass
-
-
