@@ -146,7 +146,7 @@ async def v2_delete_user(request: Request, name_and_password: json_body.Password
     image_count = DocumentDB.delete_one(db_client=db_client, collection="ImageHosting", find_filter={"person_id": person_id}).deleted_count
     collection_CalendarEventIndex = DocumentDB.delete_one(db_client=db_client, collection="CalendarEventIndex", find_filter={"person_id": person_id}).deleted_count
     collection_User = DocumentDB.delete_one(db_client=db_client, collection="User", find_filter={"person_id": person_id}).deleted_count
-    collection_Login = DocumentDB.delete_one(db_client=db_client, collection="LoginV1", find_filter={"person_id": person_id}).deleted_count
+    collection_Login = DocumentDB.delete_one(db_client=db_client, collection="LoginV2", find_filter={"person_id": person_id}).deleted_count
     mongo_client.close()
     return JSONResponse(status_code=200,
                         content={"status": "everything bind to this person_id being deleted and unrecoverable",

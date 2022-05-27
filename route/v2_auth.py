@@ -36,7 +36,7 @@ async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
 async def v2_verify_auth_password(request: Request, cred: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
-    credential_verify_query = DocumentDB.find_one(collection="LoginV1",
+    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
                                                   find_filter={"person_id": cred.person_id},
                                                   db_client=db_client)
     print(credential_verify_query)
@@ -61,7 +61,7 @@ async def v2_verify_auth_password(request: Request, cred: json_body.PasswordLogi
 async def v2_update_auth_password(request: Request, old_cred: json_body.PasswordLoginBody, new_cred: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
-    credential_verify_query = DocumentDB.find_one(collection="LoginV1",
+    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
                                                   find_filter={"person_id": old_cred.person_id},
                                                   db_client=db_client)
     print(credential_verify_query)
@@ -79,7 +79,7 @@ async def v2_update_auth_password(request: Request, old_cred: json_body.Password
         "password_hash": hashlib.sha512(new_cred.password.encode("utf-8")).hexdigest(),
         "password_length": len(new_cred.password),
     }
-    credential_update_query = DocumentDB.replace_one(collection="LoginV1",
+    credential_update_query = DocumentDB.replace_one(collection="LoginV2",
                                                      find_filter={"person_id": old_cred.person_id},
                                                      document_body=new_credential_entry,
                                                      db_client=db_client)
