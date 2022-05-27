@@ -278,10 +278,10 @@ async def v2_update_user_profile_picture(request: Request, req_body: json_body.P
     # TODO: check if the url passed in is a safe image
     update_query = DocumentDB.update_one(collection="User",
                                          find_filter={"person_id": person_id},
-                                         changes={"$set": {"about.avatar.image_id": req_body.avatar.image_id,  # Need use "." to connect on nested object
-                                                           "about.avatar.image_url": req_body.avatar.image_url,
-                                                           "about.background.image_id": req_body.background.image_id,
-                                                           "about.background.image_url": req_body.background.image_url}},
+                                         changes={"$set": {"picture.avatar.image_id": req_body.avatar.image_id,  # Need use "." to connect on nested object
+                                                           "picture.avatar.image_url": req_body.avatar.image_url,
+                                                           "picture.background.image_id": req_body.background.image_id,
+                                                           "picture.background.image_url": req_body.background.image_url}},
                                          db_client=db_client)
     if update_query.matched_count != 1 and update_query.modified_count != 1:
         return JSONResponse(status_code=500,
