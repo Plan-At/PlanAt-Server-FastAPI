@@ -180,7 +180,7 @@ async def v2_get_user_profile(request: Request, person_id: str):
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "user not found"})
     mongo_client.close()
-    return JSONFilter.public_user_profile(input_json=db_query)
+    return JSONFilter.universal_user_profile(input_json=db_query)
 
 
 @router.post("/profile/name/update")
