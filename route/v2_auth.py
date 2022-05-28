@@ -15,7 +15,7 @@ import util.pymongo_wrapper as DocumentDB
 router = APIRouter()
 
 
-@router.post("/token/revoke", tags=["V2"])
+@router.post("/token/revoke")
 async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -32,7 +32,7 @@ async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
         return JSONResponse(status_code=200, content={"status": "deleted", "pa_token": pa_token})
 
 
-@router.post("/password/verify", tags=["V2"])
+@router.post("/password/verify")
 async def v2_verify_auth_password(request: Request, cred: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -57,7 +57,7 @@ async def v2_verify_auth_password(request: Request, cred: json_body.PasswordLogi
 
 
 # TODO: revoke existing session/token
-@router.post("/password/update", tags=["V2"])
+@router.post("/password/update")
 async def v2_update_auth_password(request: Request, old_cred: json_body.PasswordLoginBody, new_cred: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -93,7 +93,7 @@ async def v2_update_auth_password(request: Request, old_cred: json_body.Password
     return JSONResponse(status_code=200, content={"status": "success", "voided": old_cred.password})
 
 
-@router.post("/totp/enable", tags=["V2"])
+@router.post("/totp/enable")
 async def v2_enable_auth_totp(request: Request, cred: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -133,7 +133,7 @@ async def v2_enable_auth_totp(request: Request, cred: json_body.PasswordLoginBod
                                  "authenticator_url": authenticator_url})
 
 
-@router.post("/totp/disable", tags=["V2"])
+@router.post("/totp/disable")
 async def v2_disable_auth_totp(request: Request, cred: json_body.PasswordLoginBody):
     # Copy and Paste of /enable
     # Not require current output from Authenticator since the user might lose their
@@ -172,7 +172,7 @@ async def v2_disable_auth_totp(request: Request, cred: json_body.PasswordLoginBo
                                  "person_id": cred.person_id})
 
 
-@router.post("/totp/verify", tags=["V2"])
+@router.post("/totp/verify")
 async def v2_verify_auth_totp(request: Request, person_id: str, totp_code: str):
     # Copy and Paste of /disable
     # Not require current output from Authenticator since the user might lose their
@@ -218,7 +218,7 @@ async def v2_verify_auth_totp(request: Request, person_id: str, totp_code: str):
                                  "expiration_timestamp": generated_token[1]})
 
 
-@router.post("/github/enable", tags=["V2"])
+@router.post("/github/enable")
 async def v2_enable_auth_github(request: Request, req_body: json_body.GitHubOAuthCode, pa_token: str = Header(None)):
     github_session = aiohttp.ClientSession()
     a = await github_session.post(f"https://github.com/login/oauth/access_token?client_id={1}&client_secret={2}&code={3}")
@@ -227,11 +227,11 @@ async def v2_enable_auth_github(request: Request, req_body: json_body.GitHubOAut
     return JSONResponse(status_code=200, content={"status": "success", "code": req_body.code})
 
 
-@router.post("/github/disable", tags=["V2"])
+@router.post("/github/disable")
 async def v2_disable_auth_github(request: Request, req_body: json_body.GitHubOAuthCode, pa_token: str = Header(None)):
     pass
 
 
-@router.post("/github/verify", tags=["V2"])
+@router.post("/github/verify")
 async def v2_verify_auth_github(request: Request, req_body: json_body.GitHubOAuthCode):
     pass

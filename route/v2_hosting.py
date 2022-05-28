@@ -12,7 +12,7 @@ from constant import ServerConfig, ContentLimit
 router = APIRouter()
 
 
-@router.post("/image/upload", tags=["V2"])
+@router.post("/image/upload")
 async def v2_upload_image(request: Request, image_file_bytes: bytes = File(..., max_length=ContentLimit.IMAGE_SIZE), pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -50,7 +50,7 @@ async def v2_upload_image(request: Request, image_file_bytes: bytes = File(..., 
                         content={"status": "success", "image_id": assigned_id, "image_url": image_info["uploadedFiles"][0]["url"]})
 
 
-@router.post("/image/delete", tags=["V2"])
+@router.post("/image/delete")
 async def v2_delete_image(request: Request, image_id: str, pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)

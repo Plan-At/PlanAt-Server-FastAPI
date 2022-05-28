@@ -18,7 +18,7 @@ from constant import AuthConfig
 router = APIRouter()
 
 
-@router.post("/create", tags=["V2"])
+@router.post("/create")
 async def v2_create_user(request: Request, user_profile: json_body.UserProfileObject, password: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -116,7 +116,7 @@ async def v2_create_user(request: Request, user_profile: json_body.UserProfileOb
     return JSONResponse(status_code=200, content={"status": "created", "person_id": person_id, "password": password})
 
 
-@router.post("/delete", tags=["V2"])
+@router.post("/delete")
 async def v2_delete_user(request: Request, name_and_password: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -158,7 +158,7 @@ async def v2_delete_user(request: Request, name_and_password: json_body.Password
                                  "delete_login_credential": collection_Login == 1})
 
 
-@router.get("/id/get", tags=["V2"])
+@router.get("/id/get")
 async def v2_get_user_id(request: Request, pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -170,7 +170,7 @@ async def v2_get_user_id(request: Request, pa_token: str = Header(None)):
     return JSONResponse(status_code=200, content={"status": "success", "person_id": person_id})
 
 
-@router.get("/profile/get", tags=["V2"])
+@router.get("/profile/get")
 async def v2_get_user_profile(request: Request, person_id: str):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -183,7 +183,7 @@ async def v2_get_user_profile(request: Request, person_id: str):
     return JSONFilter.public_user_profile(input_json=db_query)
 
 
-@router.post("/profile/name/update", tags=["V2"])
+@router.post("/profile/name/update")
 async def v2_update_user_profile_name(request: Request, req_body: json_body.NamingSection, pa_token: str = Header(None)):
     # All the update method of user profile is based on this
     mongo_client = DocumentDB.get_client()
@@ -210,7 +210,7 @@ async def v2_update_user_profile_name(request: Request, req_body: json_body.Nami
     return JSONResponse(status_code=200, content={"status": "success"})
 
 
-@router.post("/profile/about/update", tags=["V2"])
+@router.post("/profile/about/update")
 async def v2_update_user_profile_about(request: Request, req_body: json_body.AboutSection, pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -236,7 +236,7 @@ async def v2_update_user_profile_about(request: Request, req_body: json_body.Abo
     return JSONResponse(status_code=200, content={"status": "success"})
 
 
-@router.post("/profile/status/update", tags=["V2"])
+@router.post("/profile/status/update")
 async def v2_update_user_profile_status(request: Request, req_body: json_body.StatusSection, pa_token: str = Header(None)):
     # Clone of previous two endpoint
     mongo_client = DocumentDB.get_client()
@@ -265,7 +265,7 @@ async def v2_update_user_profile_status(request: Request, req_body: json_body.St
     return JSONResponse(status_code=200, content={"status": "success"})
 
 
-@router.post("/profile/picture/update", tags=["V2"])
+@router.post("/profile/picture/update")
 async def v2_update_user_profile_picture(request: Request, req_body: json_body.PictureSection, pa_token: str = Header(None)):
     # Clone of these previous three endpoint
     mongo_client = DocumentDB.get_client()
@@ -293,7 +293,7 @@ async def v2_update_user_profile_picture(request: Request, req_body: json_body.P
 
 
 # TODO: test this
-@router.post("/profile/contact/update", tags=["V2"])
+@router.post("/profile/contact/update")
 async def v2_update_user_profile_contact(request: Request, req_body: json_body.ContactMethodSection, pa_token: str = Header(None)):
     # Clone of these previous four endpoint
     mongo_client = DocumentDB.get_client()
