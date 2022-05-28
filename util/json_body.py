@@ -19,7 +19,7 @@ class TagObject(BaseModel):
     display_name: str
 
 
-class ACObject(BaseModel):
+class AccessControl(BaseModel):
     canonical_name: Optional[str]
     person_id: Optional[str]
     permission_list: List[str] = ["read_full", "edit_full", "delete"]
@@ -30,29 +30,12 @@ Is possible to stack multiple BaseModel class into one
 """
 
 
-class RequestUserProfile(BaseModel):
-    person_id: str
-
-
-class UpdateUserProfileName_DisplayName(BaseModel):
-    display_name: str
-
-
-class UpdateUserProfileAbout_Description(BaseModel):
-    short_description: str
-    full_description: str
-
-
-class UpdateUserProfileStatus(BaseModel):
-    current_status: str
-
-
-class CalendarEventObject(BaseModel):
+class CalendarEvent(BaseModel):
     display_name: str = "my event"
     description: str = "my description"
     start_time: TimeObject
     end_time: TimeObject
-    access_control_list: List[ACObject]
+    access_control_list: List[AccessControl]
     type_list: List[TypeObject]
     tag_list: List[TagObject]
 
@@ -67,22 +50,22 @@ class PasswordLoginBody(BaseModel):
     token_lifespan: int = 60 * 60 * 24 * 1
 
 
-class PictureObject(BaseModel):
+class PictureLink(BaseModel):
     image_id: str
     image_url: str
 
 
-class EmailObject(BaseModel):
+class EmailAddress(BaseModel):
     domain_name: str
     full_address: str
 
 
-class PhoneNumberObject(BaseModel):
+class PhoneNumber(BaseModel):
     country_code: str
     regular_number: str
 
 
-class PhysicalAddressObject(BaseModel):
+class PhysicalAddress(BaseModel):
     full_address: str
     street_address: str
     city: str
@@ -110,8 +93,8 @@ class NamingSection(BaseModel):
 
 
 class PictureSection(BaseModel):
-    avatar: PictureObject
-    background: PictureObject
+    avatar: PictureLink
+    background: PictureLink
 
 
 class StatusSection(BaseModel):
@@ -128,9 +111,9 @@ class AboutSection(BaseModel):
 
 
 class ContactMethodSection(BaseModel):
-    email_primary: EmailObject
-    phone: PhoneNumberObject
-    physical_address: PhysicalAddressObject
+    email_primary: EmailAddress
+    phone: PhoneNumber
+    physical_address: PhysicalAddress
     twitter: TwitterUser
     github: GithubUser
 

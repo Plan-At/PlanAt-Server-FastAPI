@@ -11,13 +11,12 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
-from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from constant import ServerConfig, RateLimitConfig, MediaAssets, START_TIME, PROGRAM_HASH
-from route import fake, v1, v2, v2_captcha, v2_auth, v2_user, v2_calendar, v2_hosting
+from constant import ServerConfig, RateLimitConfig, MediaAssets, START_TIME, PROGRAM_HASH, APITag
+from route import fake, v2_captcha, v2_auth, v2_user, v2_calendar, v2_hosting
 from util import docs_page
 
 app = FastAPI()
@@ -25,23 +24,23 @@ app = FastAPI()
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-app.include_router(v2.router, prefix="/v2")
-app.include_router(v2_auth.router, prefix="/v2/auth")
-app.include_router(v2_calendar.router, prefix="/v2/calendar")
-app.include_router(v2_user.router, prefix="/v2/user")
-app.include_router(v2_hosting.router, prefix="/v2/hosting")
-app.include_router(v2_captcha.router, prefix="/v2/captcha")
-app.include_router(fake.router, prefix="/fake")
-app.include_router(v1.router)
+app.include_router(v2_auth.router, prefix="/v2/auth", tags=APITag.AUTH)
+app.include_router(v2_calendar.router, prefix="/v2/calendar", tags=APITag.CALENDAR)
+app.include_router(v2_user.router, prefix="/v2/user", tags=APITag.USER)
+app.include_router(v2_hosting.router, prefix="/v2/hosting", tags=APITag.HOSTING)
+app.include_router(v2_captcha.router, prefix="/v2/captcha", tags=APITag.CAPTCHA)
+app.include_router(fake.router, prefix="/fake", tags=APITag.EXAMPLE)
 
 """enable this for local development or where have no nginx presence"""
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins="*",
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+if ServerConfig.ADD_CORS_HEADER:
+    from fastapi.middleware.cors import CORSMiddleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins="*",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 @app.middleware("http")
@@ -72,9 +71,9 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
-        title="Plan-At API",
-        version="2.0.0",
-        description="The official Plan-At backend, using FastAPI",
+        title=ServerConfig.TITLE,
+        version=ServerConfig.SEMVER,
+        description=ServerConfig.DESCRIPTION,
         routes=app.routes,
     )
     openapi_schema["info"]["x-logo"] = {
@@ -87,14 +86,14 @@ def custom_openapi():
 app.openapi = custom_openapi
 
 
-@app.get("/")
+@app.get("/", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def hello_world(request: Request):
     # return JSONResponse(status_code=200, content={"message": "hello, documentation available at /docs"})
     return RedirectResponse(url="/docs")
 
 
-@app.get("/favicon.ico")
+@app.get("/favicon.ico", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def get_favicon(request: Request):
     return RedirectResponse(url=MediaAssets.FAVICON)
@@ -142,21 +141,9 @@ def request_timestamp(request: Request):
 @app.get("/status", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def api_status(request: Request):
-    return JSONResponse(status_code=200, content={"status": f"alive", "uptime": f"{datetime.now() - START_TIME}",
+    return JSONResponse(status_code=200, content={"status": f"alive",
+                                                  "uptime": f"{datetime.now() - START_TIME}",
                                                   "version": PROGRAM_HASH})
-
-
-@app.get("/server/list", tags=["General Methods"])
-@limiter.limit(RateLimitConfig.HIGH_SENSITIVITY)
-def api_server_list(request: Request):
-    return JSONResponse(status_code=200, content={"server_list": ServerConfig.API_SERVER_LIST})
-
-
-@app.get("/server/assignment", tags=["General Methods"])
-@limiter.limit(RateLimitConfig.LOW_SENSITIVITY)
-def api_server_assignment(request: Request):
-    return JSONResponse(status_code=200, content={"recommended_servers": [
-        {"priority": 0, "load": 0, "display_name": "", "URL": "", "provider": "", "location": ""}]})
 
 
 @app.get("/test/connection", tags=["General Methods"])
@@ -172,14 +159,14 @@ def api_tool_delay(request: Request, sleep_time: int):
     return JSONResponse(status_code=200, content={"status": "finished"})
 
 
-@app.get("/everything")
+@app.get("/everything", tags=["General Methods"])
 async def receive_everything(request: Request):
     print(request.headers)
     print(await request.body())
     return JSONResponse(status_code=200, content={"status": "finished"})
 
 
-@app.post("/everything")
+@app.post("/everything", tags=["General Methods"])
 async def receive_everything(request: Request):
     print(request.headers)
     print(await request.body())

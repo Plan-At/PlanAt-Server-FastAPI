@@ -10,10 +10,12 @@ class ServerConfig:
     HOST = "127.0.0.1"
     CONCURRENCY = 8
     CURRENT_VERSION = "v2"
-    API_SERVER_LIST = [
-        {"priority": 0, "load": 0, "name": "Primary", "URL": "https://api-0.752628.xyz/", "provider": "Official", "location": "US-West"}]
+    SEMVER = "2.2.0"
     IMAGEBED_FOLDER = "/Plan-At/usercontent"
     LOG_LEVEL = "debug"
+    ADD_CORS_HEADER = False
+    TITLE = "Plan-At API"
+    DESCRIPTION = "The official Plan-At backend, using FastAPI"
 
 
 class AuthConfig:
@@ -70,3 +72,12 @@ class RateLimitConfig:
 
 class MediaAssets:
     FAVICON = "https://cdn.jsdelivr.net/gh/Plan-At/static-image/2022/02/17/favicon.ico"
+
+
+class APITag:
+    AUTH = ["Authorization"]
+    HOSTING = ["Content Hosting"]
+    CALENDAR = ["Calendar Related"]
+    USER = ["User Related"]
+    CAPTCHA = ["Captcha"]
+    EXAMPLE = ["Example Data"]

@@ -15,8 +15,8 @@ import util.json_filter as JSONFilter
 router = APIRouter()
 
 
-@router.post("/event/create", tags=["V2"])
-async def v2_create_calendar_event(request: Request, req_body: json_body.CalendarEventObject, pa_token: str = Header(None)):
+@router.post("/event/create")
+async def v2_create_calendar_event(request: Request, req_body: json_body.CalendarEvent, pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     print(dict(req_body))
@@ -81,10 +81,10 @@ async def v2_create_calendar_event(request: Request, req_body: json_body.Calenda
     return JSONResponse(status_code=200, content={"status": "success", "event_id": new_event_id})
 
 
-@router.post("/event/edit", tags=["V2"])
+@router.post("/event/edit")
 async def v2_edit_calendar_event(request: Request,
                                  event_id: int,
-                                 req_body: json_body.CalendarEventObject,
+                                 req_body: json_body.CalendarEvent,
                                  pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -159,7 +159,7 @@ async def v2_edit_calendar_event(request: Request,
     return JSONResponse(status_code=200, content={"status": "success", "event_id": event_id})
 
 
-@router.post("/event/delete", tags=["V2"])
+@router.post("/event/delete")
 async def v2_delete_calendar_event(request: Request, event_id: int, pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -203,7 +203,7 @@ async def v2_delete_calendar_event(request: Request, event_id: int, pa_token: st
     return JSONResponse(status_code=200, content={"status": "deletion success", "event_id": event_id})
 
 
-@router.get("/event/get", tags=["V2"])
+@router.get("/event/get")
 async def v2_get_calendar_event(request: Request,
                                 event_id_list: List[int] = Query(None),
                                 pa_token: Optional[str] = Header("")):
@@ -237,7 +237,7 @@ async def v2_get_calendar_event(request: Request,
     return JSONResponse(status_code=200, content={"status": "finished", "result": result_calendar_event})
 
 
-@router.get("/event/index", tags=["V2"])
+@router.get("/event/index")
 async def v2_get_calendar_event_index(request: Request, pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -249,4 +249,4 @@ async def v2_get_calendar_event_index(request: Request, pa_token: str = Header(N
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "CalendarEvent index for this user not found", "person_id": person_id})
     mongo_client.close()
-    return JSONFilter.private_user_calendar_event_index(input_json=db_query)
+    return JSONFilter.universal_user_calendar_event_index(input_json=db_query)
