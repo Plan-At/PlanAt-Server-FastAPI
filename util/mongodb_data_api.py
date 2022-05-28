@@ -1,9 +1,11 @@
 import requests
 import json
 
+from constant import DBName
+
 TOKEN = json.load(open("app.token.json"))
-DB_CLUSTER = "Cluster1"
-DB_NAME = "PlanAtDev"
+DB_CLUSTER = DBName.CLUSTER_NAME
+DB_NAME = DBName.THIS
 
 
 def get_client():

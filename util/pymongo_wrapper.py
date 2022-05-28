@@ -4,8 +4,10 @@ import json
 from pymongo import MongoClient
 from pymongo.database import Database
 
+from constant import DBName
+
 TOKEN = json.load(open("app.token.json"))
-DB = "PlanAtDev"
+DB = DBName.THIS
 
 
 def get_client() -> MongoClient:

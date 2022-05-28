@@ -11,6 +11,7 @@ from util import random_content, json_body
 from util.token_tool import get_person_id_with_token
 import util.pymongo_wrapper as DocumentDB
 import util.json_filter as JSONFilter
+from constant import DBName
 
 router = APIRouter()
 
@@ -64,13 +65,13 @@ async def v2_create_calendar_event(request: Request, req_body: json_body.Calenda
     if not least_one_access_control:
         return JSONResponse(status_code=400, content={"status": "person_id or canonical_name in access_control_list is required"})
     print(new_event_entry)
-    insert_query = DocumentDB.insert_one(collection="CalendarEventEntry",
+    insert_query = DocumentDB.insert_one(collection=DBName.CALENDAR_EVENT,
                                          document_body=new_event_entry,
                                          db_client=db_client)
     print(insert_query.inserted_id)
     """add record to the index"""
     index_update_query = DocumentDB.update_one(
-        collection="CalendarEventIndex",
+        collection=DBName.CALENDAR_EVENT_INDEX,
         find_filter={"person_id": person_id},
         changes={"$push": {"event_id_list": new_event_id}},
         db_client=db_client)
@@ -97,7 +98,7 @@ async def v2_edit_calendar_event(request: Request,
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "user not found"})
     # Check is have sufficient permission to modify the event
-    find_query = DocumentDB.find_one(collection="CalendarEventEntry",
+    find_query = DocumentDB.find_one(collection=DBName.CALENDAR_EVENT,
                                      find_filter={"event_id": event_id},
                                      db_client=db_client)
     print(find_query)
@@ -141,7 +142,7 @@ async def v2_edit_calendar_event(request: Request,
     least_one_access_control = False
     for each_access_control in req_body.access_control_list:
         print(each_access_control)
-        if (each_access_control.canonical_name != None) or (each_access_control.person_id != None):
+        if (each_access_control.canonical_name is not None) or (each_access_control.person_id is not None):
             updated_event_entry["access_control_list"].append({
                 "canonical_name": each_access_control.canonical_name,
                 "person_id": each_access_control.person_id,
@@ -152,8 +153,10 @@ async def v2_edit_calendar_event(request: Request,
         return JSONResponse(status_code=400,
                             content={"status": "person_id or canonical_name in access_control_list is required"})
     print(updated_event_entry)
-    insert_query = DocumentDB.replace_one(collection="CalendarEventEntry", find_filter={"event_id": event_id},
-                                          document_body=updated_event_entry, db_client=db_client)
+    insert_query = DocumentDB.replace_one(collection=DBName.CALENDAR_EVENT,
+                                          find_filter={"event_id": event_id},
+                                          document_body=updated_event_entry,
+                                          db_client=db_client)
     print(insert_query)
     mongo_client.close()
     return JSONResponse(status_code=200, content={"status": "success", "event_id": event_id})
@@ -179,7 +182,7 @@ async def v2_delete_calendar_event(request: Request, event_id: int, pa_token: st
         mongo_client.close()
         return JSONResponse(status_code=403,
                             content={"status": f"unable to delete calendar_event {event_id} with current token"})
-    deletion_query = DocumentDB.delete_one(collection="CalendarEventEntry",
+    deletion_query = DocumentDB.delete_one(collection=DBName.CALENDAR_EVENT,
                                            find_filter={"event_id": event_id},
                                            db_client=db_client)
     print(deletion_query)
@@ -190,7 +193,7 @@ async def v2_delete_calendar_event(request: Request, event_id: int, pa_token: st
         return JSONResponse(status_code=404,
                             content={"status": "calendar_event deleted but some error occurred", "event_id": event_id})
     """remove from the index"""
-    update_query = DocumentDB.update_one(collection="CalendarEventIndex",
+    update_query = DocumentDB.update_one(collection=DBName.CALENDAR_EVENT_INDEX,
                                          find_filter={"person_id": person_id},
                                          changes={"$pull": {"event_id_list": event_id}},
                                          db_client=db_client)
@@ -219,15 +222,14 @@ async def v2_get_calendar_event(request: Request,
             if len(str(event_id)) != 16:
                 result_calendar_event.append({"status": "malformed event_id", "event_id": event_id})
             else:
-                find_query = DocumentDB.find_one(collection="CalendarEventEntry",
+                find_query = DocumentDB.find_one(collection=DBName.CALENDAR_EVENT,
                                                  find_filter={"event_id": event_id},
                                                  db_client=db_client)
                 if find_query is None:
                     result_calendar_event.append({"status": "calendar_event not found", "event_id": event_id})
-                processed_find_query = JSONFilter.universal_calendar_event(
-                    input_json=find_query,
-                    person_id=person_id,
-                    required_permission_list=["read_full"])
+                processed_find_query = JSONFilter.universal_calendar_event(input_json=find_query,
+                                                                           person_id=person_id,
+                                                                           required_permission_list=["read_full"])
                 if processed_find_query:
                     result_calendar_event.append(processed_find_query)
         except (Exception, OSError, IOError) as e:
@@ -245,7 +247,7 @@ async def v2_get_calendar_event_index(request: Request, pa_token: str = Header(N
     if person_id == "":
         mongo_client.close()
         return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
-    db_query = DocumentDB.find_one(collection="CalendarEventIndex", find_filter={"person_id": person_id}, db_client=db_client)
+    db_query = DocumentDB.find_one(collection=DBName.CALENDAR_EVENT_INDEX, find_filter={"person_id": person_id}, db_client=db_client)
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "CalendarEvent index for this user not found", "person_id": person_id})
     mongo_client.close()

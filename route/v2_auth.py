@@ -11,6 +11,7 @@ import pyotp
 # Local file
 from util import json_body, token_tool
 import util.pymongo_wrapper as DocumentDB
+from constant import DBName
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     token_deletion_query = DocumentDB.delete_one(
-        collection="TokenV3",
+        collection=DBName.TOKEN,
         find_filter={"token_value": pa_token},
         db_client=db_client)
     mongo_client.close()
@@ -36,7 +37,7 @@ async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
 async def v2_verify_auth_password(request: Request, cred: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
-    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
+    credential_verify_query = DocumentDB.find_one(collection=DBName.LOGIN,
                                                   find_filter={"person_id": cred.person_id},
                                                   db_client=db_client)
     print(credential_verify_query)
@@ -61,7 +62,7 @@ async def v2_verify_auth_password(request: Request, cred: json_body.PasswordLogi
 async def v2_update_auth_password(request: Request, old_cred: json_body.PasswordLoginBody, new_cred: json_body.PasswordLoginBody):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
-    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
+    credential_verify_query = DocumentDB.find_one(collection=DBName.LOGIN,
                                                   find_filter={"person_id": old_cred.person_id},
                                                   db_client=db_client)
     print(credential_verify_query)
@@ -79,7 +80,7 @@ async def v2_update_auth_password(request: Request, old_cred: json_body.Password
         "password_hash": hashlib.sha512(new_cred.password.encode("utf-8")).hexdigest(),
         "password_length": len(new_cred.password),
     }
-    credential_update_query = DocumentDB.replace_one(collection="LoginV2",
+    credential_update_query = DocumentDB.replace_one(collection=DBName.LOGIN,
                                                      find_filter={"person_id": old_cred.person_id},
                                                      document_body=new_credential_entry,
                                                      db_client=db_client)
@@ -98,7 +99,7 @@ async def v2_enable_auth_totp(request: Request, cred: json_body.PasswordLoginBod
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     # same as the traditional plain-password login
-    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
+    credential_verify_query = DocumentDB.find_one(collection=DBName.LOGIN,
                                                   find_filter={"person_id": cred.person_id},
                                                   db_client=db_client)
     print(credential_verify_query)
@@ -118,7 +119,7 @@ async def v2_enable_auth_totp(request: Request, cred: json_body.PasswordLoginBod
     authenticator_url = pyotp.totp.TOTP(new_secret_key).provisioning_uri(name=cred.person_id,
                                                                          issuer_name='Plan-At')
     credential_modify_query = DocumentDB.update_one(db_client=db_client,
-                                                    collection="LoginV2",
+                                                    collection=DBName.LOGIN,
                                                     find_filter={"person_id": cred.person_id},
                                                     changes={"$set": {"totp_status": "enabled",
                                                                       "totp_secret_key": new_secret_key}})
@@ -140,7 +141,7 @@ async def v2_disable_auth_totp(request: Request, cred: json_body.PasswordLoginBo
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     # same as the traditional plain-password login
-    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
+    credential_verify_query = DocumentDB.find_one(collection=DBName.LOGIN,
                                                   find_filter={"person_id": cred.person_id},
                                                   db_client=db_client)
     print(credential_verify_query)
@@ -158,7 +159,7 @@ async def v2_disable_auth_totp(request: Request, cred: json_body.PasswordLoginBo
                             content={"status": "Time-based OTP not enabled for this user",
                                      "person_id": cred.person_id})
     credential_modify_query = DocumentDB.update_one(db_client=db_client,
-                                                    collection="LoginV2",
+                                                    collection=DBName.LOGIN,
                                                     find_filter={"person_id": cred.person_id},
                                                     changes={"$set": {"totp_status": "disabled",
                                                                       "totp_secret_key": ""}})
@@ -184,7 +185,7 @@ async def v2_verify_auth_totp(request: Request, person_id: str, totp_code: str):
                             content={"status": "totp_code malformed",
                                      "totp_code": totp_code})
     # same as the traditional plain-password login
-    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
+    credential_verify_query = DocumentDB.find_one(collection=DBName.LOGIN,
                                                   find_filter={"person_id": person_id},
                                                   db_client=db_client)
     print(credential_verify_query)
