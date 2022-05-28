@@ -32,6 +32,30 @@ class ContentLimit:
     IMAGE_SIZE = 1024 * 1024 * 4
 
 
+class MediaAssets:
+    FAVICON = "https://cdn.jsdelivr.net/gh/Plan-At/static-image/2022/02/17/favicon.ico"
+
+
+class APITag:
+    AUTH = ["Authorization"]
+    HOSTING = ["Content Hosting"]
+    CALENDAR = ["Calendar Related"]
+    USER = ["User Related"]
+    CAPTCHA = ["Captcha"]
+    EXAMPLE = ["Example Data"]
+
+
+class DBName:
+    THIS = "PlanAtDev"
+    CLUSTER_NAME = "Cluster1"
+    TOKEN = "TokenV3"
+    LOGIN = "LoginV2"
+    USER_PROFILE = "User"
+    CALENDAR_EVENT_INDEX = "CalendarEventIndex"
+    CALENDAR_EVENT = "CalendarEventEntry"
+    IMAGE_HOSTING = "ImageHosting"
+
+
 class RateLimitConfig:
     ENABLE_RL = False
     if ENABLE_RL:
@@ -68,16 +92,3 @@ class RateLimitConfig:
         MID_SENSITIVITY = "100/second"
         HIGH_SENSITIVITY = "100/second"
         BURST = "1000/second"
-
-
-class MediaAssets:
-    FAVICON = "https://cdn.jsdelivr.net/gh/Plan-At/static-image/2022/02/17/favicon.ico"
-
-
-class APITag:
-    AUTH = ["Authorization"]
-    HOSTING = ["Content Hosting"]
-    CALENDAR = ["Calendar Related"]
-    USER = ["User Related"]
-    CAPTCHA = ["Captcha"]
-    EXAMPLE = ["Example Data"]

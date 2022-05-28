@@ -13,7 +13,7 @@ from util import random_content, json_body
 import util.pymongo_wrapper as DocumentDB
 import util.json_filter as JSONFilter
 from util.token_tool import get_person_id_with_token
-from constant import AuthConfig
+from constant import AuthConfig, DBName
 
 router = APIRouter()
 
@@ -93,14 +93,14 @@ async def v2_create_user(request: Request, user_profile: json_body.UserProfileOb
             }
         }
     }
-    profile_insert_query = DocumentDB.insert_one(db_client=db_client, collection="User", document_body=full_profile)
+    profile_insert_query = DocumentDB.insert_one(db_client=db_client, collection=DBName.USER_PROFILE, document_body=full_profile)
     print(profile_insert_query.inserted_id)
     calendar_index_insert_query = DocumentDB.insert_one(db_client=db_client,
-                                                        collection="CalendarEventIndex",
+                                                        collection=DBName.CALENDAR_EVENT_INDEX,
                                                         document_body={"structure_version": 1, "person_id": person_id, "event_id_list": []})
     print(calendar_index_insert_query.inserted_id)
     login_credential_insert_query = DocumentDB.insert_one(db_client=db_client,
-                                                          collection="LoginV2",
+                                                          collection=DBName.LOGIN,
                                                           document_body={
                                                               "structure_version": 2,
                                                               "person_id": person_id,
@@ -121,7 +121,7 @@ async def v2_delete_user(request: Request, name_and_password: json_body.Password
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     person_id = name_and_password.person_id
-    credential_verify_query = DocumentDB.find_one(collection="LoginV2",
+    credential_verify_query = DocumentDB.find_one(collection=DBName.LOGIN,
                                                   find_filter={"person_id": person_id},
                                                   db_client=db_client)
     print(credential_verify_query)
@@ -132,21 +132,21 @@ async def v2_delete_user(request: Request, name_and_password: json_body.Password
                                      "person_id": name_and_password.person_id,
                                      "password": name_and_password.password})
     calendar_event_index_query = DocumentDB.find_one(db_client=db_client,
-                                                     collection="CalendarEventIndex",
+                                                     collection=DBName.CALENDAR_EVENT_INDEX,
                                                      find_filter={"person_id": person_id})
     calendar_event_count = 0
     if calendar_event_index_query is not None:
         calendar_event_index = calendar_event_index_query["event_id_list"]
         for each_calendar_event_id in calendar_event_index:
             calendar_event_count += DocumentDB.delete_one(db_client=db_client,
-                                                          collection="CalendarEventEntry",
+                                                          collection=DBName.CALENDAR_EVENT,
                                                           find_filter={"event_id": each_calendar_event_id}).deleted_count
     # Order based on the rank of importance and regenerate possibility
-    token_count = DocumentDB.delete_many(db_client=db_client, collection="TokenV3", find_filter={"person_id": person_id}).deleted_count
-    image_count = DocumentDB.delete_one(db_client=db_client, collection="ImageHosting", find_filter={"person_id": person_id}).deleted_count
-    collection_CalendarEventIndex = DocumentDB.delete_one(db_client=db_client, collection="CalendarEventIndex", find_filter={"person_id": person_id}).deleted_count
-    collection_User = DocumentDB.delete_one(db_client=db_client, collection="User", find_filter={"person_id": person_id}).deleted_count
-    collection_Login = DocumentDB.delete_one(db_client=db_client, collection="LoginV2", find_filter={"person_id": person_id}).deleted_count
+    token_count = DocumentDB.delete_many(db_client=db_client, collection=DBName.TOKEN, find_filter={"person_id": person_id}).deleted_count
+    image_count = DocumentDB.delete_one(db_client=db_client, collection=DBName.IMAGE_HOSTING, find_filter={"person_id": person_id}).deleted_count
+    collection_CalendarEventIndex = DocumentDB.delete_one(db_client=db_client, collection=DBName.CALENDAR_EVENT_INDEX, find_filter={"person_id": person_id}).deleted_count
+    collection_User = DocumentDB.delete_one(db_client=db_client, collection=DBName.USER_PROFILE, find_filter={"person_id": person_id}).deleted_count
+    collection_Login = DocumentDB.delete_one(db_client=db_client, collection=DBName.LOGIN, find_filter={"person_id": person_id}).deleted_count
     mongo_client.close()
     return JSONResponse(status_code=200,
                         content={"status": "everything bind to this person_id being deleted and unrecoverable",
@@ -176,11 +176,11 @@ async def v2_get_user_profile(request: Request, person_id: str):
     db_client = mongo_client.get_database(DocumentDB.DB)
     if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-    db_query = DocumentDB.find_one(collection="User", find_filter={"person_id": person_id}, db_client=db_client)
+    db_query = DocumentDB.find_one(collection=DBName.USER_PROFILE, find_filter={"person_id": person_id}, db_client=db_client)
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "user not found"})
     mongo_client.close()
-    return JSONFilter.public_user_profile(input_json=db_query)
+    return JSONFilter.universal_user_profile(input_json=db_query)
 
 
 @router.post("/profile/name/update")
@@ -194,7 +194,7 @@ async def v2_update_user_profile_name(request: Request, req_body: json_body.Nami
         return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
     # This based on assumption of structure version is matched
     # TODO: forbid special characters check if unique_name already being used
-    update_query = DocumentDB.update_one(collection="User",
+    update_query = DocumentDB.update_one(collection=DBName.USER_PROFILE,
                                          find_filter={"person_id": person_id},
                                          changes={"$set": {"naming.unique_name": req_body.unique_name,  # Need use "." to connect on nested object
                                                            "naming.display_name_full": req_body.display_name_full,
@@ -220,7 +220,7 @@ async def v2_update_user_profile_about(request: Request, req_body: json_body.Abo
         return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
     # This based on assumption of structure version is matched
     # TODO: forbid special characters check length
-    update_query = DocumentDB.update_one(collection="User",
+    update_query = DocumentDB.update_one(collection=DBName.USER_PROFILE,
                                          find_filter={"person_id": person_id},
                                          changes={"$set": {"about.short_description": req_body.short_description,  # Need use "." to connect on nested object
                                                            "about.full_description": req_body.full_description,
@@ -247,7 +247,7 @@ async def v2_update_user_profile_status(request: Request, req_body: json_body.St
         return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
     # This based on assumption of structure version is matched
     # TODO: check if the url passed in is a safe image
-    update_query = DocumentDB.update_one(collection="User",
+    update_query = DocumentDB.update_one(collection=DBName.USER_PROFILE,
                                          find_filter={"person_id": person_id},
                                          changes={"$set": {"status.current_status": req_body.current_status,  # Need use "." to connect on nested object
                                                            "status.until.text": req_body.until.text,
@@ -276,7 +276,7 @@ async def v2_update_user_profile_picture(request: Request, req_body: json_body.P
         return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
     # This based on assumption of structure version is matched
     # TODO: check if the url passed in is a safe image
-    update_query = DocumentDB.update_one(collection="User",
+    update_query = DocumentDB.update_one(collection=DBName.USER_PROFILE,
                                          find_filter={"person_id": person_id},
                                          changes={"$set": {"picture.avatar.image_id": req_body.avatar.image_id,  # Need use "." to connect on nested object
                                                            "picture.avatar.image_url": req_body.avatar.image_url,
@@ -304,7 +304,7 @@ async def v2_update_user_profile_contact(request: Request, req_body: json_body.C
         return JSONResponse(status_code=403, content={"status": "user not found with this token", "pa_token": pa_token})
     # This based on assumption of structure version is matched
     # TODO: check if the url passed in is a safe image
-    update_query = DocumentDB.update_one(collection="User",
+    update_query = DocumentDB.update_one(collection=DBName.USER_PROFILE,
                                          find_filter={"person_id": person_id},
                                          changes={"$set": {"contact_method_collection.email_primary.domain_name": req_body.email_primary.domain_name,
                                                            "contact_method_collection.email_primary.full_address": req_body.email_primary.full_address,

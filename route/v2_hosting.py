@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 import util.pymongo_wrapper as DocumentDB
 from util.token_tool import get_person_id_with_token
 from util import image4io
-from constant import ServerConfig, ContentLimit
+from constant import ServerConfig, ContentLimit, DBName
 
 router = APIRouter()
 
@@ -43,7 +43,7 @@ async def v2_upload_image(request: Request, image_file_bytes: bytes = File(..., 
         "image_height": image_info["uploadedFiles"][0]["height"],
         "hosting_provider": "image4io"
     }
-    db_action_result = DocumentDB.insert_one(collection="ImageHosting", document_body=report_card, db_client=db_client)
+    db_action_result = DocumentDB.insert_one(collection=DBName.IMAGE_HOSTING, document_body=report_card, db_client=db_client)
     print(db_action_result)
     mongo_client.close()
     return JSONResponse(status_code=201,
@@ -57,7 +57,7 @@ async def v2_delete_image(request: Request, image_id: str, pa_token: str = Heade
     person_id = get_person_id_with_token(pa_token, db_client)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "you need to upload an image", "pa_token": pa_token})
-    image_info_query = DocumentDB.find_one(collection="ImageHosting", find_filter={"image_id": image_id}, db_client=db_client)
+    image_info_query = DocumentDB.find_one(collection=DBName.IMAGE_HOSTING, find_filter={"image_id": image_id}, db_client=db_client)
     print(image_info_query)
     resp = image4io.deleteImage(
         authorization=image4io.calculate_basic_auth(
@@ -69,7 +69,7 @@ async def v2_delete_image(request: Request, image_id: str, pa_token: str = Heade
         return JSONResponse(status_code=500, content={"status": "image deletion failed", "reason": resp.json()["errors"]})
     image_info = resp.json()
     print(image_info)
-    db_action_result = DocumentDB.delete_one(collection="ImageHosting", find_filter={"image_id": image_id}, db_client=db_client)
+    db_action_result = DocumentDB.delete_one(collection=DBName.IMAGE_HOSTING, find_filter={"image_id": image_id}, db_client=db_client)
     if db_action_result.deleted_count != 1:
         return JSONResponse(status_code=500,
                             content={"status": "image deleted from hosting service but failed to remove relevant record from our database", "image_id": image_id})
