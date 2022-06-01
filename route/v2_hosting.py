@@ -1,7 +1,7 @@
 import json
 
 from starlette.requests import Request
-from fastapi import APIRouter, File, Header
+from fastapi import APIRouter, File, Header, Form, UploadFile
 from fastapi.responses import JSONResponse
 
 import util.pymongo_wrapper as DocumentDB
@@ -13,9 +13,22 @@ router = APIRouter()
 
 
 @router.post("/image/upload")
-async def v2_upload_image(request: Request, image_file_bytes: bytes = File(..., max_length=ContentLimit.IMAGE_SIZE), pa_token: str = Header(None)):
+async def v2_upload_image(request: Request,
+                          image_file_bytes: bytes = File(None, max_length=ContentLimit.IMAGE_SIZE), pa_token: str = Header(None),
+                          image_file: UploadFile = Form(None), pa_token_form: str = Form(None)):
+    # No need ofr optional since they already provided fallback value
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
+    if pa_token is not None:
+        pass
+    elif pa_token_form is not None:
+        pa_token = pa_token_form
+    else:
+        return JSONResponse(status_code=400, content={"status": "no token provided"})
+    if image_file is not None:
+        image_file_bytes = await image_file.read()
+    elif image_file_bytes is None:
+        return JSONResponse(status_code=400, content={"status": "no file provided"})
     person_id = get_person_id_with_token(pa_token, db_client)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "you need to upload an image", "pa_token": pa_token})
@@ -75,4 +88,4 @@ async def v2_delete_image(request: Request, image_id: str, pa_token: str = Heade
                             content={"status": "image deleted from hosting service but failed to remove relevant record from our database", "image_id": image_id})
     mongo_client.close()
     return JSONResponse(status_code=201,
-                        content={"status": "success", "image_id": image_id})
+                        content={"status": "deleted", "image_id": image_id})
