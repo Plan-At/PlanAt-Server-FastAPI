@@ -57,12 +57,11 @@ async def log_requests(request: Request, call_next):
 
 @app.exception_handler(Exception)
 async def debug_exception_handler(request: Request, exc: Exception):
+    print(exc)
     return Response(
         status_code=200,  # return 500 here might not show any text
         content="".join(
-            traceback.format_exception(
-                etype=type(exc), value=exc, tb=exc.__traceback__
-            )
+            traceback.format_exception(etype=type(exc), value=exc, tb=exc.__traceback__)  # Not compatible with Python3.10
         )
     )
 

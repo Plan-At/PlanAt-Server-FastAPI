@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class TimeObject(BaseModel):
@@ -57,7 +57,7 @@ class PictureLink(BaseModel):
 
 class EmailAddress(BaseModel):
     domain_name: str
-    full_address: str
+    full_address: EmailStr
 
 
 class PhoneNumber(BaseModel):
@@ -118,7 +118,7 @@ class ContactMethodSection(BaseModel):
     github: GithubUser
 
 
-class UserProfileObject(BaseModel):
+class UserProfile(BaseModel):
     naming: NamingSection
     picture: PictureSection
     about: AboutSection

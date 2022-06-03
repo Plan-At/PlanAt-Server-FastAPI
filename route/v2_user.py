@@ -19,7 +19,7 @@ router = APIRouter()
 
 
 @router.post("/create")
-async def v2_create_user(request: Request, user_profile: json_body.UserProfileObject, password: str = Header(None)):
+async def v2_create_user(request: Request, user_profile: json_body.UserProfile, password: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     person_id = random_content.generate_person_id()
