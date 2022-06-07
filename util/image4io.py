@@ -1,8 +1,8 @@
 import base64
 import hashlib
 import json
-import requests
 from datetime import datetime
+import requests
 
 
 def calculate_basic_auth(api_key: str, api_secret: str):

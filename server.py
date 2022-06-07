@@ -32,7 +32,7 @@ app.include_router(v2_captcha.router, prefix="/v2/captcha", tags=APITag.CAPTCHA)
 app.include_router(fake.router, prefix="/fake", tags=APITag.EXAMPLE)
 
 """
-enable this for local development or where have no nginx presence
+enable this for local development or when it's not reverse proxied
 """
 if ServerConfig.ADD_CORS_HEADER:
     from fastapi.middleware.cors import CORSMiddleware

@@ -1,12 +1,14 @@
-from pymongo.database import Database
-from constant import AuthConfig
 from datetime import datetime
 import hashlib
 
-import util.pymongo_wrapper as DocumentDB
+from pymongo.database import Database
+
+from constant import AuthConfig
+from constant import DBName
 from util import random_content
 from util.custom_exception import TokenExpiredException
-from constant import DBName
+import util.pymongo_wrapper as DocumentDB
+
 
 
 def get_person_id_with_token(pa_token: str, db_client: Database):
