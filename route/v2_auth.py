@@ -1,5 +1,7 @@
 # Builtin library
 import hashlib
+import json
+from urllib.parse import parse_qs
 import aiohttp
 
 # Framework core library
@@ -15,6 +17,7 @@ from constant import DBName
 
 router = APIRouter()
 
+TOKEN = json.load(open("app.token.json", encoding="utf-8"))
 
 @router.post("/token/revoke")
 async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
@@ -222,9 +225,11 @@ async def v2_verify_auth_totp(request: Request, person_id: str, totp_code: str):
 @router.post("/github/enable")
 async def v2_enable_auth_github(request: Request, req_body: json_body.GitHubOAuthCode, pa_token: str = Header(None)):
     github_session = aiohttp.ClientSession()
-    a = await github_session.post(f"https://github.com/login/oauth/access_token?client_id={1}&client_secret={2}&code={3}")
-    print(a.status, a.text())
-    a = a.json()
+    to_url = f"https://github.com/login/oauth/access_token?client_id={TOKEN['github_oauth']['client_id']}&client_secret={TOKEN['github_oauth']['client_secret']}&code={req_body.code}"
+    resp1 = await github_session.post(to_url)
+    print(resp1.status, resp1.headers)  # just the attributes of the response object so no need to wait again
+    print(parse_qs(await resp1.text()))
+    await github_session.close()  # must close the session otherwise will throw warning
     return JSONResponse(status_code=200, content={"status": "success", "code": req_body.code})
 
 
