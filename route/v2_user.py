@@ -93,25 +93,30 @@ async def v2_create_user(request: Request, user_profile: json_body.UserProfile, 
             }
         }
     }
-    profile_insert_query = DocumentDB.insert_one(db_client=db_client, collection=DBName.USER_PROFILE, document_body=full_profile)
+    profile_insert_query = DocumentDB.insert_one(db_client=db_client,
+                                                 collection=DBName.USER_PROFILE,
+                                                 document_body=full_profile)
     print(profile_insert_query.inserted_id)
     calendar_index_insert_query = DocumentDB.insert_one(db_client=db_client,
                                                         collection=DBName.CALENDAR_EVENT_INDEX,
-                                                        document_body={"structure_version": 1, "person_id": person_id, "event_id_list": []})
+                                                        document_body={"structure_version": 1,
+                                                                       "person_id": person_id,
+                                                                       "event_id_list": []})
     print(calendar_index_insert_query.inserted_id)
-    login_credential_insert_query = DocumentDB.insert_one(db_client=db_client,
-                                                          collection=DBName.LOGIN,
-                                                          document_body={
-                                                              "structure_version": 2,
-                                                              "person_id": person_id,
-                                                              "password_hash": hashlib.sha512(password.encode("utf-8")).hexdigest(),
-                                                              "password_length": len(password),
-                                                              "totp_status": "disabled",
-                                                              "totp_secret_key": "",
-                                                              "github_oauth_status": "disabled",
-                                                              "github_email": ""
-                                                          })
-    print(login_credential_insert_query.inserted_id)
+    login_cred_insert_query = DocumentDB.insert_one(db_client=db_client,
+                                                    collection=DBName.LOGIN,
+                                                    document_body={
+                                                        "structure_version": 2,
+                                                        "person_id": person_id,
+                                                        "password_hash": hashlib.sha512(
+                                                            password.encode("utf-8")).hexdigest(),
+                                                        "password_length": len(password),
+                                                        "totp_status": "disabled",
+                                                        "totp_secret_key": "",
+                                                        "github_oauth_status": "disabled",
+                                                        "github_email": ""
+                                                    })
+    print(login_cred_insert_query.inserted_id)
     mongo_client.close()
     return JSONResponse(status_code=200, content={"status": "created", "person_id": person_id, "password": password})
 
@@ -126,7 +131,8 @@ async def v2_delete_user(request: Request, name_and_password: json_body.Password
                                                   db_client=db_client)
     print(credential_verify_query)
     # the hash string generated using hashlib is lowercase
-    if hashlib.sha512(name_and_password.password.encode("utf-8")).hexdigest() != credential_verify_query["password_hash"]:
+    if hashlib.sha512(name_and_password.password.encode("utf-8")).hexdigest() != credential_verify_query[
+        "password_hash"]:
         return JSONResponse(status_code=403,
                             content={"status": "not found or not match",
                                      "person_id": name_and_password.person_id,
@@ -140,13 +146,19 @@ async def v2_delete_user(request: Request, name_and_password: json_body.Password
         for each_calendar_event_id in calendar_event_index:
             calendar_event_count += DocumentDB.delete_one(db_client=db_client,
                                                           collection=DBName.CALENDAR_EVENT,
-                                                          find_filter={"event_id": each_calendar_event_id}).deleted_count
+                                                          find_filter={
+                                                              "event_id": each_calendar_event_id}).deleted_count
     # Order based on the rank of importance and regenerate possibility
-    token_count = DocumentDB.delete_many(db_client=db_client, collection=DBName.TOKEN, find_filter={"person_id": person_id}).deleted_count
-    image_count = DocumentDB.delete_one(db_client=db_client, collection=DBName.IMAGE_HOSTING, find_filter={"person_id": person_id}).deleted_count
-    collection_CalendarEventIndex = DocumentDB.delete_one(db_client=db_client, collection=DBName.CALENDAR_EVENT_INDEX, find_filter={"person_id": person_id}).deleted_count
-    collection_User = DocumentDB.delete_one(db_client=db_client, collection=DBName.USER_PROFILE, find_filter={"person_id": person_id}).deleted_count
-    collection_Login = DocumentDB.delete_one(db_client=db_client, collection=DBName.LOGIN, find_filter={"person_id": person_id}).deleted_count
+    token_count = DocumentDB.delete_many(db_client=db_client, collection=DBName.TOKEN,
+                                         find_filter={"person_id": person_id}).deleted_count
+    image_count = DocumentDB.delete_one(db_client=db_client, collection=DBName.IMAGE_HOSTING,
+                                        find_filter={"person_id": person_id}).deleted_count
+    collection_CalendarEventIndex = DocumentDB.delete_one(db_client=db_client, collection=DBName.CALENDAR_EVENT_INDEX,
+                                                          find_filter={"person_id": person_id}).deleted_count
+    collection_User = DocumentDB.delete_one(db_client=db_client, collection=DBName.USER_PROFILE,
+                                            find_filter={"person_id": person_id}).deleted_count
+    collection_Login = DocumentDB.delete_one(db_client=db_client, collection=DBName.LOGIN,
+                                             find_filter={"person_id": person_id}).deleted_count
     mongo_client.close()
     return JSONResponse(status_code=200,
                         content={"status": "everything bind to this person_id being deleted and unrecoverable",
@@ -176,7 +188,8 @@ async def v2_get_user_profile(request: Request, person_id: str):
     db_client = mongo_client.get_database(DocumentDB.DB)
     if len(person_id) != AuthConfig.PERSON_ID_LENGTH:
         return JSONResponse(status_code=403, content={"status": "illegal request", "reason": "malformed person_id"})
-    db_query = DocumentDB.find_one(collection=DBName.USER_PROFILE, find_filter={"person_id": person_id}, db_client=db_client)
+    db_query = DocumentDB.find_one(collection=DBName.USER_PROFILE, find_filter={"person_id": person_id},
+                                   db_client=db_client)
     if db_query is None:
         return JSONResponse(status_code=403, content={"status": "user not found"})
     mongo_client.close()
@@ -184,7 +197,8 @@ async def v2_get_user_profile(request: Request, person_id: str):
 
 
 @router.post("/profile/name/update")
-async def v2_update_user_profile_name(request: Request, req_body: json_body.NamingSection, pa_token: str = Header(None)):
+async def v2_update_user_profile_name(request: Request, req_body: json_body.NamingSection,
+                                      pa_token: str = Header(None)):
     # All the update method of user profile is based on this
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -196,7 +210,8 @@ async def v2_update_user_profile_name(request: Request, req_body: json_body.Nami
     # TODO: forbid special characters check if unique_name already being used
     update_query = DocumentDB.update_one(collection=DBName.USER_PROFILE,
                                          find_filter={"person_id": person_id},
-                                         changes={"$set": {"naming.unique_name": req_body.unique_name,  # Need use "." to connect on nested object
+                                         changes={"$set": {"naming.unique_name": req_body.unique_name,
+                                                           # Need use "." to connect on nested object
                                                            "naming.display_name_full": req_body.display_name_full,
                                                            "naming.display_name_partial": req_body.display_name_partial},
                                                   "$push": {"naming.historical_name": req_body.display_name_full}},
@@ -211,7 +226,8 @@ async def v2_update_user_profile_name(request: Request, req_body: json_body.Nami
 
 
 @router.post("/profile/about/update")
-async def v2_update_user_profile_about(request: Request, req_body: json_body.AboutSection, pa_token: str = Header(None)):
+async def v2_update_user_profile_about(request: Request, req_body: json_body.AboutSection,
+                                       pa_token: str = Header(None)):
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
     person_id = get_person_id_with_token(pa_token=pa_token, db_client=db_client)
@@ -222,7 +238,8 @@ async def v2_update_user_profile_about(request: Request, req_body: json_body.Abo
     # TODO: forbid special characters check length
     update_query = DocumentDB.update_one(collection=DBName.USER_PROFILE,
                                          find_filter={"person_id": person_id},
-                                         changes={"$set": {"about.short_description": req_body.short_description,  # Need use "." to connect on nested object
+                                         changes={"$set": {"about.short_description": req_body.short_description,
+                                                           # Need use "." to connect on nested object
                                                            "about.full_description": req_body.full_description,
                                                            "about.company_name": req_body.company_name,
                                                            "about.job_title": req_body.job_title}},
@@ -237,7 +254,8 @@ async def v2_update_user_profile_about(request: Request, req_body: json_body.Abo
 
 
 @router.post("/profile/status/update")
-async def v2_update_user_profile_status(request: Request, req_body: json_body.StatusSection, pa_token: str = Header(None)):
+async def v2_update_user_profile_status(request: Request, req_body: json_body.StatusSection,
+                                        pa_token: str = Header(None)):
     # Clone of previous two endpoint
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -249,7 +267,8 @@ async def v2_update_user_profile_status(request: Request, req_body: json_body.St
     # TODO: check if the url passed in is a safe image
     update_query = DocumentDB.update_one(collection=DBName.USER_PROFILE,
                                          find_filter={"person_id": person_id},
-                                         changes={"$set": {"status.current_status": req_body.current_status,  # Need use "." to connect on nested object
+                                         changes={"$set": {"status.current_status": req_body.current_status,
+                                                           # Need use "." to connect on nested object
                                                            "status.until.text": req_body.until.text,
                                                            "status.until.timestamp_int": req_body.until.timestamp_int,
                                                            "status.until.timezone_name": req_body.until.timezone_name,
@@ -266,7 +285,8 @@ async def v2_update_user_profile_status(request: Request, req_body: json_body.St
 
 
 @router.post("/profile/picture/update")
-async def v2_update_user_profile_picture(request: Request, req_body: json_body.PictureSection, pa_token: str = Header(None)):
+async def v2_update_user_profile_picture(request: Request, req_body: json_body.PictureSection,
+                                         pa_token: str = Header(None)):
     # Clone of these previous three endpoint
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -278,7 +298,8 @@ async def v2_update_user_profile_picture(request: Request, req_body: json_body.P
     # TODO: check if the url passed in is a safe image
     update_query = DocumentDB.update_one(collection=DBName.USER_PROFILE,
                                          find_filter={"person_id": person_id},
-                                         changes={"$set": {"picture.avatar.image_id": req_body.avatar.image_id,  # Need use "." to connect on nested object
+                                         changes={"$set": {"picture.avatar.image_id": req_body.avatar.image_id,
+                                                           # Need use "." to connect on nested object
                                                            "picture.avatar.image_url": req_body.avatar.image_url,
                                                            "picture.background.image_id": req_body.background.image_id,
                                                            "picture.background.image_url": req_body.background.image_url}},
@@ -294,7 +315,8 @@ async def v2_update_user_profile_picture(request: Request, req_body: json_body.P
 
 # TODO: test this
 @router.post("/profile/contact/update")
-async def v2_update_user_profile_contact(request: Request, req_body: json_body.ContactMethodSection, pa_token: str = Header(None)):
+async def v2_update_user_profile_contact(request: Request, req_body: json_body.ContactMethodSection,
+                                         pa_token: str = Header(None)):
     # Clone of these previous four endpoint
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -306,22 +328,23 @@ async def v2_update_user_profile_contact(request: Request, req_body: json_body.C
     # TODO: check if the url passed in is a safe image
     update_query = DocumentDB.update_one(collection=DBName.USER_PROFILE,
                                          find_filter={"person_id": person_id},
-                                         changes={"$set": {"contact_method_collection.email_primary.domain_name": req_body.email_primary.domain_name,
-                                                           "contact_method_collection.email_primary.full_address": req_body.email_primary.full_address,
-                                                           "contact_method_collection.phone.country_code": req_body.phone.country_code,
-                                                           "contact_method_collection.phone.regular_number": req_body.phone.regular_number,
-                                                           "contact_method_collection.physical_address.full_address": req_body.physical_address.full_address,
-                                                           "contact_method_collection.physical_address.street_address": req_body.physical_address.street_address,
-                                                           "contact_method_collection.physical_address.city": req_body.physical_address.city,
-                                                           "contact_method_collection.physical_address.province": req_body.physical_address.province,
-                                                           "contact_method_collection.physical_address.country": req_body.physical_address.country,
-                                                           "contact_method_collection.physical_address.continent": req_body.physical_address.continent,
-                                                           "contact_method_collection.physical_address.post_code": req_body.physical_address.post_code,
-                                                           "contact_method_collection.twitter.user_name": req_body.twitter.user_name,
-                                                           "contact_method_collection.twitter.user_handle": req_body.twitter.user_handle,
-                                                           "contact_method_collection.twitter.user_id": req_body.twitter.user_id,
-                                                           "contact_method_collection.github.user_name": req_body.github.user_name,
-                                                           "contact_method_collection.github.user_handle": req_body.github.user_handle}},
+                                         changes={"$set": {
+                                             "contact_method_collection.email_primary.domain_name": req_body.email_primary.domain_name,
+                                             "contact_method_collection.email_primary.full_address": req_body.email_primary.full_address,
+                                             "contact_method_collection.phone.country_code": req_body.phone.country_code,
+                                             "contact_method_collection.phone.regular_number": req_body.phone.regular_number,
+                                             "contact_method_collection.physical_address.full_address": req_body.physical_address.full_address,
+                                             "contact_method_collection.physical_address.street_address": req_body.physical_address.street_address,
+                                             "contact_method_collection.physical_address.city": req_body.physical_address.city,
+                                             "contact_method_collection.physical_address.province": req_body.physical_address.province,
+                                             "contact_method_collection.physical_address.country": req_body.physical_address.country,
+                                             "contact_method_collection.physical_address.continent": req_body.physical_address.continent,
+                                             "contact_method_collection.physical_address.post_code": req_body.physical_address.post_code,
+                                             "contact_method_collection.twitter.user_name": req_body.twitter.user_name,
+                                             "contact_method_collection.twitter.user_handle": req_body.twitter.user_handle,
+                                             "contact_method_collection.twitter.user_id": req_body.twitter.user_id,
+                                             "contact_method_collection.github.user_name": req_body.github.user_name,
+                                             "contact_method_collection.github.user_handle": req_body.github.user_handle}},
                                          db_client=db_client)
     if update_query.matched_count != 1 and update_query.modified_count != 1:
         return JSONResponse(status_code=500,
