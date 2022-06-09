@@ -1,3 +1,6 @@
+"""
+Wrapper for access MongoDB over HTTP
+"""
 import requests
 import json
 
@@ -6,6 +9,12 @@ from constant import DBName
 TOKEN = json.load(open("app.token.json"))
 DB_CLUSTER = DBName.CLUSTER_NAME
 DB_NAME = DBName.THIS
+HEADER = {
+    "Content-Type": "application/json",
+    "Access-Control-Request-Headers": "*",
+    "api-key": TOKEN["mongodb"]["data_api_key"],
+    "Connection": "Keep-Alive",
+}
 
 
 def get_client():
@@ -20,13 +29,8 @@ def find_one(target_collection: str, find_filter: dict, target_db: str = DB_NAME
         "collection": target_collection,
         "filter": find_filter
     })
-    headers = {
-        "Content-Type": "application/json",
-        "Access-Control-Request-Headers": "*",
-        "api-key": TOKEN["mongodb"]["data_api_key"],
-        # "Connection": "Keep-Alive",
-    }
-    response = requests_session.request("POST", url, headers=headers, data=payload)
+    response = requests_session.request(
+        "POST", url, headers=HEADER, data=payload)
     print(response.json())
     return json.loads(response.text)["document"]
 
@@ -39,13 +43,7 @@ def delete_one(target_collection: str, find_filter: dict, target_db: str = DB_NA
         "collection": target_collection,
         "filter": find_filter
     })
-    headers = {
-        "Content-Type": "application/json",
-        "Access-Control-Request-Headers": "*",
-        "api-key": TOKEN["mongodb"]["data_api_key"],
-        "Connection": "Keep-Alive",
-    }
-    response = requests.request("POST", url, headers=headers, data=payload)
+    response = requests.request("POST", url, headers=HEADER, data=payload)
     return response.json()
 
 
@@ -57,13 +55,8 @@ def insert_one(target_collection: str, document_body: dict, target_db: str = DB_
         "collection": target_collection,
         "document": document_body
     })
-    headers = {
-        "Content-Type": "application/json",
-        "Access-Control-Request-Headers": "*",
-        "api-key": TOKEN["mongodb"]["data_api_key"],
-        "Connection": "Keep-Alive",
-    }
-    response = requests_session.request("POST", url, headers=headers, data=payload)
+    response = requests_session.request(
+        "POST", url, headers=HEADER, data=payload)
     return response.json()
 
 
@@ -76,11 +69,6 @@ def replace_one(target_collection: str, find_filter: dict, document_body: dict, 
         "filter": find_filter,
         "replacement": document_body
     })
-    headers = {
-        "Content-Type": "application/json",
-        "Access-Control-Request-Headers": "*",
-        "api-key": TOKEN["mongodb"]["data_api_key"],
-        "Connection": "Keep-Alive",
-    }
-    response = requests_session.request("POST", url, headers=headers, data=payload)
+    response = requests_session.request(
+        "POST", url, headers=HEADER, data=payload)
     return response.json()

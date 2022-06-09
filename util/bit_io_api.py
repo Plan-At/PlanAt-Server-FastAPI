@@ -1,8 +1,9 @@
 import json
 import requests
 
-DB_USER_NAME: str = json.load(open("app.token.json"))['bit_io']['user_name']
-DB_API_KEY: str = json.load(open("app.token.json"))['bit_io']['api_key']
+TOKEN = json.load(open("app.token.json"))
+DB_USER_NAME: str = TOKEN['bit_io']['user_name']
+DB_API_KEY: str = TOKEN['bit_io']['api_key']
 API_ENDPOINT = "https://api.bit.io/api/v1beta/query/"
 
 
