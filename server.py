@@ -1,8 +1,8 @@
 import sys
 from datetime import datetime
 import time
-import requests
 import traceback
+import requests
 
 import uvicorn
 from starlette.requests import Request
@@ -31,7 +31,9 @@ app.include_router(v2_hosting.router, prefix="/v2/hosting", tags=APITag.HOSTING)
 app.include_router(v2_captcha.router, prefix="/v2/captcha", tags=APITag.CAPTCHA)
 app.include_router(fake.router, prefix="/fake", tags=APITag.EXAMPLE)
 
-"""enable this for local development or where have no nginx presence"""
+"""
+enable this for local development or when it's not reverse proxied
+"""
 if ServerConfig.ADD_CORS_HEADER:
     from fastapi.middleware.cors import CORSMiddleware
     app.add_middleware(
@@ -57,12 +59,11 @@ async def log_requests(request: Request, call_next):
 
 @app.exception_handler(Exception)
 async def debug_exception_handler(request: Request, exc: Exception):
+    print(exc)
     return Response(
         status_code=200,  # return 500 here might not show any text
         content="".join(
-            traceback.format_exception(
-                etype=type(exc), value=exc, tb=exc.__traceback__
-            )
+            traceback.format_exception(etype=type(exc), value=exc, tb=exc.__traceback__)  # Not compatible with Python3.10
         )
     )
 
@@ -141,7 +142,7 @@ def request_timestamp(request: Request):
 @app.get("/status", tags=["General Methods"])
 @limiter.limit(RateLimitConfig.NO_COMPUTE)
 def api_status(request: Request):
-    return JSONResponse(status_code=200, content={"status": f"alive",
+    return JSONResponse(status_code=200, content={"status": "alive",
                                                   "uptime": f"{datetime.now() - START_TIME}",
                                                   "version": PROGRAM_HASH})
 
@@ -160,14 +161,14 @@ def api_tool_delay(request: Request, sleep_time: int):
 
 
 @app.get("/everything", tags=["General Methods"])
-async def receive_everything(request: Request):
+async def receive_everything_get(request: Request):
     print(request.headers)
     print(await request.body())
     return JSONResponse(status_code=200, content={"status": "finished"})
 
 
 @app.post("/everything", tags=["General Methods"])
-async def receive_everything(request: Request):
+async def receive_everything_post(request: Request):
     print(request.headers)
     print(await request.body())
     return JSONResponse(status_code=200, content={"status": "finished"})

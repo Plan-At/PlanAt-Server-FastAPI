@@ -10,3 +10,4 @@ pymongo
 dnspython
 pyotp
 aiohttp
+email-validator

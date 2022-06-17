@@ -5,11 +5,34 @@
     <title>Form Upload</title>
 </head>
 <body>
-<form method="post" action="http://localhost:8000/v2/hosting/image/form_upload" enctype="multipart/form-data">
-    <input type="hidden" name="pa_token" value="aaaaaaaa">
-    <input type="file" name="image_file" accept="image/png, image/jpeg">
-    <input type="submit">
-</form>
+    <h2>Vanilla Form</h1>
+    <form method="post" action="http://localhost:8000/v2/hosting/image/upload" enctype="multipart/form-data">
+        <input type="hidden" name="pa_token" value="aaaaaaaa">
+        <input type="file" name="image_file" accept="image/png, image/jpeg">
+        <input type="submit">
+    </form>
 
+    <h2>Advanced</h1>
+    <input type="file" id="image_file" name="image_file" accept="image/png, image/jpeg">
+    <input type="button" id="upload_file" name="upload_file" onclick="submitFile()">
+    <label for="upload_file">Submit</label>
+
+    <script>
+        function submitFile(){
+            console.log(document.getElementById("image_file").value);
+
+            var input = document.querySelector('input[type="file"]');
+            var data = new FormData();
+            data.append("image_file", input.files[0]);
+            data.append("pa_token_form", "aaaaaaaa");
+            console.log(data);
+            fetch('https://api.752628.xyz/v2/hosting/image/upload', {
+                method: 'POST',
+                body: data
+            }).then((resp) => {
+                console.log(resp.text);
+            })
+        }
+    </script>
 </body>
 </html>

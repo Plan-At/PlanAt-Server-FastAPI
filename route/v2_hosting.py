@@ -1,8 +1,8 @@
 import json
 
-from starlette.requests import Request
 from fastapi import APIRouter, File, Header, Form, UploadFile
 from fastapi.responses import JSONResponse
+from starlette.requests import Request
 
 import util.pymongo_wrapper as DocumentDB
 from util.token_tool import get_person_id_with_token
@@ -14,8 +14,10 @@ router = APIRouter()
 
 @router.post("/image/upload")
 async def v2_upload_image(request: Request,
-                          image_file_bytes: bytes = File(None, max_length=ContentLimit.IMAGE_SIZE), pa_token: str = Header(None),
-                          image_file: UploadFile = Form(None), pa_token_form: str = Form(None)):
+                          image_file_bytes: bytes = File(None, max_length=ContentLimit.IMAGE_SIZE),
+                          pa_token: str = Header(None),
+                          image_file: UploadFile = Form(None),
+                          pa_token_form: str = Form(None)):
     # No need ofr optional since they already provided fallback value
     mongo_client = DocumentDB.get_client()
     db_client = mongo_client.get_database(DocumentDB.DB)
@@ -56,11 +58,15 @@ async def v2_upload_image(request: Request,
         "image_height": image_info["uploadedFiles"][0]["height"],
         "hosting_provider": "image4io"
     }
-    db_action_result = DocumentDB.insert_one(collection=DBName.IMAGE_HOSTING, document_body=report_card, db_client=db_client)
+    db_action_result = DocumentDB.insert_one(collection=DBName.IMAGE_HOSTING,
+                                             document_body=report_card,
+                                             db_client=db_client)
     print(db_action_result)
     mongo_client.close()
     return JSONResponse(status_code=201,
-                        content={"status": "success", "image_id": assigned_id, "image_url": image_info["uploadedFiles"][0]["url"]})
+                        content={"status": "success",
+                                 "image_id": assigned_id,
+                                 "image_url": image_info["uploadedFiles"][0]["url"]})
 
 
 @router.post("/image/delete")
@@ -70,7 +76,9 @@ async def v2_delete_image(request: Request, image_id: str, pa_token: str = Heade
     person_id = get_person_id_with_token(pa_token, db_client)
     if person_id == "":
         return JSONResponse(status_code=403, content={"status": "you need to upload an image", "pa_token": pa_token})
-    image_info_query = DocumentDB.find_one(collection=DBName.IMAGE_HOSTING, find_filter={"image_id": image_id}, db_client=db_client)
+    image_info_query = DocumentDB.find_one(collection=DBName.IMAGE_HOSTING,
+                                           find_filter={"image_id": image_id},
+                                           db_client=db_client)
     print(image_info_query)
     resp = image4io.deleteImage(
         authorization=image4io.calculate_basic_auth(
@@ -82,10 +90,13 @@ async def v2_delete_image(request: Request, image_id: str, pa_token: str = Heade
         return JSONResponse(status_code=500, content={"status": "image deletion failed", "reason": resp.json()["errors"]})
     image_info = resp.json()
     print(image_info)
-    db_action_result = DocumentDB.delete_one(collection=DBName.IMAGE_HOSTING, find_filter={"image_id": image_id}, db_client=db_client)
+    db_action_result = DocumentDB.delete_one(collection=DBName.IMAGE_HOSTING,
+                                             find_filter={"image_id": image_id},
+                                             db_client=db_client)
     if db_action_result.deleted_count != 1:
         return JSONResponse(status_code=500,
-                            content={"status": "image deleted from hosting service but failed to remove relevant record from our database", "image_id": image_id})
+                            content={"status": "image deleted from hosting service but failed to remove relevant record from our database",
+                                     "image_id": image_id})
     mongo_client.close()
     return JSONResponse(status_code=201,
                         content={"status": "deleted", "image_id": image_id})

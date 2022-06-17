@@ -22,6 +22,7 @@ async def v2_generate_captcha_image():
     return StreamingResponse(content=image_data, media_type="image/png", headers={"captcha_id": str(uuid.uuid4())})
 
 
+# TODO remove this if don't have time to work on
 @router.get("/verify")
 async def v2_verify_captcha():
     pass

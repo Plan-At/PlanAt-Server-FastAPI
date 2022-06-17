@@ -1,5 +1,7 @@
 # Builtin library
 import hashlib
+import json
+from urllib.parse import parse_qs
 import aiohttp
 
 # Framework core library
@@ -15,6 +17,7 @@ from constant import DBName
 
 router = APIRouter()
 
+TOKEN = json.load(open("app.token.json", encoding="utf-8"))
 
 @router.post("/token/revoke")
 async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
@@ -26,7 +29,8 @@ async def v2_revoke_auth_token(request: Request, pa_token: str = Header(None)):
         db_client=db_client)
     mongo_client.close()
     if token_deletion_query is None:
-        return JSONResponse(status_code=500, content={"status": "failed to remove the old token to database", "pa_token": pa_token})
+        return JSONResponse(status_code=500,
+                            content={"status": "failed to remove the old token to database", "pa_token": pa_token})
     elif token_deletion_query.deleted_count == 0:
         return JSONResponse(status_code=404, content={"status": "token not found", "pa_token": pa_token})
     elif token_deletion_query.deleted_count == 1:
@@ -54,7 +58,9 @@ async def v2_verify_auth_password(request: Request, cred: json_body.PasswordLogi
                                                               token_lifespan=cred.token_lifespan)
     mongo_client.close()
     return JSONResponse(status_code=200,
-                        content={"status": "success", "pa_token": generated_token[0], "expiration_timestamp": generated_token[1]})
+                        content={"status": "success",
+                                 "pa_token": generated_token[0],
+                                 "expiration_timestamp": generated_token[1]})
 
 
 # TODO: revoke existing session/token
@@ -164,7 +170,8 @@ async def v2_disable_auth_totp(request: Request, cred: json_body.PasswordLoginBo
                                                     changes={"$set": {"totp_status": "disabled",
                                                                       "totp_secret_key": ""}})
     if credential_modify_query.matched_count != 1 and credential_modify_query.modified_count != 1:
-        return JSONResponse(status_code=500, content={"status": "failed to delete existing secret_key for totp in database",
+        return JSONResponse(status_code=500,
+                            content={"status": "failed to delete existing secret_key for totp in database",
                                                       "matched_count": credential_modify_query.matched_count,
                                                       "modified_count": credential_modify_query.modified_count})
     mongo_client.close()
@@ -222,9 +229,11 @@ async def v2_verify_auth_totp(request: Request, person_id: str, totp_code: str):
 @router.post("/github/enable")
 async def v2_enable_auth_github(request: Request, req_body: json_body.GitHubOAuthCode, pa_token: str = Header(None)):
     github_session = aiohttp.ClientSession()
-    a = await github_session.post(f"https://github.com/login/oauth/access_token?client_id={1}&client_secret={2}&code={3}")
-    print(a.status, a.text())
-    a = a.json()
+    to_url = f"https://github.com/login/oauth/access_token?client_id={TOKEN['github_oauth']['client_id']}&client_secret={TOKEN['github_oauth']['client_secret']}&code={req_body.code}"
+    resp1 = await github_session.post(to_url)
+    print(resp1.status, resp1.headers)  # just the attributes of the response object so no need to wait again
+    print(parse_qs(await resp1.text()))
+    await github_session.close()  # must close the session otherwise will throw warning
     return JSONResponse(status_code=200, content={"status": "success", "code": req_body.code})
 
 

@@ -1,4 +1,4 @@
 # Please copy and paste, rather than run this thing as a script
 # And run them as sodu
 
-sudo python -m pip install fastapi slowapi uvicorn python-multipart
+sudo python -m pip install fastapi slowapi uvicorn python-multipart requests

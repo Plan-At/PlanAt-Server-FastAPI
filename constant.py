@@ -13,7 +13,7 @@ class ServerConfig:
     SEMVER = "2.2.0"
     IMAGEBED_FOLDER = "/Plan-At/usercontent"
     LOG_LEVEL = "debug"
-    ADD_CORS_HEADER = False
+    ADD_CORS_HEADER = True
     TITLE = "Plan-At API"
     DESCRIPTION = "The official Plan-At backend, using FastAPI"
 

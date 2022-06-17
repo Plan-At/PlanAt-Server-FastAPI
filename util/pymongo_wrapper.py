@@ -1,3 +1,8 @@
+"""
+Wrapper for access MongoDB
+To provide similar method and parameters for seamless transistion 
+between any document database
+"""
 from typing import List
 import json
 

@@ -1,7 +1,9 @@
-
 def universal_user_profile(input_json: dict):
+    """
+    To remove the ObjectID and metadate
+    """
     print(input_json)
-    return_json = {
+    return {
         "structure_version": input_json["structure_version"],
         "person_id": input_json["person_id"],
         "naming": input_json["naming"],
@@ -10,21 +12,24 @@ def universal_user_profile(input_json: dict):
         "about": input_json["about"],
         "contact_method_collection": input_json["contact_method_collection"]
     }
-    return return_json
 
 
 def universal_user_calendar_event_index(input_json: dict):
+    """
+    To remove the ObjectID
+    """
     print(input_json)
-    return_json = {
+    return {
         "structure_version": input_json["structure_version"],
         "person_id": input_json["person_id"],
         "event_id_list": input_json["event_id_list"]
     }
-    return return_json
 
 
 def universal_calendar_event(input_json: dict, required_permission_list: list, person_id: str):
-    # Return False if user doesn't have sufficient permission
+    """
+    Return False if user doesn't have sufficient permission
+    """
     print(input_json)
     return_json = {
         "structure_version": input_json["structure_version"],
