@@ -7,7 +7,7 @@
 | Area              | Backend                                          |
 | Related Features  | REST API                                         |
 | Document Location | https://github.com/Plan-At/PlanAt-Server-FastAPI |
-| Spec Status       | Draft                                            |
+| Spec Status       | Finished                                         |
 
 ### Contact Information
 | Role      | Name           |
@@ -21,7 +21,7 @@
 | -      | 04/19/2022 | Initial Draft | Created this page               |
 | -      | 05/11/2022 |               | Update to add more major points |
 | -      | 05/20/2022 |               | Add description for new module  |
-| -      | 06/10/2022 |               | Finish most of them             |
+| -      | 06/17/2022 |               | Finish most of them             |
 
 ## Functional Specification
 backend server for Plan-At. Developed with the idea of "API First" to allow multiple variation of frontend/client
@@ -47,17 +47,26 @@ Sections of the project:
 
 ## Modules
 ### User Profile:
-Have the 
+Having the following information:
+- Profile Picture
+- Contact Information
+- Brief Description
+And account deletion that could easily erase everything created this this user
 ### Calendar Event:
+The core of this project, contains:
+- Name and description
+- Starting time and ending time, stored as timestamp, with field for timezone attribute
+- Access Control List (ACL), that set permission for multiple user and each user can have different permission
+
 ### Login method:
 While static password is the first and default method, after registration user can opt in other methods
 - Time-Based OPT (Authenticator)
-- GitHub OAuth (email)
 ### API Documentation:
 The framework FastAPI we're using come with native support of [OpenAPI](https://www.openapis.org/),
 which including interactive interface with minial amount of explanation about how to use the API like
 [Swagger UI](https://swagger.io/tools/swagger-ui/) and [Redoc](https://github.com/Redocly/redoc)
 and try-out these endpoints without worrying about CORS
+![image](https://user-images.githubusercontent.com/86680163/174351422-076e3bab-8a79-4d80-833e-6e5c3d5540ff.png)
 
 
 ## System Design
